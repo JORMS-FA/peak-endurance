@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XCO Calendar Coach · Abril</title>
+  <style>
+    :root{
+      --bg:#06101f;
+      --bg2:#0a1730;
+      --card:rgba(14,26,52,.74);
+      --card2:rgba(10,20,42,.92);
+      --line:rgba(140,170,255,.14);
+      --text:#eaf1ff;
+      --muted:#93a4c7;
+      --blue:#4ea1ff;
+      --cyan:#48d8ff;
+      --green:#32d583;
+      --yellow:#f8c94b;
+      --orange:#ff9d3c;
+      --red:#ff6262;
+      --shadow:0 14px 40px rgba(0,0,0,.35);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:
+      radial-gradient(circle at top left, rgba(78,161,255,.18), transparent 30%),
+      radial-gradient(circle at bottom right, rgba(72,216,255,.10), transparent 24%),
+      linear-gradient(180deg, var(--bg), var(--bg2));
+      color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;overflow-x:hidden}
+    body::before{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);background-size:34px 34px;mask-image:linear-gradient(180deg, rgba(0,0,0,.36), rgba(0,0,0,0));pointer-events:none;opacity:.25}
+    .app{max-width:1480px;margin:0 auto;padding:18px 14px 28px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:20;padding:10px 0 14px;background:linear-gradient(180deg, rgba(6,16,31,.96), rgba(6,16,31,.72), transparent);backdrop-filter:blur(14px)}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:.02em}
+    .brand-badge{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg, rgba(78,161,255,.95), rgba(72,216,255,.72));display:grid;place-items:center;box-shadow:var(--shadow);font-size:24px}
+    .brand h1{margin:0;font-size:20px;line-height:1.05}
+    .brand p{margin:2px 0 0;color:var(--muted);font-size:12px;font-weight:500}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .chip,.btn,.input,select,textarea{border:1px solid var(--line);background:rgba(8,16,34,.75);color:var(--text);border-radius:16px;box-shadow:var(--shadow)}
+    .chip{padding:11px 14px;font-size:12px;color:var(--muted)}
+    .btn{padding:12px 16px;font-weight:800;cursor:pointer;transition:.2s transform,.2s opacity,.2s background;border:none}
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{background:linear-gradient(135deg, rgba(78,161,255,.95), rgba(72,216,255,.85));color:#06101f}
+    .btn.ghost{background:rgba(10,20,42,.8);color:var(--text);border:1px solid var(--line)}
+    .layout{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;align-items:start}
+    @media (max-width: 1060px){.layout{grid-template-columns:1fr}}
+    .panel{background:linear-gradient(180deg, rgba(14,26,52,.9), rgba(9,18,36,.92));border:1px solid rgba(140,170,255,.14);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 18px 12px;border-bottom:1px solid var(--line)}
+    .panel-title{margin:0;font-size:18px}
+    .panel-sub{margin:4px 0 0;color:var(--muted);font-size:12px}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px}
+    @media (max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}}
+    .stat{padding:14px;border-radius:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .stat .k{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.12em}
+    .stat .v{font-size:24px;font-weight:900;margin-top:8px}
+    .stat .s{font-size:12px;color:var(--muted);margin-top:4px}
+    .calendar-wrap{padding:14px}
+    .weekday-row{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px}
+    .weekday{font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);padding:0 8px}
+    .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    @media (max-width:760px){
+      .calendar,.weekday-row{grid-template-columns:repeat(2,1fr)}
+      .weekday:nth-child(n+3){display:none}
+    }
+    .day{min-height:136px;padding:12px;border-radius:18px;background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));border:1px solid rgba(140,170,255,.12);cursor:pointer;position:relative;overflow:hidden;transition:.18s transform,.18s border-color,.18s background}
+    .day:hover{transform:translateY(-2px);border-color:rgba(78,161,255,.42);background:linear-gradient(180deg, rgba(78,161,255,.10), rgba(255,255,255,.03))}
+    .day.active{outline:2px solid rgba(72,216,255,.7)}
+    .day .num{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-weight:900;font-size:16px}
+    .day .dow{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800;margin-top:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+    .badge.blue{background:rgba(78,161,255,.14);color:#9bd0ff}
+    .badge.cyan{background:rgba(72,216,255,.12);color:#94e8ff}
+    .badge.green{background:rgba(50,213,131,.14);color:#89f1bb}
+    .badge.yellow{background:rgba(248,201,75,.12);color:#ffe49b}
+    .badge.orange{background:rgba(255,157,60,.12);color:#ffd1a1}
+    .badge.red{background:rgba(255,98,98,.12);color:#ffb2b2}
+    .day .title{margin-top:10px;font-weight:800;line-height:1.2;font-size:13px}
+    .day .small{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.45}
+    .day.rest{opacity:.78}
+    .day.rest .title{color:#a9b7d6;font-weight:700}
+    .summary{padding:14px;display:grid;gap:10px}
+    .summary-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:14px}
+    .summary-card h3{margin:0 0 8px;font-size:14px}
+    .summary-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+    .zones{display:grid;gap:8px;margin-top:10px}
+    .zone-row{display:grid;grid-template-columns:58px 1fr 90px;align-items:center;gap:8px}
+    .bar{height:12px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.05)}
+    .fill{height:100%;border-radius:inherit;background:linear-gradient(90deg, rgba(78,161,255,.95), rgba(72,216,255,.85))}
+    .fill.z2{background:linear-gradient(90deg, rgba(50,213,131,.95), rgba(114,255,195,.82))}
+    .fill.z3{background:linear-gradient(90deg, rgba(248,201,75,.95), rgba(255,231,149,.85))}
+    .fill.z4{background:linear-gradient(90deg, rgba(255,157,60,.95), rgba(255,206,142,.82))}
+    .fill.z5{background:linear-gradient(90deg, rgba(255,98,98,.95), rgba(255,169,169,.82))}
+    .zone-label{font-size:12px;color:var(--muted)}
+    .zone-pct{font-size:12px;text-align:right}
+    .drawer{position:fixed;right:14px;top:92px;bottom:18px;width:min(430px,calc(100vw - 28px));transform:translateX(110%);transition:.25s transform;z-index:30}
+    .drawer.open{transform:translateX(0)}
+    .drawer-inner{height:100%;display:flex;flex-direction:column}
+    .drawer-head{padding:18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+    .drawer-body{padding:18px;overflow:auto;display:grid;gap:14px}
+    .meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .meta{padding:11px;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .meta .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.11em}
+    .meta .v{font-size:14px;font-weight:800;margin-top:6px;line-height:1.35}
+    .section{padding:14px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .section h4{margin:0 0 10px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#cfe0ff}
+    .section p,.section li{margin:0;color:var(--text);font-size:13px;line-height:1.6}
+    .section ul{margin:0;padding-left:18px}
+    .editable{display:grid;gap:10px}
+    .input,select,textarea{width:100%;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:rgba(8,16,34,.85);color:var(--text);outline:none}
+    textarea{min-height:100px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .toggle{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+    .toggle input{width:18px;height:18px;accent-color:var(--blue)}
+
+    /* CHAT AHORA VA AL FINAL, NO FIJO ENCIMA */
+    .chatSection{margin-top:14px}
+    .chatShell{border:1px solid rgba(140,170,255,.16);border-radius:26px;background:linear-gradient(180deg, rgba(14,26,52,.96), rgba(8,16,34,.98));box-shadow:var(--shadow);overflow:hidden}
+    .chatTop{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .chatTop strong{font-size:14px}
+    .chatTop span{color:var(--muted);font-size:12px}
+    .chatHeaderActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .chatLog{max-height:260px;overflow:auto;padding:14px 14px 0;display:grid;gap:10px}
+    .msg{max-width:86%;padding:12px 14px;border-radius:18px;font-size:13px;line-height:1.55;border:1px solid rgba(255,255,255,.06)}
+    .msg.user{margin-left:auto;background:linear-gradient(135deg, rgba(78,161,255,.16), rgba(72,216,255,.08));border-top-right-radius:6px}
+    .msg.bot{background:rgba(255,255,255,.04);border-top-left-radius:6px}
+    .chatControls{display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:14px;border-top:1px solid var(--line)}
+    .chatControls .input{height:48px}
+    .chatExtras{display:flex;gap:10px;flex-wrap:wrap;padding:0 14px 14px}
+    .file-pill{display:inline-flex;align-items:center;gap:8px;border:1px dashed rgba(140,170,255,.18);padding:10px 12px;border-radius:14px;color:var(--muted);font-size:12px;cursor:pointer}
+    input[type=file]{display:none}
+    .preview{display:none;gap:12px;align-items:flex-start;padding:0 14px 14px}
+    .preview img{width:74px;height:74px;object-fit:cover;border-radius:16px;border:1px solid rgba(255,255,255,.08)}
+    .preview .txt{font-size:12px;color:var(--muted);line-height:1.45}
+    .modal{position:fixed;inset:0;background:rgba(2,6,14,.6);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;z-index:50;padding:14px}
+    .modal.open{display:flex}
+    .modal-card{width:min(860px,100%);max-height:92vh;overflow:auto;border-radius:28px;background:linear-gradient(180deg, rgba(14,26,52,.98), rgba(8,16,34,.99));border:1px solid rgba(140,170,255,.16);box-shadow:var(--shadow)}
+    .modal-head{padding:18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .modal-body{padding:18px;display:grid;gap:14px}
+    .kv{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    @media (max-width:760px){
+      .kv,.row,.row3,.chatControls,.meta-grid{grid-template-columns:1fr}
+      .chatControls{grid-template-columns:1fr}
+      .drawer{right:0;left:0;top:84px;width:auto;bottom:18px}
+      .msg{max-width:94%}
+    }
+    .footer-note{color:var(--muted);font-size:12px;padding:8px 2px 0}
+    .hidden{display:none!important}
+    .blink{animation:blink 1.2s infinite}
+    @keyframes blink{50%{opacity:.35}}
+    .zone-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .mini-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);font-size:12px;color:var(--muted)}
+    .day-zones{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+    .day-zone{font-size:11px;padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#dfeaff}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">⚡</div>
+        <div>
+          <h1>XCO Calendar Coach</h1>
+          <p>Calendario abril · modo oscuro · edición por chat · export IA</p>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="chip" id="dateRangeChip">Extracción Strava: desde <span id="fromDateLabel"></span></div>
+        <button class="btn ghost" onclick="openZonesModal()">Configurar zonas</button>
+        <button class="btn ghost" onclick="openSettingsModal()">Ajustes IA</button>
+        <button class="btn primary" onclick="downloadBundle()">Descargar datos</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Abril · calendario inteligente</h2>
+            <p class="panel-sub">Toca cualquier día para ver estructura, nutrición, zonas, y editarlo sin romper el plan.</p>
+          </div>
+          <div class="toolbar" style="gap:8px">
+            <label class="chip" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <span>Desde</span>
+              <input id="fromDate" class="input" type="date" style="padding:8px 10px;height:38px;min-width:150px" />
+            </label>
+            <button class="btn ghost" onclick="resetPlan()">Restaurar plan</button>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="k">Sesiones</div><div class="v" id="statWeek">0</div><div class="s">programadas en abril</div></div>
+          <div class="stat"><div class="k">Z2</div><div class="v" id="statZ2">0</div><div class="s">minutos totales</div></div>
+          <div class="stat"><div class="k">Claves</div><div class="v" id="statKey">0</div><div class="s">días de carga alta</div></div>
+          <div class="stat"><div class="k">Estado</div><div class="v" id="statState">Listo</div><div class="s">sincronizado localmente</div></div>
+        </div>
+
+        <div class="calendar-wrap">
+          <div class="weekday-row" id="weekdayRow"></div>
+          <div class="calendar" id="calendar"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Zona, progreso y optimización</h2>
+            <p class="panel-sub">Datos listos para exportar y comparar con tus fotos de entrenamiento.</p>
+          </div>
+        </div>
+        <div class="summary">
+          <div class="summary-card">
+            <h3>Tu configuración actual</h3>
+            <div class="zones" id="zoneSummary"></div>
+          </div>
+          <div class="summary-card">
+            <h3>Recomendaciones automáticas</h3>
+            <p id="recommendationText"></p>
+          </div>
+          <div class="summary-card">
+            <h3>Exportación limpia para IA</h3>
+            <p>Incluye plan, zonas, nutrición, cambios hechos por chat y recomendaciones de optimización.</p>
+            <div class="footer-note">Perfecto para pasarlo después a otro modelo sin perder contexto.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT AL FINAL DE LA WEB -->
+    <div class="chatSection">
+      <div class="chatShell">
+        <div class="chatTop">
+          <div>
+            <strong>Chat coach</strong><br>
+            <span>Escribe: “cambia el domingo por intervalos”, “ajusta hora del viernes a 5:30”, o sube una foto para comparar.</span>
+          </div>
+          <div class="chatHeaderActions">
+            <button class="btn ghost" onclick="toggleChat()" id="chatToggleBtn">Minimizar</button>
+            <button class="btn ghost" onclick="insertPrompt('cambia el domingo por intervalos')">Ejemplo</button>
+            <button class="btn ghost" onclick="insertPrompt('descarga la información')">Exportar</button>
+          </div>
+        </div>
+
+        <div id="chatBody">
+          <div class="chatLog" id="chatLog"></div>
+          <div class="preview" id="previewBox">
+            <img id="previewImg" alt="preview" />
+            <div class="txt" id="previewTxt"></div>
+          </div>
+          <div class="chatExtras">
+            <label class="file-pill" for="photoInput">📷 Subir foto de entreno</label>
+            <input id="photoInput" type="file" accept="image/*" />
+            <button class="btn ghost" onclick="clearPhoto()">Quitar foto</button>
+          </div>
+          <div class="chatControls">
+            <input id="chatInput" class="input" placeholder="Escribe un cambio, una duda o pide análisis..." />
+            <button class="btn ghost" onclick="sendChat()">Enviar</button>
+            <button class="btn primary" onclick="analyzePendingPhoto()">Analizar foto</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="drawer" id="drawer">
+    <div class="panel drawer-inner">
+      <div class="drawer-head">
+        <div>
+          <h2 class="panel-title" id="drawerTitle">Día</h2>
+          <p class="panel-sub" id="drawerSub">Selecciona un día del calendario</p>
+        </div>
+        <div class="toolbar">
+          <button class="btn ghost" onclick="closeDrawer()">Cerrar</button>
+        </div>
+      </div>
+      <div class="drawer-body" id="drawerBody"></div>
+    </div>
+  </aside>
+
+  <div class="modal" id="zonesModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h2 class="panel-title">Configurar zonas de frecuencia cardíaca</h2>
+          <p class="panel-sub">Al iniciar la app, estas zonas se guardan en tu navegador.</p>
+        </div>
+        <button class="btn ghost" onclick="closeZonesModal()">Cerrar</button>
+      </div>
+      <div class="modal-body">
+        <div class="row3">
+          <label>Vt1 / inicio aeróbico<input class="input" id="z1End" type="number" /></label>
+          <label>Z2 inicia<input class="input" id="z2End" type="number" /></label>
+          <label>Z3 inicia<input class="input" id="z3End" type="number" /></label>
+        </div>
+        <div class="row">
+          <label>Z4 inicia<input class="input" id="z4End" type="number" /></label>
+          <label>Vt2 / umbral alto<input class="input" id="z5Start" type="number" /></label>
+        </div>
+        <div class="row">
+          <button class="btn primary" onclick="saveZones()">Guardar zonas</button>
+          <button class="btn ghost" onclick="loadDefaultZones()">Restaurar valores del ejemplo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h2 class="panel-title">Ajustes IA</h2>
+          <p class="panel-sub">Usa Ollama Cloud con API key u OpenAI. Para fotos necesitas un modelo con visión.</p>
+        </div>
+        <button class="btn ghost" onclick="closeSettingsModal()">Cerrar</button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <label>Proveedor IA
+            <select id="aiProvider">
+              <option value="ollama_cloud">Ollama Cloud API</option>
+              <option value="openai">OpenAI</option>
+            </select>
+          </label>
+          <label>Modelo<input class="input" id="apiModel" placeholder="gpt-oss:120b" /></label>
+        </div>
+        <div class="row">
+          <label>URL Ollama<input class="input" id="ollamaUrl" placeholder="https://ollama.com" /></label>
+          <label>API key<input class="input" id="apiKey" placeholder="ollama_... / sk-..." /></label>
+        </div>
+        <div class="row">
+          <label>Desde Strava<input class="input" id="stravaFrom" type="date" /></label>
+          <label>Nombre del atleta<input class="input" id="athleteName" placeholder="Tu nombre" /></label>
+        </div>
+        <label class="toggle"><input type="checkbox" id="saveSensitive" /> Guardar la API key solo en este navegador</label>
+        <div class="footer-note">Para Ollama Cloud usa https://ollama.com y un modelo disponible en tu cuenta, por ejemplo gpt-oss:120b.</div>
+        <div class="row">
+          <button class="btn primary" onclick="saveAISettings()">Guardar</button>
+          <button class="btn ghost" onclick="clearAISettings()">Borrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'xco_calendar_coach_v3';
+    const DEFAULT_ZONES = { z1End:131, z2End:148, z3End:160, z4End:172, z5Start:174 };
+    const MONTH = { name: 'Abril', number: 4, year: 2026 };
+    const weekdays = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+    const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+    const initialPlan = {
+      15: { day:15, dow:3, time:'05:00', title:'Gym pierna + Z2', sport:'gym + ciclismo', intensity:'ALTA', color:'blue',
+        structure:['Gym pierna 70% (sentadilla, peso muerto, búlgaras)','Rodaje 30–40 min en Z2 suave'],
+        nutrition:['Proteína + carbos (arroz / papa)','Hidratación alta'],
+        notes:'Objetivo: activar fuerza sin fatigar de más. Cierra con rodaje controlado.' },
+      16: { day:16, dow:4, time:'05:00', title:'Z2 suave', sport:'ciclismo', intensity:'MEDIA', color:'green',
+        structure:['10 min Z1','40 min Z2','10 min suave'], nutrition:['Comida limpia','Grasas moderadas'], notes:'Cadencia alta 90+.' },
+      17: { day:17, dow:5, time:'05:00', title:'Intervalos clave', sport:'ciclismo', intensity:'MUY ALTA', color:'red',
+        structure:['10 min calentamiento','5 × 3 min Z4-Z5','3 min suave entre repeticiones','10 min enfriar'], nutrition:['Carbos altos','Buena hidratación'], notes:'Simula repechos y cambios de ritmo de carrera.' },
+      18: { day:18, dow:6, time:'05:30', title:'Activación', sport:'ciclismo', intensity:'MEDIA', color:'cyan',
+        structure:['10 min suave','30 min Z2','2 sprints de 20 seg'], nutrition:['Ligero','No comer pesado'], notes:'Solo activar sin cargar.' },
+      19: { day:19, dow:0, time:'05:00', title:'Último fondo', sport:'ciclismo', intensity:'ALTA', color:'orange',
+        structure:['20 min suave','1h30 Z2-Z3','20–30 min Z3/Z4','Enfriar'], nutrition:['Comer durante (banano, panela, gel)','Hidratación constante'], notes:'No vayas a tope todo el tiempo. Guarda energía para el cierre.' },
+      20: { day:20, dow:1, time:'05:30', title:'Recuperación', sport:'ciclismo', intensity:'BAJA', color:'blue',
+        structure:['Rodaje 45 min Z1-Z2 continuo'], nutrition:['Normal'], notes:'Soltar piernas y recuperar.' },
+      21: { day:21, dow:2, time:'05:00', title:'Sprint day', sport:'ciclismo', intensity:'MUY ALTA', color:'red',
+        structure:['10 min suave','6 × 20 seg ALL OUT','2–3 min suave entre cada uno','10 min enfriar'], nutrition:['Carbos normales'], notes:'Día que puede definir la carrera. Máxima calidad, no volumen.' },
+      22: { day:22, dow:3, time:'05:30', title:'Z2 + gym suave', sport:'gym + ciclismo', intensity:'MEDIA', color:'green',
+        structure:['40 min Z2','Core + tren superior'], nutrition:['Ligero','No pesado'], notes:'Nada pesado. Mantener frescura.' },
+      23: { day:23, dow:4, time:'05:30', title:'Activación', sport:'ciclismo', intensity:'MEDIA', color:'cyan',
+        structure:['10 min suave','20 min Z2','2 progresivos de 30 seg'], nutrition:['Hidratar'], notes:'Preparar piernas sin generar fatiga.' },
+      24: { day:24, dow:5, time:'05:30', title:'Descanso o muy suave', sport:'recuperación', intensity:'BAJA', color:'yellow',
+        structure:['20 min muy suave o descanso total'], nutrition:['Inicio carga de carbos fuerte'], notes:'Aquí empiezas a llenar depósitos, sin inventar intensidad.' },
+      25: { day:25, dow:6, time:'06:00', title:'Openers', sport:'ciclismo', intensity:'MEDIA', color:'green',
+        structure:['10 min suave','2 sprints de 15–20 seg','10 min suave'], nutrition:['Muy ligero','Hidratación alta'], notes:'Activación pre-carrera.' },
+      26: { day:26, dow:0, time:'Salida', title:'CARRERA', sport:'ciclismo', intensity:'MÁXIMA', color:'red',
+        structure:['10 min suave','3 progresivos de 30 seg','1 esfuerzo corto Z4','Salida enfocada'], nutrition:['Desayuno ligero','Carbos y sal'], notes:'No ataques al inicio. Guarda y lanza el sprint final a 15–20 seg.' }
+    };
+
+    const state = {
+      zones: loadZones(),
+      plan: loadPlan(),
+      selectedDay: 15,
+      chat: loadChat(),
+      photo: null,
+      ai: loadAISettings(),
+      stravaFrom: localStorage.getItem('xco_strava_from') || '2026-04-01',
+      chatCollapsed: false
+    };
+
+    function loadZones(){
+      const saved = safeJSON(localStorage.getItem(STORAGE_KEY), null);
+      return saved?.zones || {...DEFAULT_ZONES};
+    }
+    function loadPlan(){
+      const saved = safeJSON(localStorage.getItem(STORAGE_KEY), null);
+      return saved?.plan ? mergePlan(saved.plan) : deepClone(initialPlan);
+    }
+    function loadChat(){
+      const saved = safeJSON(localStorage.getItem(STORAGE_KEY), null);
+      return saved?.chat || [{role:'bot', text:'Te leo. Puedes cambiar un día, ajustar horas o subir una foto para comparar.'}];
+    }
+    function loadAISettings(){
+      const saved = safeJSON(localStorage.getItem(STORAGE_KEY), null);
+      const legacyProvider = saved?.ai?.provider === 'ollama' ? 'ollama_cloud' : saved?.ai?.provider;
+      const provider = legacyProvider || (saved?.ai?.apiKey ? 'openai' : 'ollama_cloud');
+      const savedModel = saved?.ai?.model || '';
+      const model = provider === 'ollama_cloud' && /llama3\.2-vision/i.test(savedModel) ? 'gpt-oss:120b' : savedModel;
+      return {
+        provider,
+        apiKey: saved?.ai?.apiKey || '',
+        model: model || (provider === 'openai' ? 'gpt-4.1-mini' : 'gpt-oss:120b'),
+        ollamaUrl: saved?.ai?.ollamaUrl && !/localhost:11434/.test(saved.ai.ollamaUrl) ? saved.ai.ollamaUrl : 'https://ollama.com',
+        athleteName: saved?.ai?.athleteName || '',
+        saveSensitive: !!saved?.ai?.saveSensitive
+      };
+    }
+    function safeJSON(value, fallback){ try { return value ? JSON.parse(value) : fallback; } catch { return fallback; } }
+    function deepClone(v){ return JSON.parse(JSON.stringify(v)); }
+    function mergePlan(saved){
+      const merged = deepClone(initialPlan);
+      Object.keys(saved || {}).forEach(k => merged[k] = { ...merged[k], ...saved[k] });
+      return merged;
+    }
+    function persist(){
+      const aiToStore = { ...state.ai };
+      if(!aiToStore.saveSensitive) aiToStore.apiKey = '';
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ zones: state.zones, plan: state.plan, chat: state.chat, ai: aiToStore }));
+      localStorage.setItem('xco_strava_from', state.stravaFrom || '2026-04-01');
+    }
+
+    function init(){
+      buildWeekdays();
+      bindInputs();
+      renderAll();
+      addBot('Listo. Toca un día o escribe un cambio abajo. Si conectas Ollama Cloud, puedo responder como coach con IA.');
+      if(!localStorage.getItem('xco_seen_zones')) openZonesModal(true);
+      if(!localStorage.getItem('xco_seen_settings')) openSettingsModal(true);
+    }
+
+    function buildWeekdays(){
+      const row = document.getElementById('weekdayRow');
+      row.innerHTML = weekdays.map(w => `<div class="weekday">${w}</div>`).join('');
+    }
+
+    function bindInputs(){
+      document.getElementById('fromDate').value = state.stravaFrom;
+      document.getElementById('fromDate').addEventListener('change', e => {
+        state.stravaFrom = e.target.value || '2026-04-01';
+        persist();
+        document.getElementById('fromDateLabel').textContent = state.stravaFrom;
+        addBot(`Extracción desde ${state.stravaFrom} guardada.`);
+      });
+      document.getElementById('photoInput').addEventListener('change', handlePhoto);
+      document.getElementById('chatInput').addEventListener('keydown', e => { if(e.key === 'Enter') sendChat(); });
+      document.getElementById('aiProvider').value = state.ai.provider || 'ollama_cloud';
+      document.getElementById('apiKey').value = state.ai.apiKey || '';
+      document.getElementById('apiModel').value = state.ai.model || 'gpt-oss:120b';
+      document.getElementById('ollamaUrl').value = state.ai.ollamaUrl || 'https://ollama.com';
+      document.getElementById('athleteName').value = state.ai.athleteName || '';
+      document.getElementById('saveSensitive').checked = !!state.ai.saveSensitive;
+      document.getElementById('stravaFrom').value = state.stravaFrom || '2026-04-01';
+      document.getElementById('fromDateLabel').textContent = state.stravaFrom;
+      document.getElementById('z1End').value = state.zones.z1End;
+      document.getElementById('z2End').value = state.zones.z2End;
+      document.getElementById('z3End').value = state.zones.z3End;
+      document.getElementById('z4End').value = state.zones.z4End;
+      document.getElementById('z5Start').value = state.zones.z5Start;
+    }
+
+    function renderAll(){
+      renderCalendar();
+      renderStats();
+      renderZones();
+      renderRecommendations();
+      renderChat();
+      openDay(state.selectedDay, false);
+      document.getElementById('chatBody').classList.toggle('hidden', state.chatCollapsed);
+      document.getElementById('chatToggleBtn').textContent = state.chatCollapsed ? 'Expandir' : 'Minimizar';
+    }
+
+    function renderCalendar(){
+      const cal = document.getElementById('calendar');
+      cal.innerHTML = '';
+      for(let d=1; d<=30; d++){
+        const item = state.plan[d];
+        const dayName = dayNames[new Date(MONTH.year, MONTH.number - 1, d).getDay()];
+        const el = document.createElement('div');
+        el.className = 'day' + (item ? '' : ' rest') + (state.selectedDay === d ? ' active' : '');
+        el.onclick = () => openDay(d);
+        if(item){
+          el.innerHTML = `
+            <div class="num"><span>${d}</span><span class="dow">${dayName.slice(0,3)}</span></div>
+            <div class="badge ${item.color}">${item.intensity}</div>
+            <div class="title">${item.title}</div>
+            <div class="small">🕔 ${item.time} · ${item.sport}<br>🍽 ${item.nutrition[0]}</div>
+            <div class="day-zones">${renderMiniZones(item)}</div>
+          `;
+        } else {
+          el.innerHTML = `
+            <div class="num"><span>${d}</span><span class="dow">${dayName.slice(0,3)}</span></div>
+            <div class="badge">Descanso</div>
+            <div class="title">Sin sesión programada</div>
+            <div class="small">Déjalo libre o usa el chat para asignar algo.</div>
+          `;
+        }
+        cal.appendChild(el);
+      }
+    }
+
+    function renderMiniZones(item){
+      const info = getZoneMinutes(item.structure);
+      const parts = [];
+      ['Z1','Z2','Z3','Z4','Z5'].forEach(z => { if(info[z] > 0) parts.push(`<span class="day-zone">${z}: ${formatMinutes(info[z])}</span>`); });
+      return parts.join('');
+    }
+
+    function renderStats(){
+      const active = Object.values(state.plan).filter(Boolean);
+      const keyDays = active.filter(x => ['red','orange'].includes(x.color)).length;
+      document.getElementById('statWeek').textContent = active.length;
+      document.getElementById('statZ2').textContent = active.reduce((n,x) => n + getZoneMinutes(x.structure).Z2, 0);
+      document.getElementById('statKey').textContent = keyDays;
+      document.getElementById('statState').textContent = 'Listo';
+    }
+
+    function parseDurationToMinutes(text){
+      if(typeof text !== 'string') return 0;
+      const normalized = text.toLowerCase().replace(/,/g,'.');
+      let total = 0;
+      const h = normalized.match(/(\d+(?:\.\d+)?)\s*h(?![a-z])/i);
+      if(h) total += Math.round(parseFloat(h[1]) * 60);
+      const hm = normalized.match(/(\d+)\s*h\s*(\d{1,2})\s*m/i);
+      if(hm) total += parseInt(hm[1],10) * 60 + parseInt(hm[2],10);
+      const mins = [...normalized.matchAll(/(\d+)\s*min/g)].map(m => parseInt(m[1],10)).reduce((a,b)=>a+b,0);
+      total += mins;
+      const secs = [...normalized.matchAll(/(\d+)\s*seg/g)].map(m => parseInt(m[1],10)).reduce((a,b)=>a+b,0);
+      if(secs > 0 && total === 0) total += Math.round(secs / 60);
+      return total;
+    }
+
+    function getZoneMinutes(structure){
+      const totals = { Z1:0, Z2:0, Z3:0, Z4:0, Z5:0 };
+      (Array.isArray(structure) ? structure : []).forEach(line => {
+        if(typeof line !== 'string') return;
+        const mins = parseDurationToMinutes(line);
+        if(mins <= 0) return;
+        const zones = extractZonesFromLine(line);
+        if(zones.length === 0) return;
+        const share = Math.round(mins / zones.length);
+        zones.forEach(z => { totals[z] += share; });
+      });
+      return totals;
+    }
+
+    function extractZonesFromLine(line){
+      const t = String(line).toUpperCase();
+      const found = [];
+      const push = z => { if(!found.includes(z)) found.push(z); };
+      if(/Z1/.test(t) || /RECUPER/.test(t)) push('Z1');
+      if(/Z2/.test(t) || /AERÓB|AEROB|SUAVE/.test(t)) push('Z2');
+      if(/Z3/.test(t) || /TEMPO/.test(t)) push('Z3');
+      if(/Z4/.test(t) || /UMBRAL|THRESHOLD/.test(t)) push('Z4');
+      if(/Z5/.test(t) || /ALL OUT|SPRINT|MÁX|MAX/.test(t)) push('Z5');
+      if(/Z4\s*[-–]\s*Z5/.test(t)) { push('Z4'); push('Z5'); }
+      if(/Z2\s*[-–]\s*Z3/.test(t)) { push('Z2'); push('Z3'); }
+      if(/Z3\s*[-–]\s*Z4/.test(t)) { push('Z3'); push('Z4'); }
+      if(/Z2\s*[-–]\s*Z4/.test(t)) { push('Z2'); push('Z3'); push('Z4'); }
+      if(found.length === 0 && /CALENT|ENFRI|SUAVE/.test(t)) push('Z1');
+      return found;
+    }
+
+    function formatMinutes(mins){
+      if(mins >= 60){
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        return m ? `${h}h ${m}m` : `${h}h`;
+      }
+      return `${mins}m`;
+    }
+
+    function renderZones(){
+      const z = state.zones;
+      const zones = [
+        ['Z1', `< ${z.z1End}`, 'z1', 18],
+        ['Z2', `${z.z1End}-${z.z2End}`, 'z2', 22],
+        ['Z3', `${z.z2End}-${z.z3End}`, 'z3', 24],
+        ['Z4', `${z.z3End}-${z.z4End}`, 'z4', 20],
+        ['Z5', `≥ ${z.z5Start}`, 'z5', 16]
+      ];
+      const html = zones.map(([label, range, cls, pct]) => `
+        <div class="zone-row"><div class="zone-label">${label}</div><div class="bar"><div class="fill ${cls}" style="width:${pct}%"></div></div><div class="zone-pct">${range}</div></div>
+      `).join('');
+      document.getElementById('zoneSummary').innerHTML = html;
+    }
+
+    function renderRecommendations(){
+      const active = Object.values(state.plan).filter(Boolean);
+      const hardDays = active.filter(x => ['red','orange'].includes(x.color)).length;
+      const restDays = 30 - active.length;
+      let text = 'Plan equilibrado. Mantén la calidad de los días rojos y no metas volumen extra donde el plan ya cierra fino.';
+      if(hardDays >= 3) text = 'Tienes varios días exigentes: cuida el sueño, hidrátate más y no metas fuerza pesada extra.';
+      if(restDays >= 15) text = 'Hay muchos días libres fuera del bloque principal: perfecto para recuperar y no acumular fatiga.';
+      if(state.plan[24] && state.plan[24].title.toLowerCase().includes('descanso')) text += ' El 24 debe seguir siendo suave o descanso para llegar fresco.';
+      document.getElementById('recommendationText').textContent = text;
+    }
+
+    function renderChat(){
+      const log = document.getElementById('chatLog');
+      log.innerHTML = state.chat.map(m => `<div class="msg ${m.role}">${escapeHtml(m.text)}</div>`).join('');
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function addBot(text){ state.chat.push({role:'bot', text}); persist(); renderChat(); }
+    function addUser(text){ state.chat.push({role:'user', text}); persist(); renderChat(); }
+
+    async function sendChat(){
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if(!text && !state.photo) return;
+      if(text) addUser(text);
+      input.value = '';
+      if(state.photo && /analiz|foto|image|imagen|compar/.test((text||'').toLowerCase())){
+        await analyzePendingPhoto();
+        return;
+      }
+      const handled = text ? handleCommand(text) : false;
+      if(!handled && text) await askAI(text);
+    }
+
+    function insertPrompt(text){ document.getElementById('chatInput').value = text; }
+
+    function handleCommand(text){
+      const low = text.toLowerCase();
+      if(/descarg/.test(low)){ downloadBundle(); addBot('Te descargué un JSON limpio para IA.'); return true; }
+      const day = parseDayFromText(low);
+      if(day){
+        if(/hora/.test(low)){
+          const time = parseTimeFromText(low);
+          if(time){
+            state.plan[day] = state.plan[day] || { day, dow:new Date(MONTH.year, MONTH.number - 1, day).getDay() };
+            state.plan[day].time = time;
+            persist(); renderAll(); openDay(day,false); addBot(`Hora actualizada para el día ${day} → ${time}.`); return true;
+          }
+        }
+        const replacement = parseWorkoutFromText(low);
+        if(replacement){ updateDayFromCommand(day, replacement); return true; }
+      }
+      return false;
+    }
+
+    function parseDayFromText(text){
+      const map = {'domingo':0,'lunes':1,'martes':2,'miércoles':3,'miercoles':3,'jueves':4,'viernes':5,'sábado':6,'sabado':6};
+      for(const [k,v] of Object.entries(map)) if(text.includes(k)) return findDateByDow(v);
+      const date = text.match(/(\d{1,2})/);
+      if(date){ const n = parseInt(date[1]); if(n>=1 && n<=30) return n; }
+      return null;
+    }
+
+    function findDateByDow(dow){
+      for(let d=1; d<=30; d++){
+        const wd = new Date(MONTH.year, MONTH.number - 1, d).getDay();
+        if(wd===dow) return d;
+      }
+      return null;
+    }
+
+    function parseTimeFromText(text){
+      const m = text.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+      if(!m) return null;
+      let h = parseInt(m[1]);
+      const min = m[2] ? m[2] : '00';
+      const ampm = (m[3] || '').toLowerCase();
+      if(ampm==='pm' && h < 12) h += 12;
+      if(ampm==='am' && h===12) h = 0;
+      return `${String(h).padStart(2,'0')}:${min}`;
+    }
+
+    function parseWorkoutFromText(text){
+      if(/interval|intervalo/.test(text)) return createWorkoutPreset('intervalos');
+      if(/descans/.test(text)) return createWorkoutPreset('descanso');
+      if(/sprint|sprints/.test(text)) return createWorkoutPreset('sprints');
+      if(/gym/.test(text)) return createWorkoutPreset('gym');
+      if(/z2/.test(text)) return createWorkoutPreset('z2');
+      if(/opener/.test(text)) return createWorkoutPreset('openers');
+      if(/fondo/.test(text)) return createWorkoutPreset('fondo');
+      if(/carrera|race/.test(text)) return createWorkoutPreset('carrera');
+      if(/activ/.test(text)) return createWorkoutPreset('activacion');
+      return null;
+    }
+
+    function createWorkoutPreset(type){
+      const presets = {
+        intervalos:{ title:'Intervalos', sport:'ciclismo', intensity:'MUY ALTA', color:'red', structure:['10 min calentamiento Z1','5 × 3 min Z4-Z5','3 min suave entre repeticiones Z1','10 min enfriar Z1'], nutrition:['Carbos altos','Hidratación alta'], notes:'Reemplazado por chat.' },
+        descanso:{ title:'Descanso', sport:'recuperación', intensity:'BAJA', color:'yellow', structure:['Descanso total o paseo suave'], nutrition:['Comida normal'], notes:'Reemplazado por chat.' },
+        sprints:{ title:'Sprint day', sport:'ciclismo', intensity:'MUY ALTA', color:'red', structure:['10 min suave Z1','6 × 20 seg ALL OUT Z5','2–3 min suave Z1 entre repeticiones','10 min enfriar Z1'], nutrition:['Carbos normales'], notes:'Reemplazado por chat.' },
+        gym:{ title:'Gym + suave', sport:'gym + ciclismo', intensity:'MEDIA', color:'blue', structure:['Gym controlado 60–70%','20–40 min Z2'], nutrition:['Prote + carbos'], notes:'Reemplazado por chat.' },
+        z2:{ title:'Z2 suave', sport:'ciclismo', intensity:'MEDIA', color:'green', structure:['10 min Z1','40 min Z2','10 min suave Z1'], nutrition:['Limpio'], notes:'Reemplazado por chat.' },
+        openers:{ title:'Openers', sport:'ciclismo', intensity:'MEDIA', color:'green', structure:['10 min suave Z1','2 sprints de 15–20 seg Z5','10 min suave Z1'], nutrition:['Muy ligero'], notes:'Reemplazado por chat.' },
+        fondo:{ title:'Fondo', sport:'ciclismo', intensity:'ALTA', color:'orange', structure:['20 min suave Z1','1h30 Z2-Z3','20–30 min Z3/Z4','Enfriar Z1'], nutrition:['Comer en ruta'], notes:'Reemplazado por chat.' },
+        carrera:{ title:'CARRERA', sport:'ciclismo', intensity:'MÁXIMA', color:'red', structure:['10 min suave Z1','3 progresivos de 30 seg','1 esfuerzo corto Z4','Salida'], nutrition:['Desayuno ligero'], notes:'Reemplazado por chat.' },
+        activacion:{ title:'Activación', sport:'ciclismo', intensity:'MEDIA', color:'cyan', structure:['10 min suave Z1','20–30 min Z2','2 progresivos'], nutrition:['Ligero'], notes:'Reemplazado por chat.' }
+      };
+      return deepClone(presets[type]);
+    }
+
+    function updateDayFromCommand(day, data){
+      state.plan[day] = { ...state.plan[day], ...data, day, dow:new Date(MONTH.year, MONTH.number - 1, day).getDay() };
+      state.selectedDay = day; persist(); renderAll(); openDay(day,false); addBot(`Día ${day} actualizado. Ya quedó con nueva estructura.`);
+    }
+
+    function openDay(day){
+      state.selectedDay = day; renderCalendar();
+      const item = state.plan[day];
+      const title = item ? `${day} de abril · ${item.title}` : `${day} de abril · descanso`;
+      const sub = item ? `${item.sport} · ${item.intensity} · ${item.time}` : 'Sin sesión programada';
+      document.getElementById('drawerTitle').textContent = title;
+      document.getElementById('drawerSub').textContent = sub;
+      document.getElementById('drawerBody').innerHTML = buildDayDrawer(day, item);
+      document.getElementById('drawer').classList.add('open');
+    }
+
+    function buildDayDrawer(day, item){
+      if(!item){
+        return `<div class="section"><h4>Día sin sesión</h4><p>Este día está vacío. Puedes dejarlo como descanso o escribir por chat una sesión nueva.</p></div>`;
+      }
+      const zoneMinutes = getZoneMinutes(item.structure);
+      const zoneBadges = ['Z1','Z2','Z3','Z4','Z5']
+        .filter(z => zoneMinutes[z] > 0)
+        .map(z => `<span class="mini-pill">${z}: ${formatMinutes(zoneMinutes[z])}</span>`)
+        .join('');
+      return `
+        <div class="meta-grid">
+          <div class="meta"><div class="k">Hora</div><div class="v">${item.time || '—'}</div></div>
+          <div class="meta"><div class="k">Deporte</div><div class="v">${item.sport}</div></div>
+          <div class="meta"><div class="k">Intensidad</div><div class="v">${item.intensity}</div></div>
+          <div class="meta"><div class="k">Zonas</div><div class="v">${zoneHint(item)}</div></div>
+          <div class="meta"><div class="k">Nutrición</div><div class="v">${item.nutrition[0] || '—'}</div></div>
+          <div class="meta"><div class="k">Tipo</div><div class="v">${item.title}</div></div>
+        </div>
+        <div class="section">
+          <h4>Tiempo por zona</h4>
+          <div class="zone-badges">${zoneBadges || '<span class="mini-pill">Sin zonas detectadas</span>'}</div>
+        </div>
+        <div class="section">
+          <h4>Estructura</h4>
+          <ul>${(item.structure || []).map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
+        </div>
+        <div class="section">
+          <h4>Nutrición del día</h4>
+          <ul>${(item.nutrition || []).map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
+        </div>
+        <div class="section">
+          <h4>Notas / optimización</h4>
+          <p>${escapeHtml(item.notes || '')}</p>
+        </div>
+        <div class="section editable">
+          <h4>Editar este día</h4>
+          <div class="row">
+            <label>Hora<input class="input" id="editTime" value="${item.time || ''}" /></label>
+            <label>Título<input class="input" id="editTitle" value="${item.title || ''}" /></label>
+          </div>
+          <div class="row">
+            <label>Deporte<input class="input" id="editSport" value="${item.sport || ''}" /></label>
+            <label>Intensidad<input class="input" id="editIntensity" value="${item.intensity || ''}" /></label>
+          </div>
+          <label>Estructura<textarea id="editStructure">${(item.structure || []).join('\n')}</textarea></label>
+          <label>Nutrición<textarea id="editNutrition">${(item.nutrition || []).join('\n')}</textarea></label>
+          <label>Notas<textarea id="editNotes">${item.notes || ''}</textarea></label>
+          <div class="row">
+            <button class="btn primary" onclick="saveDay(${day})">Guardar cambios</button>
+            <button class="btn ghost" onclick="setRestDay(${day})">Marcar descanso</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function zoneHint(item){
+      const str = JSON.stringify(item.structure || []).toUpperCase();
+      if(/Z4|Z5|ALL OUT|SPRINT/.test(str)) return 'Z4-Z5';
+      if(/Z3/.test(str)) return 'Z2-Z3';
+      if(/GYM/.test((item.sport || '').toUpperCase())) return 'Fuerza + Z2';
+      if(/DESCANSO/.test((item.title || '').toUpperCase())) return 'Recuperación';
+      return 'Z2';
+    }
+
+    function saveDay(day){
+      const item = state.plan[day] || { day };
+      const structure = document.getElementById('editStructure').value.split('\n').map(s => s.trim()).filter(Boolean);
+      const nutrition = document.getElementById('editNutrition').value.split('\n').map(s => s.trim()).filter(Boolean);
+      state.plan[day] = {
+        ...item,
+        day,
+        dow:new Date(MONTH.year, MONTH.number - 1, day).getDay(),
+        time: document.getElementById('editTime').value.trim() || item.time || '05:00',
+        title: document.getElementById('editTitle').value.trim() || item.title || 'Sesión',
+        sport: document.getElementById('editSport').value.trim() || item.sport || 'ciclismo',
+        intensity: document.getElementById('editIntensity').value.trim() || item.intensity || 'MEDIA',
+        structure,
+        nutrition,
+        notes: document.getElementById('editNotes').value.trim()
+      };
+      persist(); renderAll(); openDay(day); addBot(`Día ${day} guardado.`);
+    }
+
+    function setRestDay(day){
+      state.plan[day] = { day, dow:new Date(MONTH.year, MONTH.number - 1, day).getDay(), time:'', title:'Descanso', sport:'recuperación', intensity:'BAJA', color:'yellow', structure:['Descanso o movilidad suave'], nutrition:['Comida normal'], notes:'Día de descanso añadido desde el editor.' };
+      persist(); renderAll(); openDay(day); addBot(`Día ${day} convertido en descanso.`);
+    }
+
+    function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); }
+    function openZonesModal(fromInit=false){ document.getElementById('zonesModal').classList.add('open'); if(fromInit) localStorage.setItem('xco_seen_zones','1'); }
+    function closeZonesModal(){ document.getElementById('zonesModal').classList.remove('open'); }
+    function saveZones(){
+      state.zones = {
+        z1End: num('z1End'), z2End: num('z2End'), z3End: num('z3End'), z4End: num('z4End'), z5Start: num('z5Start')
+      };
+      localStorage.setItem('xco_seen_zones','1'); persist(); renderAll(); closeZonesModal(); addBot('Zonas guardadas correctamente.');
+    }
+    function loadDefaultZones(){ Object.entries(DEFAULT_ZONES).forEach(([k,v]) => document.getElementById(k).value = v); }
+    function num(id){ return parseInt(document.getElementById(id).value || DEFAULT_ZONES[id], 10); }
+
+    function openSettingsModal(fromInit=false){ document.getElementById('settingsModal').classList.add('open'); if(fromInit) localStorage.setItem('xco_seen_settings','1'); }
+    function closeSettingsModal(){ document.getElementById('settingsModal').classList.remove('open'); }
+    function saveAISettings(){
+      const provider = document.getElementById('aiProvider').value;
+      const fallbackModel = provider === 'openai' ? 'gpt-4.1-mini' : 'gpt-oss:120b';
+      state.ai = {
+        provider,
+        apiKey: document.getElementById('apiKey').value.trim(),
+        model: document.getElementById('apiModel').value.trim() || fallbackModel,
+        ollamaUrl: document.getElementById('ollamaUrl').value.trim() || 'https://ollama.com',
+        athleteName: document.getElementById('athleteName').value.trim(),
+        saveSensitive: document.getElementById('saveSensitive').checked
+      };
+      state.stravaFrom = document.getElementById('stravaFrom').value || state.stravaFrom;
+      document.getElementById('fromDate').value = state.stravaFrom;
+      document.getElementById('fromDateLabel').textContent = state.stravaFrom;
+      localStorage.setItem('xco_seen_settings','1'); persist(); closeSettingsModal(); addBot(`Ajustes guardados. Proveedor activo: ${provider === 'ollama_cloud' ? 'Ollama Cloud API' : 'OpenAI'}.`);
+    }
+    function clearAISettings(){
+      document.getElementById('aiProvider').value='ollama_cloud';
+      document.getElementById('apiKey').value='';
+      document.getElementById('apiModel').value='gpt-oss:120b';
+      document.getElementById('ollamaUrl').value='https://ollama.com';
+      document.getElementById('athleteName').value='';
+      document.getElementById('saveSensitive').checked=false;
+    }
+
+    function handlePhoto(e){
+      const file = e.target.files?.[0]; if(!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        state.photo = { name:file.name, type:file.type, dataUrl: ev.target.result };
+        document.getElementById('previewImg').src = state.photo.dataUrl;
+        document.getElementById('previewTxt').innerHTML = `<strong>${escapeHtml(file.name)}</strong><br>Lista para comparar con el día seleccionado.`;
+        document.getElementById('previewBox').style.display='flex';
+        addBot(`Foto cargada: ${file.name}. Ahora puedes analizarla o pedir comparación con el chat.`);
+      };
+      reader.readAsDataURL(file);
+    }
+    function clearPhoto(){ state.photo = null; document.getElementById('photoInput').value=''; document.getElementById('previewBox').style.display='none'; }
+
+    async function analyzePendingPhoto(){
+      if(!state.photo){ addBot('Primero sube una foto.'); return; }
+      const day = state.plan[state.selectedDay];
+      const base = `Compara esta foto con el entrenamiento planificado para el día ${state.selectedDay} de abril. ${day ? `Sesión: ${day.title}. Estructura: ${day.structure.join(' | ')}. Nutrición: ${day.nutrition.join(' | ')}.` : 'Día de descanso.'} Evalúa si la ejecución fue buena, regular o mala. Devuelve: resumen corto, aciertos, fallos, y una recomendación concreta.`;
+      if(!isAIReady()){
+        const message = day ? `No veo una IA conectada. Pero según el plan de hoy, debías hacer: ${day.title}. Si tu foto coincide con esa estructura, te doy el visto bueno; si me dices lo que hiciste, te lo comparo aquí mismo.` : 'Día vacío.';
+        addBot(message);
+        return;
+      }
+      addBot(`Analizando foto con ${state.ai.provider === 'ollama_cloud' ? 'Ollama Cloud API' : 'OpenAI'}...`);
+      try{
+        const result = await callAI(base, state.photo.dataUrl);
+        addBot(result);
+      }catch(err){
+        addBot('Error analizando la foto: ' + err.message);
+      }
+    }
+
+    async function askAI(text){
+      if(!isAIReady()){
+        addBot('Entendido. Puedo cambiar un día, la hora, el tipo de sesión o exportar datos. Para respuestas de coach con IA, pega tu API key de Ollama Cloud en Ajustes IA.');
+        return;
+      }
+      addBot(`Consultando ${state.ai.provider === 'ollama_cloud' ? 'Ollama Cloud API' : 'OpenAI'}...`);
+      try{
+        const result = await callAI(buildCoachPrompt(text));
+        addBot(result);
+      }catch(err){
+        addBot('No pude conectar con la IA: ' + err.message);
+      }
+    }
+
+    function isAIReady(){
+      if((state.ai.provider || 'ollama_cloud') === 'ollama_cloud') return !!state.ai.ollamaUrl && !!state.ai.apiKey;
+      return !!state.ai.apiKey;
+    }
+
+    function buildCoachPrompt(text){
+      const day = state.plan[state.selectedDay];
+      const planLine = day ? `Día seleccionado ${state.selectedDay}: ${day.title}. ${day.structure.join(' | ')}. Nutrición: ${day.nutrition.join(' | ')}.` : `Día seleccionado ${state.selectedDay}: descanso o sin sesión.`;
+      return `${planLine}\nZonas FC: Z1 hasta ${state.zones.z1End}, Z2 hasta ${state.zones.z2End}, Z3 hasta ${state.zones.z3End}, Z4 hasta ${state.zones.z4End}, Z5 desde ${state.zones.z5Start}.\nPregunta del atleta: ${text}\nResponde en español, corto, práctico y orientado a XCO. Si propones cambios, evita romper la descarga/taper del plan.`;
+    }
+
+    async function callAI(prompt, dataUrl=null){
+      if((state.ai.provider || 'ollama_cloud') === 'ollama_cloud') return callOllamaCloud(prompt, dataUrl);
+      return dataUrl ? callOpenAIVision(prompt, dataUrl) : callOpenAIText(prompt);
+    }
+
+    async function callOllamaCloud(prompt, dataUrl=null){
+      const url = `${(state.ai.ollamaUrl || 'https://ollama.com').replace(/\/+$/,'')}/api/chat`;
+      const userMessage = { role:'user', content: prompt };
+      if(dataUrl) userMessage.images = [dataUrlToBase64(dataUrl)];
+      const body = {
+        model: state.ai.model || 'gpt-oss:120b',
+        stream: false,
+        messages: [
+          { role:'system', content:'Eres un coach de XCO, ciclismo y running. Responde corto, claro, práctico y en español.' },
+          userMessage
+        ]
+      };
+      const res = await fetch(url, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${state.ai.apiKey}` },
+        body: JSON.stringify(body)
+      });
+      if(!res.ok){
+        const txt = await res.text();
+        throw new Error(txt.slice(0,180) || 'Ollama Cloud no respondió. Revisa la API key, la URL y el modelo.');
+      }
+      const json = await res.json();
+      return json?.message?.content?.trim() || 'Ollama respondió sin texto.';
+    }
+
+    function dataUrlToBase64(dataUrl){
+      return String(dataUrl).replace(/^data:[^;]+;base64,/, '');
+    }
+
+    async function callOpenAIVision(prompt, dataUrl){
+      const body = {
+        model: state.ai.model || 'gpt-4.1-mini',
+        input: [
+          { role: 'system', content: [{ type: 'input_text', text: 'Eres un coach de ciclismo y running. Responde corto, claro y práctico.' }] },
+          { role: 'user', content: [
+            { type: 'input_text', text: prompt },
+            { type: 'input_image', image_url: dataUrl }
+          ]}
+        ]
+      };
+      const res = await fetch('https://api.openai.com/v1/responses', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${state.ai.apiKey}` },
+        body: JSON.stringify(body)
+      });
+      if(!res.ok){
+        const txt = await res.text();
+        throw new Error(txt.slice(0,180) || 'No se pudo conectar con la IA');
+      }
+      const json = await res.json();
+      return extractResponseText(json);
+    }
+
+    async function callOpenAIText(prompt){
+      const body = {
+        model: state.ai.model || 'gpt-4.1-mini',
+        input: [
+          { role: 'system', content: [{ type: 'input_text', text: 'Eres un coach de ciclismo y running. Responde corto, claro, práctico y en español.' }] },
+          { role: 'user', content: [{ type: 'input_text', text: prompt }] }
+        ]
+      };
+      const res = await fetch('https://api.openai.com/v1/responses', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${state.ai.apiKey}` },
+        body: JSON.stringify(body)
+      });
+      if(!res.ok){
+        const txt = await res.text();
+        throw new Error(txt.slice(0,180) || 'No se pudo conectar con la IA');
+      }
+      const json = await res.json();
+      return extractResponseText(json);
+    }
+
+    function extractResponseText(json){
+      if(!json) return 'Sin respuesta.';
+      if(typeof json.output_text === 'string') return json.output_text;
+      const parts = [];
+      const output = json.output || [];
+      output.forEach(item => {
+        if(item.content) item.content.forEach(c => { if(c.text) parts.push(c.text); });
+      });
+      return parts.join('\n').trim() || JSON.stringify(json, null, 2).slice(0,800);
+    }
+
+    function downloadBundle(){
+      const payload = {
+        app: 'XCO Calendar Coach',
+        exportDate: new Date().toISOString(),
+        athlete: { name: state.ai.athleteName || 'atleta', stravaFrom: state.stravaFrom },
+        zones: state.zones,
+        aprilPlan: state.plan,
+        calendar: Object.values(state.plan).map(d => ({
+          day: d.day,
+          title: d.title,
+          time: d.time,
+          sport: d.sport,
+          intensity: d.intensity,
+          structure: d.structure,
+          structureByZone: getZoneMinutes(d.structure),
+          nutrition: d.nutrition,
+          notes: d.notes
+        })),
+        chatHistory: state.chat,
+        recommendations: document.getElementById('recommendationText').textContent,
+        iaPromptHint: 'Ideal para un modelo que analice entrenamiento, nutrición, descanso y consistencia.'
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `xco-april-export-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      addBot('Archivo JSON descargado.');
+    }
+
+    function resetPlan(){
+      if(!confirm('¿Restaurar el plan original de abril?')) return;
+      state.plan = deepClone(initialPlan); persist(); renderAll(); openDay(state.selectedDay); addBot('Plan restaurado.');
+    }
+
+    function toggleChat(){
+      state.chatCollapsed = !state.chatCollapsed;
+      renderAll();
+    }
+
+    function escapeHtml(s){ return String(s).replace(/[&<>\"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+    document.addEventListener('click', e => { if(e.target.classList.contains('modal')) e.target.classList.remove('open'); });
+    init();
+  </script>
+</body>
+</html>
