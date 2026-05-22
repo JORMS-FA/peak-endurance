@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard - Peak Endurance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Lexend:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-bright": "#46362e",
+                        "on-primary": "#571f00",
+                        "primary": "#ffb694",
+                        "on-primary-fixed-variant": "#7b2f00",
+                        "on-secondary": "#003256",
+                        "inverse-primary": "#a14000",
+                        "on-tertiary": "#003919",
+                        "secondary-fixed-dim": "#9ccaff",
+                        "on-error-container": "#ffdad6",
+                        "secondary": "#9ccaff",
+                        "inverse-on-surface": "#3d2d26",
+                        "secondary-fixed": "#d0e4ff",
+                        "on-primary-container": "#571f00",
+                        "on-error": "#690005",
+                        "on-surface-variant": "#e2bfb0",
+                        "surface-container-low": "#261812",
+                        "surface-container-high": "#362720",
+                        "on-secondary-container": "#003357",
+                        "background": "#0B0F14", // Override to match request
+                        "on-tertiary-container": "#003919",
+                        "surface-container-highest": "#41312a",
+                        "error-container": "#93000a",
+                        "tertiary-fixed": "#6dfe9c",
+                        "tertiary": "#4de082",
+                        "surface": "#1d100a",
+                        "error": "#ffb4ab",
+                        "outline-variant": "#5a4136",
+                        "on-tertiary-fixed": "#00210c",
+                        "on-primary-fixed": "#351000",
+                        "outline": "#a98a7d",
+                        "surface-container-lowest": "#170b06",
+                        "tertiary-container": "#00af5a",
+                        "tertiary-fixed-dim": "#4de082",
+                        "on-surface": "#f8ddd2",
+                        "on-secondary-fixed": "#001d35",
+                        "primary-container": "#ff6a00",
+                        "inverse-surface": "#f8ddd2",
+                        "primary-fixed": "#ffdbcc",
+                        "on-background": "#f8ddd2",
+                        "surface-dim": "#1d100a",
+                        "primary-fixed-dim": "#ffb694",
+                        "on-tertiary-fixed-variant": "#005227",
+                        "surface-tint": "#ffb694",
+                        "on-secondary-fixed-variant": "#00497a",
+                        "surface-container": "#2b1c16",
+                        "surface-variant": "#41312a",
+                        "secondary-container": "#009eff"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "xs": "8px",
+                        "sm": "12px",
+                        "base": "4px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "gutter": "16px",
+                        "container-margin": "24px",
+                        "xl": "32px"
+                    },
+                    fontFamily: {
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Lexend"],
+                        "headline-md": ["Lexend"],
+                        "display-xl": ["Lexend"]
+                    },
+                    fontSize: {
+                        "label-md": ["14px", { lineHeight: "1.4", letterSpacing: "0.01em", fontWeight: "500" }],
+                        "body-md": ["16px", { lineHeight: "1.5", fontWeight: "400" }],
+                        "body-lg": ["18px", { lineHeight: "1.5", fontWeight: "400" }],
+                        "label-sm": ["12px", { lineHeight: "1.2", letterSpacing: "0.05em", fontWeight: "600" }],
+                        "headline-lg": ["32px", { lineHeight: "1.2", fontWeight: "600" }],
+                        "headline-md": ["24px", { lineHeight: "1.3", fontWeight: "600" }],
+                        "display-xl": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #0B0F14; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .ai-glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 106, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .ai-glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 106, 0, 0.1) 0%, transparent 100%);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar (from JSON) -->
+<nav class="hidden md:flex flex-col py-6 space-y-2 bg-[#0B0F14] fixed left-0 top-0 h-screen w-64 border-r border-white/10 z-50">
+<div class="px-6 mb-8 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container text-3xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">vital_signs</span>
+<div>
+<h1 class="text-lg font-bold bg-gradient-to-r from-orange-600 to-orange-400 bg-clip-text text-transparent font-headline-md text-headline-md tracking-tight">Peak Endurance</h1>
+<p class="text-label-sm font-label-sm text-zinc-500 uppercase tracking-widest">Elite Science</p>
+</div>
+</div>
+<div class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-orange-500 font-semibold border-r-2 border-orange-500 bg-orange-500/5 font-label-md text-label-md transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Overview
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-white/5 font-label-md text-label-md transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">fitness_center</span>
+                Training Plan
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-white/5 font-label-md text-label-md transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">ecg_heart</span>
+                Biometrics
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-white/5 font-label-md text-label-md transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">insights</span>
+                Performance
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-white/5 font-label-md text-label-md transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">groups</span>
+                Team Hub
+            </a>
+</div>
+<div class="px-4 mt-auto space-y-4">
+<button class="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-primary-container to-orange-700 text-white font-label-md text-label-md shadow-lg shadow-orange-500/20 hover:opacity-90 transition-opacity">
+                Upgrade to Pro
+            </button>
+<div class="space-y-1 border-t border-white/10 pt-4">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-white/5 font-label-md text-label-md transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">help</span>
+                    Support
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-white/5 font-label-md text-label-md transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">logout</span>
+                    Sign Out
+                </a>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 relative">
+<!-- TopAppBar (from JSON) -->
+<header class="fixed top-0 right-0 left-0 md:left-64 flex justify-between items-center px-8 h-16 z-40 bg-[#0B0F14]/80 backdrop-blur-lg border-b border-white/10">
+<div class="flex-1 flex items-center">
+<h2 class="text-orange-600 font-headline-md text-headline-md tracking-tight hidden md:block">Resumen</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-zinc-400 hover:bg-white/5 transition-colors rounded-full active:scale-95 duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-zinc-400 hover:bg-white/5 transition-colors rounded-full active:scale-95 duration-200">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-zinc-800 border border-white/20 overflow-hidden ml-2">
+<img alt="Athlete Profile Avatar" class="w-full h-full object-cover" data-alt="Close up portrait of athletic person with determined expression, dark background, cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOzSk1dtdGS_iEzLv3AMM2ngRWaaOsPvpICz0FZFHljWm1a6M_uJKhH-59-D_CwM_tO2NbNcSQQ7LKiRnSVFhpxLhclhLjsm515AXAr1sSG3qahso4iYFz5VTyhcg13xRP4-WaUU2J44ZfiW80aLaGaZBvaAkCAWlyNw7QFn_hVGCot1K42iYqPGb1_wH5wMkntQwAz2yKRdFlhlrFNm0MBAoqYv_RUMBdqQa1qEKj-O6vMdlOKqZiAta13GrYeq2XjNBobwc-ysbK"/>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="pt-24 px-4 md:px-8 pb-12 max-w-7xl mx-auto space-y-6">
+<!-- Top Section: AI Coach & Recovery & Workout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- AI Coach Insights (ai-glass-card) -->
+<div class="ai-glass-card rounded-xl p-6 lg:col-span-1 flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary-container animate-pulse">psychology</span>
+<h3 class="font-headline-md text-body-lg text-white">IA Coach</h3>
+</div>
+<p class="font-body-md text-label-md text-zinc-300 mb-6 leading-relaxed">
+                            Basado en tu HRV y carga de la semana, sugerimos reducir la intensidad hoy. Tu estado de forma es óptimo, pero la fatiga empieza a acumularse.
+                        </p>
+</div>
+<div class="flex gap-3 mt-4">
+<button class="flex-1 py-2 px-3 rounded bg-primary-container text-white font-label-md text-label-sm shadow-md shadow-orange-500/10 hover:bg-orange-500 transition-colors">
+                            Analizar Semana
+                        </button>
+<button class="flex-1 py-2 px-3 rounded bg-white/5 border border-white/10 text-white font-label-md text-label-sm hover:bg-white/10 transition-colors">
+                            Ajustar Plan
+                        </button>
+</div>
+</div>
+<!-- Recovery Status Ring -->
+<div class="glass-panel rounded-xl p-6 flex flex-col items-center justify-center relative">
+<h3 class="font-headline-md text-label-md text-zinc-400 absolute top-6 left-6">Recuperación</h3>
+<div class="relative w-32 h-32 mt-4 flex items-center justify-center">
+<!-- Background Ring -->
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" r="45" stroke="rgba(255,255,255,0.1)" stroke-width="8"></circle>
+<!-- Progress Ring (85%) -->
+<circle class="transition-all duration-1000 ease-out" cx="50" cy="50" fill="none" r="45" stroke="#ff6a00" stroke-dasharray="283" stroke-dashoffset="42" stroke-width="8"></circle>
+</svg>
+<div class="absolute flex flex-col items-center">
+<span class="font-headline-lg text-headline-lg text-white">85<span class="text-body-md">%</span></span>
+</div>
+</div>
+<p class="font-label-md text-label-md text-tertiary mt-4">Listo para entrenar</p>
+</div>
+<!-- Today's Workout -->
+<div class="glass-panel rounded-xl p-6">
+<div class="flex justify-between items-start mb-4">
+<h3 class="font-headline-md text-body-lg text-white">Entrenamiento de Hoy</h3>
+<span class="px-2 py-1 bg-primary-container/20 text-primary-container rounded text-[10px] font-bold uppercase tracking-wider">Planificado</span>
+</div>
+<div class="mb-4">
+<h4 class="font-headline-md text-headline-md text-white mb-1">Threshold Climb</h4>
+<p class="font-body-md text-label-md text-zinc-400 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">schedule</span> 1h 30m
+                            <span class="material-symbols-outlined text-sm ml-2">directions_bike</span> Ciclismo
+                        </p>
+</div>
+<!-- Mini chart representation -->
+<div class="h-16 flex items-end gap-1 mb-4 opacity-80">
+<div class="w-1/6 bg-blue-500/50 h-1/4 rounded-t-sm"></div>
+<div class="w-1/6 bg-green-500/50 h-2/4 rounded-t-sm"></div>
+<div class="w-1/6 bg-orange-500/80 h-full rounded-t-sm"></div>
+<div class="w-1/6 bg-orange-500/80 h-[90%] rounded-t-sm"></div>
+<div class="w-1/6 bg-green-500/50 h-2/4 rounded-t-sm"></div>
+<div class="w-1/6 bg-blue-500/50 h-1/4 rounded-t-sm"></div>
+</div>
+<button class="w-full py-2 rounded-lg bg-white/5 border border-white/10 text-white font-label-md text-label-sm hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
+                        Ver Detalles <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Main Metrics (Bento Grid) -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="glass-panel rounded-xl p-4">
+<p class="font-label-sm text-label-sm text-zinc-500 uppercase tracking-wider mb-2">Fitness (CTL)</p>
+<div class="flex items-end gap-2">
+<span class="font-headline-lg text-headline-lg text-white">82</span>
+<span class="font-label-sm text-label-sm text-tertiary mb-2 flex items-center"><span class="material-symbols-outlined text-[16px]">trending_up</span> +2</span>
+</div>
+</div>
+<div class="glass-panel rounded-xl p-4">
+<p class="font-label-sm text-label-sm text-zinc-500 uppercase tracking-wider mb-2">Fatiga (ATL)</p>
+<div class="flex items-end gap-2">
+<span class="font-headline-lg text-headline-lg text-white">94</span>
+<span class="font-label-sm text-label-sm text-error mb-2 flex items-center"><span class="material-symbols-outlined text-[16px]">trending_up</span> +5</span>
+</div>
+</div>
+<div class="glass-panel rounded-xl p-4">
+<p class="font-label-sm text-label-sm text-zinc-500 uppercase tracking-wider mb-2">Forma (TSB)</p>
+<div class="flex items-end gap-2">
+<span class="font-headline-lg text-headline-lg text-primary-container">-12</span>
+<span class="font-label-sm text-label-sm text-zinc-400 mb-2 flex items-center">Óptimo</span>
+</div>
+</div>
+<div class="glass-panel rounded-xl p-4">
+<p class="font-label-sm text-label-sm text-zinc-500 uppercase tracking-wider mb-2">Carga Semanal</p>
+<div class="flex items-end gap-2">
+<span class="font-headline-lg text-headline-lg text-white">450</span>
+<span class="font-label-sm text-label-sm text-zinc-400 mb-2">TSS</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
