@@ -1,0 +1,35 @@
+# Ignore everything that's not needed for the Vercel build
+node_modules
+**/node_modules
+.git
+.github
+backup
+backup-old-app
+app
+.gradle
+gradle
+gradlew
+gradlew.bat
+build.gradle.kts
+settings.gradle.kts
+gradle.properties
+*.iml
+.idea
+.vscode
+*.log
+.DS_Store
+pictures
+secrets
+docs
+strava-training-analyzer.html
+index.html
+redesign.html
+IMPLEMENTATION_SUMMARY.md
+NEXT_STEPS.md
+QUICK_REFERENCE.md
+README.md
+sdd peak endurace.md
+frd.md
+fdd.md
+.hermes
+**/dist
