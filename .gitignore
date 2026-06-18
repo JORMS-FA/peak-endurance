@@ -26,3 +26,9 @@ build/
 app/build/
 
 modules/
+
+.vercel
+.vercel-token
+apps/web/.env.local
+redesign.html
+implementation.md

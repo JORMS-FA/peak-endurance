@@ -4,6 +4,13 @@ export type ZonePrecision = 'real' | 'estimated' | 'insufficient'
 export type SessionStatus = 'planned' | 'completed' | 'recovery' | 'race'
 export type AiActionKind = 'analyze_week' | 'adjust_plan' | 'detect_fatigue'
 
+export type AuthProfile = {
+  id: string
+  email: string
+  displayName: string
+  avatarUrl: string | null
+}
+
 export type AthleteUser = {
   name: string
   email: string
@@ -27,7 +34,7 @@ export type TrainingSession = {
   durationMinutes: number
   tss: number
   status: SessionStatus
-  intensity: 'low' | 'moderate' | 'high'
+  intensity: 'low' | 'moderate' | 'high' | 'rest'
   notes: string
 }
 
@@ -77,4 +84,20 @@ export type PendingAiAction = {
     sessionId: string
     patch: Partial<TrainingSession>
   }>
+}
+
+export type StravaSegment = {
+  id: string
+  name: string
+  distanceKm: number
+  elevationGain: number
+  effort: string
+  starred: boolean
+  sport: 'running' | 'riding'
+}
+
+export type HermesStatus = {
+  connected: boolean
+  stravaConnected: boolean
+  weeklyReportEnabled: boolean
 }

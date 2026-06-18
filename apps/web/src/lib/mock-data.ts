@@ -1,21 +1,23 @@
 import type {
   AiSettings,
   AiUsage,
+  HermesStatus,
   ImportedActivity,
   SourceConnection,
+  StravaSegment,
   TrainingSession,
 } from './types'
 
-export const calendarMonths = ['2026-04', '2026-05', '2026-06']
-export const raceDate = '2026-05-03'
+export const calendarMonths = ['2026-06', '2026-07', '2026-08']
+export const raceDate = '2026-08-16'
 
 export const initialConnections: SourceConnection[] = [
-  { source: 'strava', label: 'Strava', status: 'connected', lastSync: '2026-04-24T09:15:00Z', connected: true, color: '#ff6a1a' },
+  { source: 'strava', label: 'Strava', status: 'coming_soon', lastSync: '', connected: false, color: '#5e6ad2' },
   { source: 'garmin', label: 'Garmin', status: 'coming_soon', lastSync: '', connected: false, color: '#53a4ff' },
   { source: 'coros', label: 'Coros', status: 'coming_soon', lastSync: '', connected: false, color: '#23d18b' },
   { source: 'igpsport', label: 'iGPSPORT', status: 'coming_soon', lastSync: '', connected: false, color: '#f6b31a' },
   { source: 'coospo', label: 'Coospo', status: 'coming_soon', lastSync: '', connected: false, color: '#ff4d6d' },
-]
+] 
 
 export const initialAiSettings: AiSettings = {
   tone: 'supportive',
@@ -31,18 +33,76 @@ export const initialAiUsage: AiUsage = {
 }
 
 export const initialSessions: TrainingSession[] = [
-  { id: 's1', date: '2026-04-28', title: 'Fuerza general', sport: 'gym', durationMinutes: 60, tss: 42, status: 'planned', intensity: 'moderate', notes: 'Movilidad + fuerza base.' },
-  { id: 's2', date: '2026-04-29', title: 'Z2 fondo', sport: 'bike', durationMinutes: 150, tss: 95, status: 'planned', intensity: 'moderate', notes: 'Trabajo aeróbico estable.' },
-  { id: 's3', date: '2026-05-01', title: 'Umbral en subida', sport: 'bike', durationMinutes: 90, tss: 85, status: 'planned', intensity: 'high', notes: 'Bloques al umbral con control de FC.' },
-  { id: 's4', date: '2026-05-02', title: 'Activacion pre carrera', sport: 'bike', durationMinutes: 45, tss: 38, status: 'planned', intensity: 'low', notes: 'Pierna viva, sin fatigar.' },
-  { id: 's5', date: '2026-05-03', title: 'Peak Endurace Race Day', sport: 'race', durationMinutes: 110, tss: 120, status: 'race', intensity: 'high', notes: 'Carrera principal del bloque.' },
-  { id: 's6', date: '2026-05-05', title: 'Recuperacion activa', sport: 'bike', durationMinutes: 50, tss: 24, status: 'recovery', intensity: 'low', notes: 'Soltar piernas y revisar sensaciones.' },
-  { id: 's7', date: '2026-05-08', title: 'VO2 tecnico', sport: 'bike', durationMinutes: 80, tss: 88, status: 'planned', intensity: 'high', notes: 'Bloques cortos con tecnica MTB.' },
-  { id: 's8', date: '2026-05-14', title: 'Trail run aeróbico', sport: 'run', durationMinutes: 70, tss: 55, status: 'planned', intensity: 'moderate', notes: 'Terreno ondulado.' },
-  { id: 's9', date: '2026-05-20', title: 'Largo MTB', sport: 'bike', durationMinutes: 180, tss: 145, status: 'planned', intensity: 'moderate', notes: 'Volumen principal del microciclo.' },
-  { id: 's10', date: '2026-06-02', title: 'Fuerza + tecnica', sport: 'gym', durationMinutes: 75, tss: 48, status: 'planned', intensity: 'moderate', notes: 'Estabilidad y fuerza útil.' },
-  { id: 's11', date: '2026-06-09', title: 'Z2 suave', sport: 'bike', durationMinutes: 90, tss: 52, status: 'planned', intensity: 'low', notes: 'Carga controlada.' },
-  { id: 's12', date: '2026-06-17', title: 'Umbral progresivo', sport: 'bike', durationMinutes: 95, tss: 86, status: 'planned', intensity: 'high', notes: 'Construccion de forma post carrera.' },
+  // ── Semana de transición (existing) ──
+  { id: 's10', date: '2026-06-18', title: 'Fuerza general', sport: 'gym', durationMinutes: 60, tss: 42, status: 'planned', intensity: 'moderate', notes: 'Movilidad + fuerza base.' },
+  { id: 's11', date: '2026-06-20', title: 'Z2 fondo aeróbico', sport: 'run', durationMinutes: 55, tss: 45, status: 'planned', intensity: 'moderate', notes: 'Base aeróbica 5:30/km.' },
+  { id: 's12', date: '2026-06-22', title: 'Umbral progresivo', sport: 'run', durationMinutes: 45, tss: 52, status: 'planned', intensity: 'high', notes: 'Bloques 3x8min al umbral.' },
+
+  // ════════════════════════════════════════════
+  // PLAN 15K — 9 Semanas (16 Jun → 16 Ago 2026)
+  // ════════════════════════════════════════════
+
+  // ─── S1: Base (16-22 Jun) ───
+  { id: 's1-1', date: '2026-06-16', title: 'Fondo suave', sport: 'run', durationMinutes: 30, tss: 22, status: 'planned', intensity: 'low', notes: '5 km a 6:00/km. Sensaciones.' },
+  { id: 's1-2', date: '2026-06-17', title: 'Fuerza general', sport: 'gym', durationMinutes: 45, tss: 30, status: 'planned', intensity: 'moderate', notes: 'Full body + core.' },
+  { id: 's1-3', date: '2026-06-18', title: 'Rodaje suave', sport: 'run', durationMinutes: 35, tss: 28, status: 'planned', intensity: 'low', notes: '5 km a 5:45/km.' },
+  { id: 's1-4', date: '2026-06-20', title: 'Fondo acumulación', sport: 'run', durationMinutes: 50, tss: 42, status: 'planned', intensity: 'moderate', notes: '8 km a 5:30/km.' },
+
+  // ─── S2: Base (23-29 Jun) ───
+  { id: 's2-1', date: '2026-06-23', title: 'Rodaje + técnica', sport: 'run', durationMinutes: 35, tss: 28, status: 'planned', intensity: 'low', notes: '5 km + drills de carrera.' },
+  { id: 's2-2', date: '2026-06-24', title: 'Fuerza + estabilidad', sport: 'gym', durationMinutes: 45, tss: 30, status: 'planned', intensity: 'moderate', notes: 'Pierna + core.' },
+  { id: 's2-3', date: '2026-06-25', title: 'Fartlek suave', sport: 'run', durationMinutes: 40, tss: 38, status: 'planned', intensity: 'moderate', notes: '6 km con cambios de ritmo suaves.' },
+  { id: 's2-4', date: '2026-06-27', title: 'Fondo construcción', sport: 'run', durationMinutes: 60, tss: 52, status: 'planned', intensity: 'moderate', notes: '10 km a 5:20/km.' },
+  { id: 's2-5', date: '2026-06-28', title: 'Recup. activa bici', sport: 'bike', durationMinutes: 45, tss: 20, status: 'planned', intensity: 'low', notes: '45 min suave.' },
+
+  // ─── S3: Construcción (30 Jun-6 Jul) ───
+  { id: 's3-1', date: '2026-06-30', title: 'Tempo run', sport: 'run', durationMinutes: 40, tss: 48, status: 'planned', intensity: 'high', notes: '3 km calentamiento + 5 km a 4:45/km + 1 km enfriamiento.' },
+  { id: 's3-2', date: '2026-07-01', title: 'Fuerza funcional', sport: 'gym', durationMinutes: 50, tss: 35, status: 'planned', intensity: 'moderate', notes: 'Circuito de fuerza.' },
+  { id: 's3-3', date: '2026-07-02', title: 'Rodaje regenerativo', sport: 'run', durationMinutes: 30, tss: 22, status: 'planned', intensity: 'low', notes: '5 km muy suaves.' },
+  { id: 's3-4', date: '2026-07-04', title: 'Largo construcción', sport: 'run', durationMinutes: 75, tss: 68, status: 'planned', intensity: 'moderate', notes: '12 km a 5:15/km.' },
+  { id: 's3-5', date: '2026-07-05', title: 'Bici recuperativa', sport: 'bike', durationMinutes: 60, tss: 25, status: 'planned', intensity: 'low', notes: 'Paseo activo.' },
+
+  // ─── S4: Construcción (7-13 Jul) ───
+  { id: 's4-1', date: '2026-07-07', title: 'Series 1000m', sport: 'run', durationMinutes: 45, tss: 55, status: 'planned', intensity: 'high', notes: "4x1000m a 4:15/km con 2' rec." },
+  { id: 's4-2', date: '2026-07-08', title: 'Fuerza + técnica', sport: 'gym', durationMinutes: 50, tss: 35, status: 'planned', intensity: 'moderate', notes: 'Trabajo de fuerza reactiva.' },
+  { id: 's4-3', date: '2026-07-09', title: 'Rodaje suave', sport: 'run', durationMinutes: 35, tss: 28, status: 'planned', intensity: 'low', notes: '6 km recuperación.' },
+  { id: 's4-4', date: '2026-07-11', title: 'Fondo medio', sport: 'run', durationMinutes: 85, tss: 75, status: 'planned', intensity: 'moderate', notes: '13 km a 5:15/km.' },
+  { id: 's4-5', date: '2026-07-12', title: 'Bici regenerativa', sport: 'bike', durationMinutes: 50, tss: 22, status: 'planned', intensity: 'low', notes: 'Recuperación activa.' },
+
+  // ─── S5: Construcción pesada (14-20 Jul) ───
+  { id: 's5-1', date: '2026-07-14', title: 'Tempo + cuestas', sport: 'run', durationMinutes: 50, tss: 62, status: 'planned', intensity: 'high', notes: '3x500m cuesta + 15 min tempo.' },
+  { id: 's5-2', date: '2026-07-15', title: 'Gimnasio', sport: 'gym', durationMinutes: 55, tss: 38, status: 'planned', intensity: 'moderate', notes: 'Fuerza máxima + core.' },
+  { id: 's5-3', date: '2026-07-16', title: 'Rodaje regenerativo', sport: 'run', durationMinutes: 30, tss: 22, status: 'planned', intensity: 'low', notes: '5 km suaves.' },
+  { id: 's5-4', date: '2026-07-18', title: 'Largo 14K', sport: 'run', durationMinutes: 90, tss: 82, status: 'planned', intensity: 'moderate', notes: '14 km a 5:10/km.' },
+  { id: 's5-5', date: '2026-07-19', title: 'Natación recup.', sport: 'swim', durationMinutes: 30, tss: 15, status: 'planned', intensity: 'low', notes: '30 min piscina suave.' },
+
+  // ─── S6: Pico (21-27 Jul) ───
+  { id: 's6-1', date: '2026-07-21', title: 'Series 1km + tempo', sport: 'run', durationMinutes: 50, tss: 65, status: 'planned', intensity: 'high', notes: "5x1000m a 4:10/km + 2' rec." },
+  { id: 's6-2', date: '2026-07-22', title: 'Fuerza funcional', sport: 'gym', durationMinutes: 50, tss: 35, status: 'planned', intensity: 'moderate', notes: 'Circuito + pliometría.' },
+  { id: 's6-3', date: '2026-07-23', title: 'Rodaje suave', sport: 'run', durationMinutes: 35, tss: 28, status: 'planned', intensity: 'low', notes: '6 km recuperación.' },
+  { id: 's6-4', date: '2026-07-25', title: 'Largo 15K', sport: 'run', durationMinutes: 95, tss: 88, status: 'planned', intensity: 'moderate', notes: '15 km a 5:00/km — simulacro de carrera.' },
+  { id: 's6-5', date: '2026-07-26', title: 'Bici regenerativa', sport: 'bike', durationMinutes: 45, tss: 20, status: 'planned', intensity: 'low', notes: '45 min muy suave.' },
+
+  // ─── S7: Pico (28 Jul-3 Ago) ───
+  { id: 's7-1', date: '2026-07-28', title: 'VO2 max corto', sport: 'run', durationMinutes: 40, tss: 52, status: 'planned', intensity: 'high', notes: "8x400m a 3:50/km con 1' rec." },
+  { id: 's7-2', date: '2026-07-30', title: 'Tempo sostenido', sport: 'run', durationMinutes: 45, tss: 55, status: 'planned', intensity: 'high', notes: '10 km con 6 km a 4:35/km.' },
+  { id: 's7-3', date: '2026-08-01', title: 'Largo 14K', sport: 'run', durationMinutes: 85, tss: 78, status: 'planned', intensity: 'moderate', notes: '14 km a 5:00/km — último largo.' },
+  { id: 's7-4', date: '2026-08-02', title: 'Recup. activa', sport: 'bike', durationMinutes: 40, tss: 18, status: 'planned', intensity: 'low', notes: '40 min suave.' },
+
+  // ─── S8: Tapering (4-10 Ago) ───
+  { id: 's8-1', date: '2026-08-04', title: 'Rodaje corto', sport: 'run', durationMinutes: 25, tss: 18, status: 'planned', intensity: 'low', notes: '4 km suaves a 5:30/km.' },
+  { id: 's8-2', date: '2026-08-05', title: 'Activación fuerza', sport: 'gym', durationMinutes: 30, tss: 20, status: 'planned', intensity: 'low', notes: 'Core + ejercicios de activación.' },
+  { id: 's8-3', date: '2026-08-06', title: 'Fartlek corto', sport: 'run', durationMinutes: 30, tss: 32, status: 'planned', intensity: 'moderate', notes: '5 km con 3 cambios de ritmo.' },
+  { id: 's8-4', date: '2026-08-08', title: 'Fondo ligero', sport: 'run', durationMinutes: 50, tss: 40, status: 'planned', intensity: 'low', notes: '8 km suaves — soltar piernas.' },
+  { id: 's8-5', date: '2026-08-09', title: 'Bici muy suave', sport: 'bike', durationMinutes: 30, tss: 12, status: 'planned', intensity: 'low', notes: '30 min rodar suave.' },
+
+  // ─── S9: Tapering + 🏁 Race (11-16 Ago) ───
+  { id: 's9-1', date: '2026-08-11', title: 'Activación ligera', sport: 'run', durationMinutes: 20, tss: 14, status: 'planned', intensity: 'low', notes: '3 km con estiramientos.' },
+  { id: 's9-2', date: '2026-08-12', title: 'Gimnasio suave', sport: 'gym', durationMinutes: 25, tss: 15, status: 'planned', intensity: 'low', notes: 'Solo movilidad y activación.' },
+  { id: 's9-3', date: '2026-08-13', title: 'Pre-activación', sport: 'run', durationMinutes: 15, tss: 10, status: 'planned', intensity: 'low', notes: '2 km + 3 cambios de ritmo cortos.' },
+  { id: 's9-4', date: '2026-08-14', title: 'Descanso total', sport: 'rest', durationMinutes: 0, tss: 0, status: 'planned', intensity: 'rest', notes: 'Descanso completo.' },
+  { id: 's9-5', date: '2026-08-15', title: 'Pre-carrera', sport: 'run', durationMinutes: 15, tss: 8, status: 'planned', intensity: 'low', notes: 'Trote muy suave 2 km + strides.' },
+  { id: 's9-race', date: '2026-08-16', title: '🏁 15K Race Day', sport: 'race', durationMinutes: 0, tss: 0, status: 'planned', intensity: 'high', notes: 'Carrera de 15 km — La Macarena, Colombia 🏆' },
 ]
 
 export const initialActivities: ImportedActivity[] = [
@@ -144,4 +204,103 @@ export const sparklineSets = {
   ctl: [58, 60, 61, 63, 62, 66, 69, 72],
   atl: [44, 52, 49, 57, 51, 62, 70, 68],
   tsb: [-10, -5, -8, -2, 3, 1, 6, 4],
+}
+
+export const initialSegments: StravaSegment[] = [
+  {
+    id: 'seg-1',
+    name: 'Caño Cristales Climb',
+    distanceKm: 4.8,
+    elevationGain: 312,
+    effort: '5:42/km',
+    starred: true,
+    sport: 'running',
+  },
+  {
+    id: 'seg-2',
+    name: 'Sierra de la Macarena Ascent',
+    distanceKm: 12.4,
+    elevationGain: 685,
+    effort: '32 min',
+    starred: true,
+    sport: 'riding',
+  },
+  {
+    id: 'seg-3',
+    name: 'Río Güejar Trail',
+    distanceKm: 6.1,
+    elevationGain: 198,
+    effort: '6:18/km',
+    starred: false,
+    sport: 'running',
+  },
+  {
+    id: 'seg-4',
+    name: 'Mirador Llano Grande',
+    distanceKm: 9.7,
+    elevationGain: 540,
+    effort: '26 min',
+    starred: false,
+    sport: 'riding',
+  },
+  {
+    id: 'seg-5',
+    name: 'Bosque de las Acacias Loop',
+    distanceKm: 3.2,
+    elevationGain: 84,
+    effort: '4:55/km',
+    starred: true,
+    sport: 'running',
+  },
+  {
+    id: 'seg-6',
+    name: 'Vereda El Tablazo Descent',
+    distanceKm: 7.6,
+    elevationGain: 410,
+    effort: '21 min',
+    starred: false,
+    sport: 'riding',
+  },
+  {
+    id: 'seg-7',
+    name: 'Piedra del Cocuy Sprint',
+    distanceKm: 1.4,
+    elevationGain: 62,
+    effort: '4:12/km',
+    starred: false,
+    sport: 'running',
+  },
+  {
+    id: 'seg-8',
+    name: 'Cuchilla de Santo Domingo',
+    distanceKm: 18.2,
+    elevationGain: 920,
+    effort: '48 min',
+    starred: true,
+    sport: 'riding',
+  },
+  {
+    id: 'seg-9',
+    name: 'Sendero Las Delicias',
+    distanceKm: 5.5,
+    elevationGain: 224,
+    effort: '6:02/km',
+    starred: false,
+    sport: 'running',
+  },
+  {
+    id: 'seg-10',
+    name: 'Tramo Caño Yarumales',
+    distanceKm: 14.3,
+    elevationGain: 612,
+    effort: '37 min',
+    starred: false,
+    sport: 'riding',
+  },
+]
+
+export const hermesStatus: HermesStatus = {
+  connected: false,
+  stravaConnected: false,
+  weeklyReportEnabled: false,
 }

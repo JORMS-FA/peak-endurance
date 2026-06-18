@@ -1,50 +1,58 @@
 import {
-  Bell,
   Bot,
   CalendarDays,
+  Check,
   Dumbbell,
   Flag,
   Globe,
   Home,
   LineChart,
   MoreHorizontal,
+  Mountain,
   Plug,
   Search,
   Settings,
   Sparkles,
+  Star,
   TrendingUp,
+  Zap,
 } from 'lucide-react'
 import {
   startTransition,
   useDeferredValue,
   useEffect,
+  useMemo,
   useState,
 } from 'react'
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
-import { appBrand, appNavigation, languages, mobileNavigation } from '@peak-ui'
 import { createAiProposal } from './lib/ai-engine'
+import { AuthGuard, SignOutButton } from './components/auth/AuthGuard'
+import { AuthScreen } from './components/auth/AuthScreen'
+import { useAuth } from './hooks/useAuth'
 import { buildCoachContext } from './lib/context-builder'
 import { t } from './lib/i18n'
-import peakLogo from './assets/peak-logo.png'
 import {
   calendarMonths,
+  hermesStatus as initialHermesStatus,
   initialActivities,
   initialAiSettings,
   initialAiUsage,
   initialConnections,
+  initialSegments,
   initialSessions,
   raceDate,
   sparklineSets,
 } from './lib/mock-data'
-import { supabaseConfigured } from './lib/supabase'
+import { languages, mobileNavigation } from './lib/ui'
 import type {
   AiSettings,
   AppLanguage,
-  AthleteUser,
   DateRange,
+  HermesStatus,
   ImportedActivity,
   PendingAiAction,
   SourceConnection,
+  StravaSegment,
   TrainingSession,
 } from './lib/types'
 
@@ -56,6 +64,7 @@ const iconMap = {
   sparkles: Sparkles,
   chart: LineChart,
   trending: TrendingUp,
+  search: Search,
   plug: Plug,
   settings: Settings,
   more: MoreHorizontal,
@@ -70,6 +79,8 @@ const storageKeys = {
   aiUsage: 'peak-v2-ai-usage',
   sessions: 'peak-v2-sessions',
   pendingAction: 'peak-v2-pending-action',
+  segments: 'peak-v2-segments',
+  hermes: 'peak-v2-hermes',
 }
 
 function loadStored<T>(key: string, fallback: T): T {
@@ -83,9 +94,8 @@ function loadStored<T>(key: string, fallback: T): T {
 }
 
 function App() {
+  const { configured, status, user: authUser, profile } = useAuth()
   const [language, setLanguage] = useState<AppLanguage>(() => loadStored(storageKeys.language, 'es'))
-  const [user, setUser] = useState<AthleteUser | null>(() => loadStored(storageKeys.user, null))
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [sessions, setSessions] = useState<TrainingSession[]>(() => loadStored(storageKeys.sessions, initialSessions))
   const [activities] = useState<ImportedActivity[]>(initialActivities)
   const [connections] = useState<SourceConnection[]>(initialConnections)
@@ -98,45 +108,33 @@ function App() {
   const [pendingAction, setPendingAction] = useState<PendingAiAction | null>(() =>
     loadStored(storageKeys.pendingAction, null),
   )
+  const [segments, setSegments] = useState<StravaSegment[]>(() => loadStored(storageKeys.segments, initialSegments))
+  const [hermes, setHermes] = useState<HermesStatus>(() => loadStored(storageKeys.hermes, initialHermesStatus))
   const deferredRange = useDeferredValue(range)
+
+  const user = useMemo(
+    () => ({
+      name: profile?.displayName || authUser?.email?.split('@')[0] || 'Atleta',
+      email: profile?.email || authUser?.email || '',
+      role: 'Athlete',
+    }),
+    [profile, authUser],
+  )
 
   useEffect(() => {
     localStorage.setItem(storageKeys.language, JSON.stringify(language))
-    localStorage.setItem(storageKeys.user, JSON.stringify(user))
     localStorage.setItem(storageKeys.selectedDate, JSON.stringify(selectedDate))
     localStorage.setItem(storageKeys.dateRange, JSON.stringify(range))
     localStorage.setItem(storageKeys.aiSettings, JSON.stringify(aiSettings))
     localStorage.setItem(storageKeys.aiUsage, JSON.stringify(aiUsage))
     localStorage.setItem(storageKeys.sessions, JSON.stringify(sessions))
     localStorage.setItem(storageKeys.pendingAction, JSON.stringify(pendingAction))
-  }, [language, user, selectedDate, range, aiSettings, aiUsage, sessions, pendingAction])
+    localStorage.setItem(storageKeys.segments, JSON.stringify(segments))
+    localStorage.setItem(storageKeys.hermes, JSON.stringify(hermes))
+  }, [language, selectedDate, range, aiSettings, aiUsage, sessions, pendingAction, segments, hermes])
 
-  if (!isAuthenticated) {
-    return (
-      <SignInScreen
-        language={language}
-        setLanguage={setLanguage}
-        initialUser={user}
-        onEnter={(nextUser) => {
-          setUser(nextUser)
-          setIsAuthenticated(true)
-        }}
-      />
-    )
-  }
-
-  if (!user) {
-    return (
-      <SignInScreen
-        language={language}
-        setLanguage={setLanguage}
-        initialUser={null}
-        onEnter={(nextUser) => {
-          setUser(nextUser)
-          setIsAuthenticated(true)
-        }}
-      />
-    )
+  if (!configured || status !== 'authenticated') {
+    return <AuthScreen language={language} setLanguage={setLanguage} />
   }
 
   const copy = (key: Parameters<typeof t>[1]) => t(language, key)
@@ -184,61 +182,15 @@ function App() {
   }
 
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand-lockup">
-          <img src={peakLogo} alt="Peak Endurance" className="brand-logo" />
-        </div>
-
-        <nav className="nav-stack">
-          {appNavigation.map((item) => {
-            const Icon = iconMap[item.icon]
-            return (
-              <NavLink key={item.id} to={item.path} className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
-                <Icon size={18} />
-                <span>{copy(item.id as Parameters<typeof t>[1])}</span>
-              </NavLink>
-            )
-          })}
-        </nav>
-
-        <div className="sidebar-card">
-          <div className="eyebrow">{copy('sourceMix')}</div>
-          {connections.filter((item) => item.connected).map((item) => (
-            <div key={item.source} className="source-row">
-              <span className="source-dot" style={{ backgroundColor: item.color }} />
-              <div>
-                <strong>{item.label}</strong>
-                <small>{copy('connected')}</small>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="pro-card">
-          <div>
-            <div className="eyebrow">{copy('freePlan')}</div>
-            <strong>{remainingAi} {copy('aiLeft')}</strong>
+    <AuthGuard fallback={<AuthScreen language={language} setLanguage={setLanguage} />}>
+      <div className="app-shell">
+      <main className="app-stage">
+        <header className="top-header">
+          <div className="top-header-greet">
+            <div className="eyebrow">Peak Endurance</div>
+            <h1>{copy('greeting')}, {user.name}!</h1>
           </div>
-          <button type="button" className="ghost-button">Mejorar</button>
-        </div>
-
-        <button type="button" className="profile-chip" onClick={() => setIsAuthenticated(false)}>
-          <span className="avatar">{user.name.slice(0, 1)}</span>
-          <span>{user.name}</span>
-        </button>
-      </aside>
-
-      <main className="main-stage">
-        <header className="topbar">
-          <div>
-            <h1>{copy('greeting')}, {user.name}! <span className="wave">👋</span></h1>
-            <p>{copy('subtitle')}</p>
-          </div>
-
           <div className="top-actions">
-            <button type="button" className="icon-button"><Search size={18} /></button>
-            <button type="button" className="icon-button"><Bell size={18} /></button>
             <label className="language-switch">
               <Globe size={16} />
               <select value={language} onChange={(event) => setLanguage(event.target.value as AppLanguage)}>
@@ -247,7 +199,7 @@ function App() {
                 ))}
               </select>
             </label>
-            <div className="avatar hero-avatar">{user.name.slice(0, 1)}</div>
+            <div className="top-avatar">{user.name.slice(0, 1)}</div>
           </div>
         </header>
 
@@ -321,6 +273,35 @@ function App() {
           <Route path="/progreso" element={<ProgressPage />} />
           <Route path="/conexiones" element={<ConnectionsPage copy={copy} connections={connections} />} />
           <Route
+            path="/segmentos"
+            element={
+              <StravaSegmentsPage
+                copy={copy}
+                segments={segments}
+                onToggleStar={(id) =>
+                  setSegments((current) =>
+                    current.map((segment) => (segment.id === id ? { ...segment, starred: !segment.starred } : segment)),
+                  )
+                }
+              />
+            }
+          />
+          <Route
+            path="/hermes"
+            element={
+              <HermesIntegrationPage
+                copy={copy}
+                status={hermes}
+                onToggleConnection={() =>
+                  setHermes((current) => ({ ...current, connected: !current.connected }))
+                }
+                onToggleWeeklyReport={() =>
+                  setHermes((current) => ({ ...current, weeklyReportEnabled: !current.weeklyReportEnabled }))
+                }
+              />
+            }
+          />
+          <Route
             path="/ajustes"
             element={
               <SettingsPage
@@ -329,18 +310,18 @@ function App() {
                 language={language}
                 setLanguage={setLanguage}
                 setAiSettings={setAiSettings}
-                supabaseConfigured={supabaseConfigured}
+                supabaseConfigured={configured}
               />
             }
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 
-        <nav className="mobile-nav">
+        <nav className="bottom-nav">
           {mobileNavigation.map((item) => {
             const Icon = iconMap[item.icon]
             return (
-              <NavLink key={item.id} to={item.path} className={({ isActive }) => `mobile-item${isActive ? ' active' : ''}`}>
+              <NavLink key={item.id} to={item.path} className={({ isActive }) => `bottom-nav-item${isActive ? ' is-active' : ''}`}>
                 <Icon size={18} />
                 <span>{copy(item.id === 'mas' ? 'settings' : item.id as Parameters<typeof t>[1])}</span>
               </NavLink>
@@ -349,63 +330,7 @@ function App() {
         </nav>
       </main>
     </div>
-  )
-}
-
-function SignInScreen({
-  language,
-  setLanguage,
-  initialUser,
-  onEnter,
-}: {
-  language: AppLanguage
-  setLanguage: (language: AppLanguage) => void
-  initialUser: AthleteUser | null
-  onEnter: (user: AthleteUser) => void
-}) {
-  const [name, setName] = useState(initialUser?.name ?? 'Andres')
-  const [email, setEmail] = useState(initialUser?.email ?? 'andres@peak.local')
-
-  return (
-    <div className="signin-shell">
-      <div className="signin-panel">
-        <div className="brand-lockup">
-          <img src={peakLogo} alt="Peak Endurance" className="brand-logo signin-logo" />
-        </div>
-
-        <h1>{appBrand.name}</h1>
-        <p>Tu panel de rendimiento para planificar, ajustar y optimizar cada semana.</p>
-
-        <div className="signin-grid">
-          <label>
-            Nombre completo
-            <input value={name} onChange={(event) => setName(event.target.value)} />
-          </label>
-          <label>
-            Correo
-            <input value={email} onChange={(event) => setEmail(event.target.value)} />
-          </label>
-        </div>
-
-        <div className="signin-actions">
-          <button type="button" className="primary-button" onClick={() => onEnter({ name, email, role: 'Athlete' })}>
-            {t(language, 'signIn')}
-          </button>
-          <button type="button" className="secondary-button" onClick={() => onEnter({ name: 'Andres', email: 'demo@peak.local', role: 'Athlete' })}>
-            {t(language, 'demo')}
-          </button>
-        </div>
-
-        <label className="language-switch inline-switch">
-          <Globe size={16} />
-          <select value={language} onChange={(event) => setLanguage(event.target.value as AppLanguage)}>
-            {languages.map((item) => (
-              <option key={item.value} value={item.value}>{item.label}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-    </div>
+  </AuthGuard>
   )
 }
 
@@ -474,7 +399,7 @@ function DashboardPage(props: {
           <MetricCard title="Forma actual" value="87%" accent="green" series={sparklineSets.form} />
           <MetricCard title="Carga semanal" value="842" accent="blue" series={sparklineSets.load} />
           <MetricCard title="Aptitud (CTL)" value="72" accent="green" series={sparklineSets.ctl} />
-          <MetricCard title="Fatiga (ATL)" value="68" accent="orange" series={sparklineSets.atl} />
+          <MetricCard title="Fatiga (ATL)" value="68" accent="violet" series={sparklineSets.atl} />
           <MetricCard title="Forma (TSB)" value="4" accent="blue" series={sparklineSets.tsb} />
         </section>
 
@@ -728,7 +653,7 @@ function ProgressPage() {
       <div className="metric-grid">
         <MetricCard title="Forma" value="87%" accent="green" series={sparklineSets.form} />
         <MetricCard title="Carga" value="842" accent="blue" series={sparklineSets.load} />
-        <MetricCard title="Fatiga" value="68" accent="orange" series={sparklineSets.atl} />
+        <MetricCard title="Fatiga" value="68" accent="violet" series={sparklineSets.atl} />
       </div>
     </section>
   )
@@ -809,6 +734,177 @@ function SettingsPage(props: {
       </div>
       <div className="status-callout">
         Supabase: {props.supabaseConfigured ? 'configurado' : 'pendiente de variables de entorno'}
+      </div>
+      <div style={{ marginTop: 14 }}>
+        <SignOutButton className="primary-button full-width">
+          Cerrar sesión
+        </SignOutButton>
+      </div>
+    </section>
+  )
+}
+
+function StravaSegmentsPage({
+  copy,
+  segments,
+  onToggleStar,
+}: {
+  copy: (key: Parameters<typeof t>[1]) => string
+  segments: StravaSegment[]
+  onToggleStar: (id: string) => void
+}) {
+  const [sport, setSport] = useState<'all' | StravaSegment['sport']>('all')
+  const filtered = sport === 'all' ? segments : segments.filter((segment) => segment.sport === sport)
+
+  return (
+    <section className="page-card">
+      <div className="panel-head">
+        <div>
+          <div className="eyebrow">Strava · MCP</div>
+          <strong>{copy('segments')}</strong>
+          <p style={{ margin: '6px 0 0', color: 'var(--muted)' }}>{copy('segmentDescription')}</p>
+        </div>
+        <div className="sport-filters">
+          <button type="button" className={sport === 'all' ? 'active' : ''} onClick={() => setSport('all')}>
+            Todos
+          </button>
+          <button type="button" className={sport === 'running' ? 'active' : ''} onClick={() => setSport('running')}>
+            Running
+          </button>
+          <button type="button" className={sport === 'riding' ? 'active' : ''} onClick={() => setSport('riding')}>
+            Ciclismo
+          </button>
+        </div>
+      </div>
+
+      <div className="segments-grid">
+        {filtered.map((segment) => (
+          <article key={segment.id} className="segment-card">
+            <div className="segment-card-head">
+              <div>
+                <h3>{segment.name}</h3>
+                <small>{segment.sport === 'running' ? 'Running' : 'Ciclismo'}</small>
+              </div>
+              <button
+                type="button"
+                className={`star-button${segment.starred ? ' active' : ''}`}
+                onClick={() => onToggleStar(segment.id)}
+                aria-label={copy('starred')}
+              >
+                <Star size={18} fill={segment.starred ? 'currentColor' : 'none'} />
+              </button>
+            </div>
+            <div className="segment-meta">
+              <div>
+                <small>Distancia</small>
+                <strong>{segment.distanceKm.toFixed(1)} km</strong>
+              </div>
+              <div>
+                <small>{copy('elevation')}</small>
+                <strong>{segment.elevationGain} m</strong>
+              </div>
+              <div>
+                <small>{copy('effort')}</small>
+                <strong>{segment.effort}</strong>
+              </div>
+            </div>
+            <div className="segment-effort">
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Mountain size={14} /> La Macarena, Colombia
+              </span>
+              <span style={{ color: 'var(--accent)' }}>Explorar →</span>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function HermesIntegrationPage({
+  copy,
+  status,
+  onToggleConnection,
+  onToggleWeeklyReport,
+}: {
+  copy: (key: Parameters<typeof t>[1]) => string
+  status: HermesStatus
+  onToggleConnection: () => void
+  onToggleWeeklyReport: () => void
+}) {
+  return (
+    <section className="page-card">
+      <div className="panel-head">
+        <div>
+          <div className="eyebrow">Autonomous Agent</div>
+          <strong>{copy('hermes')}</strong>
+          <p style={{ margin: '6px 0 0', color: 'var(--muted)' }}>{copy('hermesDescription')}</p>
+        </div>
+      </div>
+
+      <div className="hermes-grid">
+        <article className="hermes-card">
+          <div className="eyebrow">{copy('connectedTo')} Hermes</div>
+          <div className={`hermes-status ${status.connected ? 'connected' : ''}`} style={{ marginTop: 10 }}>
+            <span
+              className="source-dot"
+              style={{ backgroundColor: status.connected ? 'var(--accent)' : 'var(--muted)' }}
+            />
+            <strong>{status.connected ? 'Conectado' : 'Desconectado'}</strong>
+          </div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.86rem', margin: '10px 0 0' }}>
+            Hermes Agent puede supervisar tu entrenamiento y generar reportes autónomos cada lunes.
+          </p>
+          <div style={{ marginTop: 14 }}>
+            <button type="button" className={status.connected ? 'secondary-button' : 'primary-button'} onClick={onToggleConnection}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                {status.connected ? <Plug size={14} /> : <Zap size={14} />}
+                {status.connected ? copy('disconnect') : copy('connect')}
+              </span>
+            </button>
+          </div>
+        </article>
+
+        <article className="hermes-card">
+          <div className="eyebrow">{copy('stravaSync')}</div>
+          <div className="hermes-status connected" style={{ marginTop: 10 }}>
+            <span className="source-dot" style={{ backgroundColor: 'var(--accent)' }} />
+            <strong>Strava sincronizado</strong>
+          </div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.86rem', margin: '10px 0 0' }}>
+            Las actividades de Strava se importan automáticamente. Última sync: 24 abr 2026.
+          </p>
+        </article>
+
+        <article className="hermes-card">
+          <div className="eyebrow">Capacidades</div>
+          <div className="capability-list">
+            <div className="capability-row">
+              <span className="check"><Check size={12} /></span>
+              {copy('autonomousReports')}
+            </div>
+            <div className="capability-row">
+              <span className="check"><Check size={12} /></span>
+              Alertas de fatiga
+            </div>
+            <div className="capability-row">
+              <span className="check"><Check size={12} /></span>
+              Ajustes de plan
+            </div>
+          </div>
+          <div className="toggle-row">
+            <span>{copy('weeklyReport')}</span>
+            <button
+              type="button"
+              className={`toggle ${status.weeklyReportEnabled ? 'on' : ''}`}
+              onClick={onToggleWeeklyReport}
+              aria-label={copy('weeklyReport')}
+            />
+          </div>
+          <button type="button" className="primary-button full-width" style={{ marginTop: 14 }}>
+            Configurar cronjob semanal
+          </button>
+        </article>
       </div>
     </section>
   )
@@ -908,7 +1004,7 @@ function MetricCard({
 }: {
   title: string
   value: string
-  accent: 'green' | 'blue' | 'orange'
+  accent: 'green' | 'blue' | 'violet'
   series: number[]
 }) {
   return (

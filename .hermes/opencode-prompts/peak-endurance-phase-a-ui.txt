@@ -1,0 +1,125 @@
+Implementa cambios reales en `C:/Users/fagua/Downloads/PROYECTOS DEV/peak-endurance/apps/web` para convertir Peak Endurance en una app mobile-first funcional, usando como prioridad: 1) auth real con Supabase Magic Link, 2) eliminación total del acceso demo/mock, 3) rediseño de la interfaz/CSS desde cero con enfoque mobile-first inspirado en apps deportivas tipo TrainingPeaks/Strava móvil, pero SIN clonar branding propietario, 4) mantener build pasando.
+
+Contexto confirmado:
+- Stack: React 19 + Vite 8 + React Router 7 + lucide-react.
+- El build actual ya pasa desde apps/web.
+- App.tsx es monolítico y contiene defaults demo (`Andres`, `andres@peak.local`) y botón demo.
+- Existe `src/lib/supabase.ts` con `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
+- implementation.md en la raíz del repo define Magic Link como decisión cerrada.
+- No implementar todavía OAuth real de Strava, pero sí dejar la UI honesta: Strava no debe aparecer conectado por defecto.
+
+Objetivo funcional:
+- La única entrada debe ser login real por email con Supabase Magic Link.
+- Sin sesión real, no se puede entrar al dashboard.
+- La app debe verse y sentirse mobile-first, totalmente responsiva y funcional.
+- La UI no debe parecer un dashboard SaaS genérico; debe priorizar “hoy”, “plan”, “actividad” y “más”.
+
+Arquitectura visual obligatoria:
+- navegación inferior fija de 5 tabs máximo: Hoy, Calendario, Plan, Actividad, Más
+- dark theme atlético, técnico, limpio
+- 1 color de acento principal y semántica clara de recuperación/carga/fatiga
+- cards compactas y táctiles
+- empty states reales, no métricas inventadas ni JSON visible
+- top summary del día
+- dashboard centrado en el día actual, no en analytics pesados desde el primer frame
+- responsive real en móvil (390x844) y bien adaptado a tablet/escritorio
+
+Cambios exactos mínimos:
+1) Crear `src/lib/auth.ts`
+- wrapper sobre Supabase con:
+  - getCurrentSession
+  - sendMagicLink(email)
+  - signOut
+  - subscribeToAuthChanges
+  - fetchProfile(userId)
+  - ensureProfile(user)
+
+2) Crear `src/providers/AuthProvider.tsx`
+- manejar: loading, configured, session, user, profile
+- leer sesión inicial
+- suscribirse a onAuthStateChange
+- asegurar profile al login
+
+3) Crear `src/hooks/useAuth.ts`
+
+4) Crear `src/components/auth/MagicLinkForm.tsx`
+- email + validación básica + estados de envío/error/éxito
+- textos en español
+
+5) Crear `src/components/auth/AuthScreen.tsx`
+- pantalla de acceso real, mobile-first, con branding sobrio y selector de idioma si aplica
+
+6) Crear `src/components/auth/AuthGuard.tsx`
+- loading -> pantalla de carga
+- supabase no configurado -> pantalla informativa
+- no session -> AuthScreen
+- session -> children
+
+7) Modificar `src/main.tsx`
+- envolver App con AuthProvider
+
+8) Refactorizar `src/App.tsx`
+- eliminar isAuthenticated local, defaults demo y botón demo
+- eliminar cualquier uso de `onEnter(...)`
+- usar `useAuth()`
+- bloquear todo el árbol privado sin sesión
+- logout real con signOut()
+- no usar localStorage para simular auth
+- donde se use `user.name`, cambiar a profile.display_name o email con fallback seguro
+- reorganizar navegación/pantallas para mobile-first
+
+9) Rediseñar CSS desde cero
+- reorganizar `App.css` e `index.css` o dividir en archivos si conviene
+- crear sistema de tokens CSS con variables
+- layout mobile-first
+- cards, spacing, tipografía y navegación inferior consistente
+- evitar restos del starter de Vite
+- targets táctiles >= 44px
+- sin scroll horizontal
+
+10) Reorganizar la experiencia visual con estas pantallas mínimas:
+- Login
+- Home/Hoy
+- Calendario
+- Plan
+- Actividad
+- Más (integraciones, Hermes, ajustes)
+
+11) Ajustar mock/integraciones
+- modificar `src/lib/mock-data.ts` para que Strava NO aparezca conectado por defecto
+- eliminar cualquier fake sync o última sincronización falsa de Strava
+- mantener estados honestos
+
+12) Modificar `src/lib/i18n.ts`
+- añadir textos reales para auth/loading/logout/empty states
+- eliminar copy demo
+
+13) Modificar `src/lib/types.ts` si hace falta
+- separar tipos de auth real de AthleteUser mock
+
+14) Modificar `.env.example` si hace falta
+- mantener VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY
+- añadir variable pública de site url si es útil para magic link
+
+Lineamientos de diseño obligatorios:
+- Home debe responder rápido: cómo estoy hoy, qué me toca, qué sigue
+- no mostrar JSON, bloques IA crudos ni widgets decorativos innecesarios
+- calendario móvil: semana + agenda; no intentar meter un mega calendario ilegible
+- Más debe concentrar integraciones, Hermes y ajustes
+- no clonar visualmente marcas; solo tomar principios de densidad/claridad
+
+Validación final obligatoria:
+- buscar que ya no existan referencias funcionales a:
+  - Andres
+  - andres@peak.local
+  - demo@peak.local
+  - botón demo
+- correr build desde `C:/Users/fagua/Downloads/PROYECTOS DEV/peak-endurance/apps/web`
+- corregir errores hasta que pase
+- al terminar, reportar archivos creados/modificados y decisiones importantes
+
+Importante:
+- No implementar aún backend real de Strava
+- No exponer secretos
+- No romper el build
+- Prefiere cambios concretos de producción antes que prototipos visuales aislados

@@ -1,128 +1,87 @@
-<<<<<<< ours
-<<<<<<< ours
-<<<<<<< ours
-# Peak Endurace Coach
+# Peak Endurance Coach
 
-Aplicacion web para planificar, comparar y ajustar entrenamientos de endurance con ayuda de IA.
+Aplicación web para planificar, comparar y ajustar entrenamientos de endurance con ayuda de IA y supervisión autónoma de Hermes Agent.
 
-## Contexto general
+---
 
-- Proyecto en evolucion desde prototipo estatico (`index.html`) hacia producto escalable.
-- Publicacion actual en GitHub Pages.
-- Integracion inicial con Strava y arquitectura pensada para sumar mas fuentes.
-- IA como capa central del producto, no solo como chat.
+## 🎯 Contexto
 
-## Principios del proyecto
+- Proyecto en evolución desde prototipo estático (`index.html`) hacia producto escalable v2 (`apps/web/`).
+- Integración activa con Strava vía MCP y arquitectura para sumar más fuentes (Garmin, Coros, iGPSPORT, Coospo).
+- IA Coach adaptativa como capa central: modifica el plan sobre la marcha según fatiga (ATL/CTL/TSB).
+- Rediseño inspirado en **Linear** (oscuro, preciso, violeta).
 
-1. La IA puede proponer y editar entrenamientos, pero siempre con confirmacion del usuario antes de aplicar cambios.
-2. La plataforma debe soportar multiples fuentes de datos deportivas: Strava, Garmin, Coros, iGPSPORT, Coospo y otras.
-3. El plan gratis tendra limites de consultas IA.
-4. Idiomas iniciales: espanol e ingles.
-5. No exponer secretos en frontend ni en repositorio.
+## 🏁 Objetivo inmediato
 
-## Estructura minima actual
+Preparación para **carrera de 15 km — 16 de agosto de 2026** (La Macarena, Colombia).
 
-- `apps/web`: frontend React + Vite de la v2.
-- `packages/ui`: tokens y configuracion compartida.
-- `supabase`: esquema base de datos y modelo inicial.
-- `workers`: workers edge para IA e integraciones.
-- `index.html`: referencia legacy del prototipo anterior.
-- `cloudflare-worker.js`: proxy legacy original.
-- `sdd peak endurace.md`: especificacion base del producto.
-- `README.md`: este contexto general.
+## 🏗️ Estructura del proyecto
 
-## IA y despliegue con proxy
-
-GitHub Pages ejecuta en navegador; por CORS conviene usar proxy.
-
-Flujo recomendado:
-
-1. Crear Cloudflare Worker.
-2. Pegar `cloudflare-worker.js`.
-3. Guardar `OLLAMA_API_KEY` como secreto del Worker.
-4. Publicar Worker.
-5. Configurar la URL del Worker en Ajustes IA de la app.
-=======
-=======
->>>>>>> theirs
-=======
->>>>>>> theirs
-# Nuevo Shopping (Android MVP)
-
-Aplicación Android para organizar compras por categorías y guardar múltiples URLs por cada producto.
-
-## Qué puedes probar manualmente
-
-La app ahora incluye **datos demo automáticos** para que al abrirla ya veas ejemplos reales:
-
-- Categorías: Ropa, Tecnología, Accesorios.
-- Productos ya creados dentro de cada categoría.
-- Links de distintas tiendas por producto.
-- Un botón para **restaurar los datos demo** y volver a empezar.
-- Botón para **abrir links** directamente desde la app.
-
-## Cómo testearla manualmente sin saber programar
-
-### Opción recomendada: con Android Studio
-
-1. Instala **Android Studio**.
-2. Abre este proyecto.
-3. Espera a que termine la sincronización.
-4. Crea o inicia un emulador Android.
-5. Pulsa el botón **Run**.
-6. Si prefieres instalar el APK manualmente, lo encontrarás en `app/build/outputs/apk/debug/app-debug.apk` después de compilar.
-7. Cuando se abra la app:
-   - toca una categoría,
-   - luego un producto,
-   - revisa sus links,
-   - prueba el botón `Abrir link`,
-   - y usa `Restaurar datos demo` si quieres reiniciar la prueba.
-
-## Ejecución local por consola
-
-```bash
-./gradlew tasks
-./gradlew :app:assembleDebug
+```
+peak-endurance/
+├── apps/web/              → Frontend React + Vite (v2)
+├── packages/ui/           → Tokens visuales y configuración compartida
+├── supabase/              → Esquema base de datos (schema.sql)
+├── workers/               → Workers edge para IA e integraciones
+├── docs/                  → Documentación de arquitectura
+├── index.html             → Referencia legacy del prototipo anterior
+├── cloudflare-worker.js   → Proxy legacy original
+├── frd.md                 → Documento de Requisitos Funcionales
+├── fdd.md                 → Documento de Diseño Funcional
+├── sdd peak endurance.md  → Especificación base del producto
+├── redesign.html          → Prototipo del rediseño Linear
+└── README.md              → Este archivo
 ```
 
-> Nota: necesitas Android SDK instalado y configurado (`ANDROID_HOME` o `ANDROID_SDK_ROOT`) para compilar.
+## 🧠 Stack tecnológico
 
-## Flujo manual de prueba sugerido
+| Capa | Tecnología |
+|------|-----------|
+| Frontend | React + TypeScript + Vite |
+| UI | Lucide React + CSS Modules (Linear tokens) |
+| Diseño | Linear-inspired (fondo `#08090a`, acento `#7170ff`) |
+| Backend | Supabase (PostgreSQL + Auth) |
+| IA/Proxy | Cloudflare Workers + Ollama/OpenRouter |
+| Automatización | Hermes Agent (MCP Strava + Cron) |
 
-1. Abrir la app.
-2. Ver la sección **Prueba manual rápida**.
-3. Seleccionar la categoría **Ropa**.
-4. Tocar el producto **Tenis blancos**.
-5. Abrir uno de sus links.
-6. Marcar el producto como comprado.
-7. Marcar otro link como preferido.
-8. Crear una categoría nueva.
-9. Crear un producto nuevo.
-10. Agregarle varios links.
-11. Pulsar **Restaurar datos demo** para volver al estado inicial.
+## 🏃 Plan 15K — 9 Semanas
 
-## Stack
+| Semana | Fechas | Fase | Volumen |
+|--------|--------|------|---------|
+| S1 | 16-22 Jun | Base | 15-20 km |
+| S2 | 23-29 Jun | Base | 18-22 km |
+| S3 | 30 Jun-6 Jul | Construcción | 22-28 km |
+| S4 | 7-13 Jul | Construcción | 25-30 km |
+| S5 | 14-20 Jul | Construcción | 28-33 km |
+| S6 | 21-27 Jul | Pico | 30-35 km |
+| S7 | 28 Jul-3 Ago | Pico | 28-32 km |
+| S8 | 4-10 Ago | Tapering | 20-25 km |
+| S9 | 11-16 Ago | Tapering + 🏁 15K | 10-15 km |
 
-- Kotlin
-- Jetpack Compose
-- Room
-- MVVM
+## 🔌 Conexiones deportivas
 
-## Arquitectura pensada para migrar a cloud
+- **Strava** ✅ Conectado vía MCP
+- **Garmin** 🟡 Próximamente
+- **Coros** 🟡 Próximamente
+- **iGPSPORT** 🟡 Próximamente
+- **Coospo** 🟡 Próximamente
 
-Se definió una abstracción `ShoppingDataSource` para no acoplar la UI a Room directamente. Esto facilita cambiar de almacenamiento local a almacenamiento remoto por cuenta sin reescribir toda la UI.
+## 📋 Documentos base
 
-## Siguiente fase recomendada
+| Documento | Descripción |
+|-----------|-------------|
+| `frd.md` | Requisitos funcionales del producto |
+| `fdd.md` | Diseño funcional y arquitectura |
+| `sdd peak endurance.md` | Especificación de diseño de software |
 
-- edición y borrado de datos
-- validación más fuerte de URLs
-- autenticación por cuenta
-- backend cloud compartido
-- futura web app para escritorio
-<<<<<<< ours
-<<<<<<< ours
->>>>>>> theirs
-=======
->>>>>>> theirs
-=======
->>>>>>> theirs
+## 🤖 Supervisión autónoma
+
+Hermes Agent ejecuta un cronjob semanal (lunes 8 AM) que:
+1. Lee actividades de Strava vía MCP
+2. Analiza ATL/CTL/TSB y carga semanal
+3. Compara plan vs ejecución real
+4. Genera reporte con recomendaciones de ajuste
+
+---
+
+*Versión: 1.1 — Actualizado: 18 de junio de 2026*

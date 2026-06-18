@@ -1,0 +1,43 @@
+Implementa SOLO la fase A en `C:/Users/fagua/Downloads/PROYECTOS DEV/peak-endurance/apps/web`.
+
+Objetivo:
+- quitar completamente el acceso demo/mock
+- implementar auth real con Supabase Magic Link
+- bloquear toda la app privada hasta tener sesión real
+- mantener build pasando
+
+NO hagas todavía el rediseño visual completo ni Strava real.
+
+Cambios obligatorios:
+1. Crear `src/lib/auth.ts`
+2. Crear `src/providers/AuthProvider.tsx`
+3. Crear `src/hooks/useAuth.ts`
+4. Crear `src/components/auth/MagicLinkForm.tsx`
+5. Crear `src/components/auth/AuthScreen.tsx`
+6. Crear `src/components/auth/AuthGuard.tsx`
+7. Modificar `src/main.tsx` para envolver App con AuthProvider
+8. Modificar `src/App.tsx` para:
+- eliminar defaults Andres / andres@peak.local
+- eliminar botón demo
+- eliminar `isAuthenticated` local y `onEnter(...)`
+- usar `useAuth()`
+- logout real con `signOut()`
+- no usar localStorage para simular auth
+- mostrar AuthScreen mientras no haya sesión
+9. Modificar `src/lib/i18n.ts`
+- eliminar copy demo
+- añadir textos reales de auth
+10. Modificar `src/lib/mock-data.ts`
+- Strava no conectado por defecto
+11. Modificar `src/lib/types.ts` si hace falta
+12. Modificar `.env.example` si hace falta
+
+Requisitos:
+- textos en español
+- TypeScript limpio
+- build final pasando
+- reportar archivos creados/modificados
+
+Validación obligatoria:
+- `rg -n "Andres|andres@peak.local|demo@peak.local|Entrar en demo|Enter demo" src`
+- `npm run build`
