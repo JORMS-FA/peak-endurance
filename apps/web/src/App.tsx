@@ -28,6 +28,7 @@ import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
 import { createAiProposal } from './lib/ai-engine'
 import { AuthGuard, SignOutButton } from './components/auth/AuthGuard'
 import { AuthScreen } from './components/auth/AuthScreen'
+import { ConnectStrava } from './components/strava/ConnectStrava'
 import { useAuth } from './hooks/useAuth'
 import { buildCoachContext } from './lib/context-builder'
 import { t } from './lib/i18n'
@@ -670,6 +671,7 @@ function ConnectionsPage({
     <section className="page-card">
       <div className="panel-head"><strong>{copy('connections')}</strong></div>
       <div className="connection-grid">
+        <ConnectStrava copy={copy} />
         {connections.map((connection) => (
           <article key={connection.source} className="connection-card">
             <div className="source-row">

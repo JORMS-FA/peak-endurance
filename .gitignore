@@ -32,3 +32,5 @@ modules/
 apps/web/.env.local
 redesign.html
 implementation.md
+supabase/.temp
+deploy-strava.bat

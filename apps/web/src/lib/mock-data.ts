@@ -12,7 +12,6 @@ export const calendarMonths = ['2026-06', '2026-07', '2026-08']
 export const raceDate = '2026-08-16'
 
 export const initialConnections: SourceConnection[] = [
-  { source: 'strava', label: 'Strava', status: 'coming_soon', lastSync: '', connected: false, color: '#5e6ad2' },
   { source: 'garmin', label: 'Garmin', status: 'coming_soon', lastSync: '', connected: false, color: '#53a4ff' },
   { source: 'coros', label: 'Coros', status: 'coming_soon', lastSync: '', connected: false, color: '#23d18b' },
   { source: 'igpsport', label: 'iGPSPORT', status: 'coming_soon', lastSync: '', connected: false, color: '#f6b31a' },
