@@ -1681,3 +1681,171 @@ ul {
     max-width: 460px;
   }
 }
+
+/* ============================================================
+   MISSING CLASSES — align CSS with component class names
+   ============================================================ */
+
+.signin-panel {
+  border-radius: var(--r-xl);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(108, 124, 255, 0.06));
+  border: 1px solid var(--line-strong);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  backdrop-filter: blur(18px);
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.brand-lockup {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.brand-logo.signin-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+}
+
+.magic-link-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.magic-link-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.magic-link-field > span {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.magic-link-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  min-height: var(--tap);
+  transition: border-color 0.15s ease;
+}
+
+.magic-link-input:focus-within {
+  border-color: var(--accent);
+}
+
+.magic-link-input input {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  font-size: 0.95rem;
+}
+
+.magic-link-input input:focus { background: transparent; }
+
+.magic-link-input svg {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.primary-button {
+  min-height: 52px;
+  border-radius: var(--r-md);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.96rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: -0.01em;
+  box-shadow: 0 6px 18px rgba(79, 96, 255, 0.35);
+  transition: transform 0.1s ease, background 0.15s ease;
+  border: 0;
+  cursor: pointer;
+  padding: 0 20px;
+}
+
+.primary-button:active {
+  transform: scale(0.98);
+}
+
+.primary-button:disabled {
+  background: var(--bg-3);
+  color: var(--muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.primary-button.full-width {
+  width: 100%;
+}
+
+.magic-link-message {
+  margin: 4px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  font-size: 0.82rem;
+  border: 1px solid var(--line);
+  background: var(--bg-1);
+  color: var(--text-2);
+}
+
+.magic-link-message.is-error {
+  border-color: rgba(255, 92, 108, 0.35);
+  background: rgba(255, 92, 108, 0.08);
+  color: #ffd0d6;
+}
+
+.magic-link-message.is-success {
+  border-color: rgba(61, 220, 151, 0.35);
+  background: rgba(61, 220, 151, 0.08);
+  color: #c2f4dc;
+}
+
+.magic-link-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.inline-switch {
+  margin-top: 8px;
+}
+
+.status-callout {
+  border-radius: var(--r-md);
+  padding: 12px;
+  font-size: 0.84rem;
+  color: var(--text-2);
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+}
+
+.status-callout[role="alert"] {
+  border-color: rgba(255, 92, 108, 0.35);
+  background: rgba(255, 92, 108, 0.08);
+  color: #ffd0d6;
+}
+
+.status-callout code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.8em;
+}
