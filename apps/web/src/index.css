@@ -1890,3 +1890,81 @@ ul {
   height: 1px;
   background: var(--line);
 }
+
+/* Login form (email + password) */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.login-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg-2);
+  padding: 0 12px;
+  transition: border-color 0.15s ease;
+}
+.login-input:focus-within {
+  border-color: var(--accent);
+}
+.login-input input {
+  border: none;
+  background: transparent;
+  padding: 12px 0;
+  outline: none;
+  flex: 1;
+  min-width: 0;
+}
+.login-input svg {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.login-message {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  font-size: 0.82rem;
+  border: 1px solid var(--line);
+  background: var(--bg-1);
+  color: var(--text-2);
+}
+.login-message.is-error {
+  border-color: rgba(255, 92, 108, 0.35);
+  background: rgba(255, 92, 108, 0.08);
+  color: #ffd0d6;
+}
+.login-message.is-success {
+  border-color: rgba(61, 220, 151, 0.35);
+  background: rgba(61, 220, 151, 0.08);
+  color: #c2f4dc;
+}
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.84rem;
+  cursor: pointer;
+  padding: 8px;
+  text-align: center;
+}
+.link-btn:hover {
+  text-decoration: underline;
+}
+.spin {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

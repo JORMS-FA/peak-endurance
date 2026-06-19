@@ -3,7 +3,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { appBrand, languages } from '../../lib/ui'
 import type { AppLanguage } from '../../lib/types'
 import peakLogo from '../../assets/peak-logo.png'
-import { MagicLinkForm } from './MagicLinkForm'
+import { LoginForm } from './LoginForm'
 import { supabase } from '../../lib/supabase'
 
 type Props = {
@@ -18,9 +18,7 @@ export function AuthScreen({ language, setLanguage }: Props) {
     if (!supabase) return
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: window.location.origin
-      }
+      options: { redirectTo: window.location.origin }
     })
   }
 
@@ -47,10 +45,10 @@ export function AuthScreen({ language, setLanguage }: Props) {
             </button>
 
             <div className="divider">
-              <span>o continúa con email</span>
+              <span>o con correo y contraseña</span>
             </div>
 
-            <MagicLinkForm />
+            <LoginForm />
           </>
         ) : (
           <div className="status-callout" role="alert">
