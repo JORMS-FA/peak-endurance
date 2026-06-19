@@ -1849,3 +1849,44 @@ ul {
   border-radius: 4px;
   font-size: 0.8em;
 }
+
+/* Google button */
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  border-radius: var(--r-md);
+  background: #fff;
+  color: #1a1a2e;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: 1px solid var(--line-strong);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.google-btn:active {
+  transform: scale(0.98);
+}
+.google-btn:hover {
+  background: #f0f0f5;
+}
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 4px 0;
+}
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
