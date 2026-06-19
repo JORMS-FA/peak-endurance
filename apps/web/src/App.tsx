@@ -27,7 +27,7 @@ import {
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
 import { createAiProposal } from './lib/ai-engine'
 import { AuthGuard, SignOutButton } from './components/auth/AuthGuard'
-import { AuthScreen } from './components/auth/AuthScreen'
+import { LandingPage } from './components/landing/LandingPage'
 import { ConnectStrava } from './components/strava/ConnectStrava'
 import { useAuth } from './hooks/useAuth'
 import { buildCoachContext } from './lib/context-builder'
@@ -135,7 +135,7 @@ function App() {
   }, [language, selectedDate, range, aiSettings, aiUsage, sessions, pendingAction, segments, hermes])
 
   if (!configured || status !== 'authenticated') {
-    return <AuthScreen language={language} setLanguage={setLanguage} />
+    return <LandingPage />
   }
 
   const copy = (key: Parameters<typeof t>[1]) => t(language, key)
@@ -183,7 +183,7 @@ function App() {
   }
 
   return (
-    <AuthGuard fallback={<AuthScreen language={language} setLanguage={setLanguage} />}>
+    <AuthGuard>
       <div className="app-shell">
       <main className="app-stage">
         <header className="top-header">
