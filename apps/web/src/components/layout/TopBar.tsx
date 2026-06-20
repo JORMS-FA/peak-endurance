@@ -5,11 +5,20 @@ import { useTheme } from '../../hooks/useTheme'
 import { LANGUAGES } from '../../lib/constants'
 import type { AppLanguage } from '../../lib/types'
 
+function isValidLang(val: string): val is AppLanguage {
+  return val === 'es' || val === 'en'
+}
+
 export function TopBar() {
   const { t } = useI18n()
   const { profile } = useAuth()
   const { language, setLanguage } = useTheme()
   const displayName = profile?.display_name ?? 'Atleta'
+
+  function handleLangChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const val = e.target.value
+    if (isValidLang(val)) setLanguage(val)
+  }
 
   return (
     <header className="topbar">
@@ -28,10 +37,7 @@ export function TopBar() {
         </button>
         <label className="lang-switch">
           <Globe size={14} />
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value as AppLanguage)}
-          >
+          <select value={language} onChange={handleLangChange}>
             {LANGUAGES.map((l) => (
               <option key={l.value} value={l.value}>{l.label}</option>
             ))}

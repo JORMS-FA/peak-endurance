@@ -1,10 +1,10 @@
 import { useI18n } from '../hooks/useI18n'
 
 const sources = [
-  { id: 'strava', name: 'Strava', color: '#fc4c02', status: 'available' as const },
-  { id: 'garmin', name: 'Garmin Connect', color: '#007dbb', status: 'coming_soon' as const },
-  { id: 'coros', name: 'COROS', color: '#23d18b', status: 'coming_soon' as const },
-  { id: 'wahoo', name: 'Wahoo', color: '#0068b5', status: 'coming_soon' as const },
+  { id: 'strava', name: 'Strava', color: '#fc4c02', status: 'available' },
+  { id: 'garmin', name: 'Garmin Connect', color: '#007dbb', status: 'coming_soon' },
+  { id: 'coros', name: 'COROS', color: '#23d18b', status: 'coming_soon' },
+  { id: 'wahoo', name: 'Wahoo', color: '#0068b5', status: 'coming_soon' },
 ]
 
 export function Connections() {

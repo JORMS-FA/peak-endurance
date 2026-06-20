@@ -8,11 +8,20 @@ import { LANGUAGES, APP_NAME } from '../../lib/constants'
 import { supabase } from '../../lib/supabase'
 import type { AppLanguage } from '../../lib/types'
 
+function isValidLang(val: string): val is AppLanguage {
+  return val === 'es' || val === 'en'
+}
+
 export function AuthScreen() {
   const { t } = useI18n()
   const { configured } = useAuth()
   const { language, setLanguage } = useTheme()
   const [mode, setMode] = useState<'magic' | 'password'>('magic')
+
+  function handleLangChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const val = e.target.value
+    if (isValidLang(val)) setLanguage(val)
+  }
 
   async function handleGoogleLogin() {
     if (!supabase) return
@@ -31,10 +40,7 @@ export function AuthScreen() {
         </div>
         <label className="lang-switch">
           <Globe size={14} />
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value as AppLanguage)}
-          >
+          <select value={language} onChange={handleLangChange}>
             {LANGUAGES.map((l) => (
               <option key={l.value} value={l.value}>{l.label}</option>
             ))}

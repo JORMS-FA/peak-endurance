@@ -5,8 +5,8 @@ import type { AuthProfile } from './types'
 const PROFILES_TABLE = 'profiles'
 
 function getSiteUrl(): string {
-  const fromEnv = import.meta.env.VITE_SITE_URL as string | undefined
-  if (fromEnv && fromEnv.trim().length > 0) return fromEnv.trim()
+  const fromEnv = import.meta.env.VITE_SITE_URL ?? ''
+  if (fromEnv.trim().length > 0) return fromEnv.trim()
   if (typeof window !== 'undefined' && window.location?.origin) {
     return window.location.origin
   }
@@ -107,7 +107,7 @@ export function subscribeToAuthChanges(
 
 function deriveDisplayName(user: User | null): string | null {
   if (!user) return null
-  const meta = (user.user_metadata ?? {}) as Record<string, unknown>
+  const meta: Record<string, unknown> = (user.user_metadata ?? {})
   const candidate =
     (typeof meta.full_name === 'string' && meta.full_name) ||
     (typeof meta.name === 'string' && meta.name) ||
@@ -147,10 +147,10 @@ export async function ensureProfile(user: User): Promise<AuthProfile | null> {
       created_at: null,
     }
   }
-  return (data as AuthProfile | null) ?? {
+  return (data ?? {
     id: user.id,
     email,
     display_name: displayName,
     created_at: null,
-  }
+  }) satisfies AuthProfile
 }

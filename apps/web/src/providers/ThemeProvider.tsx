@@ -12,23 +12,36 @@ export type ThemeContextValue = {
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null)
 
-function loadStored<T>(key: string, fallback: T): T {
+const VALID_THEMES: ThemeMode[] = ['dark', 'light', 'midnight', 'forest']
+const VALID_LANGS: AppLanguage[] = ['es', 'en']
+
+function loadTheme(): ThemeMode {
   try {
-    const raw = localStorage.getItem(key)
-    if (!raw) return fallback
-    return JSON.parse(raw) as T
+    const raw = localStorage.getItem(STORAGE_KEYS.theme)
+    if (!raw) return 'dark'
+    const parsed = JSON.parse(raw)
+    if (VALID_THEMES.includes(parsed)) return parsed
+    return 'dark'
   } catch {
-    return fallback
+    return 'dark'
+  }
+}
+
+function loadLanguage(): AppLanguage {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.language)
+    if (!raw) return 'es'
+    const parsed = JSON.parse(raw)
+    if (VALID_LANGS.includes(parsed)) return parsed
+    return 'es'
+  } catch {
+    return 'es'
   }
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>(() =>
-    loadStored(STORAGE_KEYS.theme, 'dark')
-  )
-  const [language, setLanguageState] = useState<AppLanguage>(() =>
-    loadStored(STORAGE_KEYS.language, 'es')
-  )
+  const [theme, setThemeState] = useState<ThemeMode>(loadTheme)
+  const [language, setLanguageState] = useState<AppLanguage>(loadLanguage)
 
   const setTheme = useCallback((t: ThemeMode) => {
     setThemeState(t)

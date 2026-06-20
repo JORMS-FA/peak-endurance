@@ -5,6 +5,14 @@ import { signOut } from '../lib/auth'
 import { THEMES, LANGUAGES } from '../lib/constants'
 import type { AppLanguage, ThemeMode } from '../lib/types'
 
+function isValidTheme(val: string): val is ThemeMode {
+  return ['dark', 'light', 'midnight', 'forest'].includes(val)
+}
+
+function isValidLang(val: string): val is AppLanguage {
+  return val === 'es' || val === 'en'
+}
+
 export function Settings() {
   const { t } = useI18n()
   const { theme, setTheme, language, setLanguage } = useTheme()
@@ -15,13 +23,21 @@ export function Settings() {
     await refresh()
   }
 
+  function handleThemeChange(val: string) {
+    if (isValidTheme(val)) setTheme(val)
+  }
+
+  function handleLangChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const val = e.target.value
+    if (isValidLang(val)) setLanguage(val)
+  }
+
   return (
     <div className="page-settings">
       <div className="page-header">
         <h2>{t('settings')}</h2>
       </div>
 
-      {/* Profile */}
       {profile && (
         <section className="card settings-section">
           <h3>{t('profile')}</h3>
@@ -37,7 +53,6 @@ export function Settings() {
         </section>
       )}
 
-      {/* Theme */}
       <section className="card settings-section">
         <h3>{t('theme')}</h3>
         <div className="theme-grid">
@@ -46,7 +61,7 @@ export function Settings() {
               key={th}
               type="button"
               className={`theme-option ${th === theme ? 'active' : ''}`}
-              onClick={() => setTheme(th as ThemeMode)}
+              onClick={() => handleThemeChange(th)}
             >
               <div className={`theme-preview theme-preview-${th}`} />
               <span>{th === 'dark' ? t('dark') : th === 'light' ? t('light') : th === 'midnight' ? t('midnight') : t('forest')}</span>
@@ -55,13 +70,12 @@ export function Settings() {
         </div>
       </section>
 
-      {/* Language */}
       <section className="card settings-section">
         <h3>{t('language')}</h3>
         <div className="settings-row">
           <select
             value={language}
-            onChange={(e) => setLanguage(e.target.value as AppLanguage)}
+            onChange={handleLangChange}
             className="settings-select"
           >
             {LANGUAGES.map((l) => (
@@ -71,7 +85,6 @@ export function Settings() {
         </div>
       </section>
 
-      {/* Status */}
       <section className="card settings-section">
         <h3>Estado del sistema</h3>
         <div className="settings-status">
@@ -88,7 +101,6 @@ export function Settings() {
         </div>
       </section>
 
-      {/* Sign Out */}
       <button type="button" className="btn-danger" onClick={handleSignOut}>
         {t('signOut')}
       </button>
