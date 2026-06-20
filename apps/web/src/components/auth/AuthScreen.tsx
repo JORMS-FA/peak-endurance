@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Globe, Mountain } from 'lucide-react'
-import { MagicLinkForm } from './MagicLinkForm'
 import { useTheme } from '../../hooks/useTheme'
 import { useAuth } from '../../hooks/useAuth'
 import { useI18n } from '../../hooks/useI18n'
@@ -16,7 +15,6 @@ export function AuthScreen() {
   const { t } = useI18n()
   const { configured } = useAuth()
   const { language, setLanguage } = useTheme()
-  const [mode, setMode] = useState<'magic' | 'password'>('magic')
 
   function handleLangChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const val = e.target.value
@@ -27,7 +25,7 @@ export function AuthScreen() {
     if (!supabase) return
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: window.location.origin + '/app' },
     })
   }
 
@@ -76,29 +74,7 @@ export function AuthScreen() {
                 <span>{t('orContinueWith')}</span>
               </div>
 
-              {mode === 'magic' ? (
-                <>
-                  <MagicLinkForm />
-                  <button
-                    type="button"
-                    className="auth-toggle"
-                    onClick={() => setMode('password')}
-                  >
-                    {t('signIn')} con contrasena
-                  </button>
-                </>
-              ) : (
-                <>
-                  <PasswordForm />
-                  <button
-                    type="button"
-                    className="auth-toggle"
-                    onClick={() => setMode('magic')}
-                  >
-                    {t('sendMagicLink')}
-                  </button>
-                </>
-              )}
+              <PasswordForm />
             </>
           )}
         </div>

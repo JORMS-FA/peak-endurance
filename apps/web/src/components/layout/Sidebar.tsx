@@ -39,6 +39,7 @@ export function Sidebar() {
             <NavLink
               key={item.id}
               to={item.path}
+              end={item.path === '/app'}
               className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
             >
               <Icon size={18} />

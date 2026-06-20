@@ -19,6 +19,7 @@ export function MobileNav() {
           <NavLink
             key={item.id}
             to={item.path}
+            end={item.path === '/app'}
             className={({ isActive }) => `mobile-nav-item${isActive ? ' active' : ''}`}
           >
             <Icon size={20} />

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
+import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import { AuthScreen } from './AuthScreen'
 
 export function AuthGuard({ children }: { children: ReactNode }) {
   const { status, configured } = useAuth()
@@ -15,9 +15,9 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     )
   }
 
-  // Not authenticated or not configured -> show auth screen
+  // Not authenticated or not configured -> redirect to login
   if (!configured || status !== 'authenticated') {
-    return <AuthScreen />
+    return <Navigate to="/login" replace />
   }
 
   return <>{children}</>

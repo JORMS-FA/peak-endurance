@@ -27,30 +27,6 @@ export async function getCurrentSession(): Promise<Session | null> {
   return data.session
 }
 
-export async function sendMagicLink(
-  email: string
-): Promise<{ ok: true } | { ok: false; message: string }> {
-  if (!supabase) {
-    return { ok: false, message: 'Supabase is not configured.' }
-  }
-  const trimmed = email.trim().toLowerCase()
-  if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-    return { ok: false, message: 'Enter a valid email address.' }
-  }
-  const redirectTo = `${getSiteUrl()}/auth/callback`
-  const { error } = await supabase.auth.signInWithOtp({
-    email: trimmed,
-    options: {
-      emailRedirectTo: redirectTo,
-      shouldCreateUser: true,
-    },
-  })
-  if (error) {
-    return { ok: false, message: error.message }
-  }
-  return { ok: true }
-}
-
 export async function signInWithPassword(
   email: string,
   password: string
