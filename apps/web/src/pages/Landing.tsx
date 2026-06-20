@@ -19,7 +19,7 @@ export function Landing() {
     <div className="landing-page">
       <header className="landing-header">
         <div className="landing-brand">
-          <Mountain size={24} />
+          <Mountain size={22} />
           <span>{APP_NAME}</span>
         </div>
         <nav className="landing-nav">
@@ -57,46 +57,46 @@ export function Landing() {
       </section>
 
       <section className="landing-features">
-        <h2>{t('featuresTitle')}</h2>
-        <div className="landing-features-grid">
-          <div className="landing-feature-card">
+        <h2 className="reveal">{t('featuresTitle')}</h2>
+        <div className="landing-features-grid stagger-children">
+          <div className="landing-feature-card reveal">
             <div className="landing-feature-icon">
-              <Brain size={24} />
+              <Brain size={22} />
             </div>
             <h3>{t('featureAiCoach')}</h3>
             <p>{t('featureAiCoachDesc')}</p>
           </div>
-          <div className="landing-feature-card">
+          <div className="landing-feature-card reveal">
             <div className="landing-feature-icon">
-              <LineChart size={24} />
+              <LineChart size={22} />
             </div>
             <h3>{t('featureAnalysis')}</h3>
             <p>{t('featureAnalysisDesc')}</p>
           </div>
-          <div className="landing-feature-card">
+          <div className="landing-feature-card reveal">
             <div className="landing-feature-icon">
-              <Zap size={24} />
+              <Zap size={22} />
             </div>
             <h3>{t('featureTraining')}</h3>
             <p>{t('featureTrainingDesc')}</p>
           </div>
-          <div className="landing-feature-card">
+          <div className="landing-feature-card reveal">
             <div className="landing-feature-icon">
-              <Trophy size={24} />
+              <Trophy size={22} />
             </div>
             <h3>{t('featureProgress')}</h3>
             <p>{t('featureProgressDesc')}</p>
           </div>
-          <div className="landing-feature-card">
+          <div className="landing-feature-card reveal">
             <div className="landing-feature-icon">
-              <Clock size={24} />
+              <Clock size={22} />
             </div>
             <h3>{t('featureCalendar')}</h3>
             <p>{t('featureCalendarDesc')}</p>
           </div>
-          <div className="landing-feature-card">
+          <div className="landing-feature-card reveal">
             <div className="landing-feature-icon">
-              <Shield size={24} />
+              <Shield size={22} />
             </div>
             <h3>{t('featureConnections')}</h3>
             <p>{t('featureConnectionsDesc')}</p>
@@ -105,8 +105,8 @@ export function Landing() {
       </section>
 
       <section className="landing-pricing">
-        <h2>{t('pricingTitle')}</h2>
-        <div className="landing-pricing-card">
+        <h2 className="reveal">{t('pricingTitle')}</h2>
+        <div className="landing-pricing-card reveal-scale">
           <div className="landing-pricing-amount">
             <span className="landing-price">$10</span>
             <span className="landing-price-period">USD / {t('pricingMonth')}</span>
@@ -127,7 +127,7 @@ export function Landing() {
         </div>
       </section>
 
-      <footer className="landing-footer">
+      <footer className="landing-footer reveal-fade">
         <p>&copy; 2025 {APP_NAME}. {t('allRightsReserved')}</p>
       </footer>
     </div>

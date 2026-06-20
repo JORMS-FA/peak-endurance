@@ -1507,49 +1507,74 @@ input, select, textarea { font: inherit; color: inherit; }
   display: flex;
   flex-direction: column;
   background: var(--bg-0);
+  overflow-x: hidden;
 }
 
 .landing-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 12px 16px;
   position: sticky;
   top: 0;
   z-index: 30;
   background: var(--surface-overlay);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
+  gap: 12px;
 }
 
 .landing-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   color: var(--text);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .landing-brand svg {
   color: var(--accent);
+  flex-shrink: 0;
 }
 
 .landing-nav {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.landing-nav .btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 
 .landing-hero {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px 60px;
+  padding: 48px 16px 40px;
   text-align: center;
-  background:
-    radial-gradient(600px 300px at 50% 0%, var(--accent-soft), transparent 70%),
-    var(--bg-0);
+  position: relative;
+  background: var(--bg-0);
+}
+
+.landing-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 600px;
+  height: 300px;
+  background: radial-gradient(ellipse at center top, var(--accent-soft), transparent 70%);
+  pointer-events: none;
+  opacity: 0.8;
 }
 
 .landing-hero-content {
@@ -1557,44 +1582,47 @@ input, select, textarea { font: inherit; color: inherit; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
 }
 
 .landing-hero-content h1 {
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.03em;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   color: var(--text);
+  max-width: 320px;
 }
 
 .landing-hero-content p {
-  font-size: 1.05rem;
+  font-size: 0.92rem;
   color: var(--text-2);
   line-height: 1.6;
-  max-width: 500px;
+  max-width: 320px;
 }
 
 .landing-hero-actions {
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .landing-features {
-  padding: 60px 20px;
+  padding: 48px 16px;
 }
 
 .landing-features h2 {
   text-align: center;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 700;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   color: var(--text);
 }
 
 .landing-features-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 12px;
   max-width: 1000px;
   margin: 0 auto;
 }
@@ -1603,15 +1631,21 @@ input, select, textarea { font: inherit; color: inherit; }
   background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 24px 20px;
+  padding: 20px 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.landing-feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .landing-feature-icon {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
   background: var(--accent-soft);
   display: grid;
@@ -1620,28 +1654,28 @@ input, select, textarea { font: inherit; color: inherit; }
 }
 
 .landing-feature-card h3 {
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 600;
   color: var(--text);
 }
 
 .landing-feature-card p {
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
   line-height: 1.5;
 }
 
 .landing-pricing {
-  padding: 60px 20px;
+  padding: 48px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .landing-pricing h2 {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 700;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   text-align: center;
   color: var(--text);
 }
@@ -1650,14 +1684,26 @@ input, select, textarea { font: inherit; color: inherit; }
   background: var(--surface-raised);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-xl);
-  padding: 32px 28px;
-  max-width: 400px;
+  padding: 28px 24px;
+  max-width: 380px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
   box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-pricing-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
 }
 
 .landing-pricing-amount {
@@ -1667,14 +1713,14 @@ input, select, textarea { font: inherit; color: inherit; }
 }
 
 .landing-price {
-  font-size: 3rem;
+  font-size: 2.5rem;
   font-weight: 800;
   color: var(--accent);
   letter-spacing: -0.03em;
 }
 
 .landing-price-period {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: var(--text-muted);
   font-weight: 500;
 }
@@ -1683,7 +1729,7 @@ input, select, textarea { font: inherit; color: inherit; }
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   padding: 0;
 }
 
@@ -1691,7 +1737,7 @@ input, select, textarea { font: inherit; color: inherit; }
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.92rem;
+  font-size: 0.85rem;
   color: var(--text-2);
 }
 
@@ -1705,20 +1751,28 @@ input, select, textarea { font: inherit; color: inherit; }
 }
 
 .landing-footer {
-  padding: 32px 20px;
+  padding: 28px 16px;
   text-align: center;
   border-top: 1px solid var(--border);
   margin-top: auto;
 }
 
 .landing-footer p {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
 }
 
 /* ═══════════════════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════ */
+
+/* Small phones (max-width: 374px) */
+@media (max-width: 374px) {
+  .landing-hero-content h1 { font-size: 1.4rem; max-width: 280px; }
+  .landing-hero-content p { font-size: 0.85rem; max-width: 280px; }
+  .landing-brand span { font-size: 0.85rem; }
+  .landing-nav .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
+}
 
 /* Tablet */
 @media (min-width: 768px) {
@@ -1733,12 +1787,20 @@ input, select, textarea { font: inherit; color: inherit; }
   .theme-grid { grid-template-columns: repeat(4, 1fr); }
   .progress-cards { grid-template-columns: repeat(3, 1fr); }
 
-  /* Landing responsive */
-  .landing-hero { padding: 100px 40px 80px; }
-  .landing-hero-content h1 { font-size: 2.8rem; }
-  .landing-features-grid { grid-template-columns: repeat(2, 1fr); }
-  .landing-features { padding: 80px 40px; }
-  .landing-pricing { padding: 80px 40px; }
+  /* Landing responsive - tablet */
+  .landing-header { padding: 16px 32px; }
+  .landing-brand { font-size: 1.1rem; gap: 8px; }
+  .landing-nav { gap: 10px; }
+  .landing-nav .btn-sm { padding: 8px 16px; font-size: 0.85rem; }
+  .landing-hero { padding: 80px 40px 64px; }
+  .landing-hero-content h1 { font-size: 2.4rem; max-width: 520px; }
+  .landing-hero-content p { font-size: 1rem; max-width: 440px; }
+  .landing-features-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .landing-features { padding: 64px 32px; }
+  .landing-features h2 { font-size: 1.5rem; margin-bottom: 32px; }
+  .landing-pricing { padding: 64px 32px; }
+  .landing-pricing h2 { font-size: 1.5rem; }
+  .landing-price { font-size: 3rem; }
 }
 
 /* Desktop */
@@ -1748,9 +1810,17 @@ input, select, textarea { font: inherit; color: inherit; }
   .hero-content h2 { font-size: 1.8rem; }
 
   /* Landing desktop */
-  .landing-hero-content h1 { font-size: 3.2rem; }
-  .landing-features-grid { grid-template-columns: repeat(3, 1fr); }
-  .landing-header { padding: 16px 40px; }
+  .landing-header { padding: 16px 48px; }
+  .landing-hero { padding: 100px 48px 80px; }
+  .landing-hero-content h1 { font-size: 3.2rem; max-width: 640px; }
+  .landing-hero-content p { font-size: 1.1rem; max-width: 500px; }
+  .landing-features-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .landing-features { padding: 80px 48px; }
+  .landing-features h2 { font-size: 1.8rem; }
+  .landing-pricing { padding: 80px 48px; }
+  .landing-pricing h2 { font-size: 1.8rem; }
+  .landing-pricing-card { padding: 36px 32px; }
+  .landing-feature-card { padding: 28px 24px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1773,4 +1843,269 @@ input, select, textarea { font: inherit; color: inherit; }
 .page-segments,
 .page-settings {
   animation: fadeIn 0.3s ease both;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SCROLL-TRIGGERED ANIMATIONS (IntersectionObserver)
+   Professional reveal system: fade, slide, scale, stagger
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Base state for all reveal elements - hidden until observed */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Slide from left */
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Slide from right */
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Scale up from center */
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.9);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Fade in only (no transform) */
+.reveal-fade {
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity;
+}
+
+.reveal-fade.visible {
+  opacity: 1;
+}
+
+/* Slide from bottom with more distance */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(48px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Rotate in slightly */
+.reveal-rotate {
+  opacity: 0;
+  transform: translateY(24px) rotate(2deg);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-rotate.visible {
+  opacity: 1;
+  transform: translateY(0) rotate(0deg);
+}
+
+/* Stagger delays for child elements in a grid/list */
+.stagger-children > .reveal:nth-child(1),
+.stagger-children > .reveal-left:nth-child(1),
+.stagger-children > .reveal-right:nth-child(1),
+.stagger-children > .reveal-scale:nth-child(1),
+.stagger-children > .reveal-up:nth-child(1) {
+  transition-delay: 0ms;
+}
+
+.stagger-children > .reveal:nth-child(2),
+.stagger-children > .reveal-left:nth-child(2),
+.stagger-children > .reveal-right:nth-child(2),
+.stagger-children > .reveal-scale:nth-child(2),
+.stagger-children > .reveal-up:nth-child(2) {
+  transition-delay: 80ms;
+}
+
+.stagger-children > .reveal:nth-child(3),
+.stagger-children > .reveal-left:nth-child(3),
+.stagger-children > .reveal-right:nth-child(3),
+.stagger-children > .reveal-scale:nth-child(3),
+.stagger-children > .reveal-up:nth-child(3) {
+  transition-delay: 160ms;
+}
+
+.stagger-children > .reveal:nth-child(4),
+.stagger-children > .reveal-left:nth-child(4),
+.stagger-children > .reveal-right:nth-child(4),
+.stagger-children > .reveal-scale:nth-child(4),
+.stagger-children > .reveal-up:nth-child(4) {
+  transition-delay: 240ms;
+}
+
+.stagger-children > .reveal:nth-child(5),
+.stagger-children > .reveal-left:nth-child(5),
+.stagger-children > .reveal-right:nth-child(5),
+.stagger-children > .reveal-scale:nth-child(5),
+.stagger-children > .reveal-up:nth-child(5) {
+  transition-delay: 320ms;
+}
+
+.stagger-children > .reveal:nth-child(6),
+.stagger-children > .reveal-left:nth-child(6),
+.stagger-children > .reveal-right:nth-child(6),
+.stagger-children > .reveal-scale:nth-child(6),
+.stagger-children > .reveal-up:nth-child(6) {
+  transition-delay: 400ms;
+}
+
+/* Delay modifiers for manual control */
+.delay-100 { transition-delay: 100ms !important; }
+.delay-200 { transition-delay: 200ms !important; }
+.delay-300 { transition-delay: 300ms !important; }
+.delay-400 { transition-delay: 400ms !important; }
+.delay-500 { transition-delay: 500ms !important; }
+
+/* Hero-specific entrance (plays immediately, no observer needed) */
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroFadeScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes heroGlow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.landing-hero-content h1 {
+  animation: heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.landing-hero-content p {
+  animation: heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+}
+
+.landing-hero-actions {
+  animation: heroFadeScale 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+}
+
+.landing-hero::before {
+  animation: heroGlow 4s ease-in-out infinite;
+}
+
+/* Pricing card glow animation on reveal */
+.landing-pricing-card.visible {
+  animation: pricingGlow 0.6s ease-out 0.3s both;
+}
+
+@keyframes pricingGlow {
+  from { box-shadow: var(--shadow-lg); }
+  to { box-shadow: var(--shadow-glow); }
+}
+
+/* Parallax-like floating animation for feature icons */
+.landing-feature-card.visible .landing-feature-icon {
+  animation: iconFloat 3s ease-in-out infinite;
+  animation-delay: var(--float-delay, 0s);
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.landing-feature-card:nth-child(1) { --float-delay: 0s; }
+.landing-feature-card:nth-child(2) { --float-delay: 0.5s; }
+.landing-feature-card:nth-child(3) { --float-delay: 1s; }
+.landing-feature-card:nth-child(4) { --float-delay: 1.5s; }
+.landing-feature-card:nth-child(5) { --float-delay: 2s; }
+.landing-feature-card:nth-child(6) { --float-delay: 2.5s; }
+
+/* Reduced motion: respect user preferences */
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale,
+  .reveal-fade,
+  .reveal-up,
+  .reveal-rotate {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .landing-hero-content h1,
+  .landing-hero-content p,
+  .landing-hero-actions {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .landing-hero::before {
+    animation: none;
+  }
+
+  .landing-feature-card.visible .landing-feature-icon {
+    animation: none;
+  }
 }
