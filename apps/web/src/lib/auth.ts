@@ -5,12 +5,12 @@ import type { AuthProfile } from './types'
 const PROFILES_TABLE = 'profiles'
 
 function getSiteUrl(): string {
-  const fromEnv = import.meta.env.VITE_SITE_URL
-  if (fromEnv && fromEnv.trim().length > 0) return fromEnv.trim()
+  const fromEnv = import.meta.env.VITE_SITE_URL ?? ''
+  if (fromEnv.trim().length > 0) return fromEnv.trim()
   if (typeof window !== 'undefined' && window.location?.origin) {
     return window.location.origin
   }
-  return 'http://localhost:5173'
+  return 'http://localhost:4173'
 }
 
 export function isAuthConfigured(): boolean {
@@ -27,13 +27,15 @@ export async function getCurrentSession(): Promise<Session | null> {
   return data.session
 }
 
-export async function sendMagicLink(email: string): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function sendMagicLink(
+  email: string
+): Promise<{ ok: true } | { ok: false; message: string }> {
   if (!supabase) {
-    return { ok: false, error: 'Supabase no está configurado.' }
+    return { ok: false, message: 'Supabase is not configured.' }
   }
   const trimmed = email.trim().toLowerCase()
   if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-    return { ok: false, error: 'Ingresa un correo electrónico válido.' }
+    return { ok: false, message: 'Enter a valid email address.' }
   }
   const redirectTo = `${getSiteUrl()}/auth/callback`
   const { error } = await supabase.auth.signInWithOtp({
@@ -44,7 +46,43 @@ export async function sendMagicLink(email: string): Promise<{ ok: true } | { ok:
     },
   })
   if (error) {
-    return { ok: false, error: error.message }
+    return { ok: false, message: error.message }
+  }
+  return { ok: true }
+}
+
+export async function signInWithPassword(
+  email: string,
+  password: string
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  if (!supabase) {
+    return { ok: false, message: 'Supabase is not configured.' }
+  }
+  const { error } = await supabase.auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
+    password,
+  })
+  if (error) {
+    return { ok: false, message: error.message }
+  }
+  return { ok: true }
+}
+
+export async function signUpWithPassword(
+  email: string,
+  password: string
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  if (!supabase) {
+    return { ok: false, message: 'Supabase is not configured.' }
+  }
+  const redirectTo = `${getSiteUrl()}/auth/callback`
+  const { error } = await supabase.auth.signUp({
+    email: email.trim().toLowerCase(),
+    password,
+    options: { emailRedirectTo: redirectTo },
+  })
+  if (error) {
+    return { ok: false, message: error.message }
   }
   return { ok: true }
 }
@@ -58,7 +96,7 @@ export async function signOut(): Promise<void> {
 }
 
 export function subscribeToAuthChanges(
-  callback: (session: Session | null) => void,
+  callback: (session: Session | null) => void
 ): Subscription | null {
   if (!supabase) return null
   const { data } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -69,7 +107,7 @@ export function subscribeToAuthChanges(
 
 function deriveDisplayName(user: User | null): string | null {
   if (!user) return null
-  const meta = (user.user_metadata ?? {}) as Record<string, unknown>
+  const meta: Record<string, unknown> = (user.user_metadata ?? {})
   const candidate =
     (typeof meta.full_name === 'string' && meta.full_name) ||
     (typeof meta.name === 'string' && meta.name) ||
@@ -81,20 +119,6 @@ function deriveDisplayName(user: User | null): string | null {
     if (local.length > 0) return local
   }
   return null
-}
-
-export async function fetchProfile(userId: string): Promise<AuthProfile | null> {
-  if (!supabase) return null
-  const { data, error } = await supabase
-    .from(PROFILES_TABLE)
-    .select('id, email, display_name, created_at')
-    .eq('id', userId)
-    .maybeSingle()
-  if (error) {
-    console.warn('[auth] fetchProfile error:', error.message)
-    return null
-  }
-  return data as AuthProfile | null
 }
 
 export async function ensureProfile(user: User): Promise<AuthProfile | null> {
@@ -116,12 +140,17 @@ export async function ensureProfile(user: User): Promise<AuthProfile | null> {
 
   if (error) {
     console.warn('[auth] ensureProfile error:', error.message)
-    return null
+    return {
+      id: user.id,
+      email,
+      display_name: displayName,
+      created_at: null,
+    }
   }
-  return (data as AuthProfile | null) ?? {
+  return (data ?? {
     id: user.id,
     email,
     display_name: displayName,
     created_at: null,
-  }
+  }) satisfies AuthProfile
 }

@@ -1,54 +1,24 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { ArrowRight, CheckCircle2, Mail, TriangleAlert } from 'lucide-react'
-import { getSiteUrl } from '../../providers/AuthProvider'
+import { Mail, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { sendMagicLink } from '../../lib/auth'
+import { useI18n } from '../../hooks/useI18n'
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-export type MagicLinkFormProps = {
-  configured: boolean
-  configuredLabel: string
-  emailLabel: string
-  emailPlaceholder: string
-  submitLabel: string
-  successHeadline: string
-  successHint: string
-  invalidEmailMessage: string
-  defaultEmail?: string
-}
-
-export function MagicLinkForm({
-  configured,
-  configuredLabel,
-  emailLabel,
-  emailPlaceholder,
-  submitLabel,
-  successHeadline,
-  successHint,
-  invalidEmailMessage,
-  defaultEmail = '',
-}: MagicLinkFormProps) {
-  const [email, setEmail] = useState(defaultEmail)
+export function MagicLinkForm() {
+  const { t } = useI18n()
+  const [email, setEmail] = useState('')
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (!configured) {
-      setError('Supabase no está configurado en este entorno.')
-      return
-    }
-    const trimmed = email.trim()
-    if (!EMAIL_REGEX.test(trimmed)) {
-      setError(invalidEmailMessage)
-      return
-    }
-    setSending(true)
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault()
     setError(null)
-    const result = await sendMagicLink(trimmed, getSiteUrl())
+    setSending(true)
+
+    const result = await sendMagicLink(email)
     setSending(false)
+
     if (!result.ok) {
       setError(result.message)
       return
@@ -58,57 +28,33 @@ export function MagicLinkForm({
 
   if (sent) {
     return (
-      <div className="magic-success" role="status">
-        <div className="magic-success-icon" aria-hidden="true">
-          <CheckCircle2 size={28} />
-        </div>
-        <div className="magic-success-copy">
-          <strong>{successHeadline}</strong>
-          <small>{successHint.replace('{email}', email.trim())}</small>
-        </div>
+      <div className="form-success">
+        <CheckCircle2 size={24} />
+        <p>{t('magicLinkSent')}</p>
       </div>
     )
   }
 
   return (
-    <form className="magic-form" onSubmit={onSubmit} noValidate>
-      <label className="magic-label">
-        <span>{emailLabel}</span>
-        <div className="magic-input">
-          <Mail size={18} aria-hidden="true" />
+    <form className="auth-form" onSubmit={onSubmit}>
+      <label className="form-field">
+        <span>{t('email')}</span>
+        <div className="input-with-icon">
+          <Mail size={16} />
           <input
             type="email"
-            inputMode="email"
-            autoComplete="email"
-            placeholder={emailPlaceholder}
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            disabled={!configured || sending}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="tu@correo.com"
+            autoComplete="email"
             required
           />
         </div>
       </label>
-
-      {!configured ? (
-        <div className="magic-warning">
-          <TriangleAlert size={16} aria-hidden="true" />
-          <span>{configuredLabel}</span>
-        </div>
-      ) : null}
-
-      {error ? (
-        <div className="magic-error" role="alert">
-          {error}
-        </div>
-      ) : null}
-
-      <button
-        type="submit"
-        className="magic-submit"
-        disabled={!configured || sending}
-      >
-        <span>{sending ? 'Enviando…' : submitLabel}</span>
-        <ArrowRight size={18} aria-hidden="true" />
+      {error && <div className="form-error">{error}</div>}
+      <button type="submit" className="btn-primary" disabled={sending}>
+        <span>{sending ? t('sending') : t('sendMagicLink')}</span>
+        <ArrowRight size={16} />
       </button>
     </form>
   )
