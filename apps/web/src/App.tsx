@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import { AppLayout } from './components/layout/AppLayout'
 import { AuthGuard } from './components/auth/AuthGuard'
 import { AuthScreen } from './components/auth/AuthScreen'
@@ -16,27 +17,30 @@ import { Settings } from './pages/Settings'
 
 export default function App() {
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<AuthScreen />} />
+    <>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<AuthScreen />} />
 
-      {/* Protected app routes */}
-      <Route path="/app" element={<AuthGuard><AppLayout /></AuthGuard>}>
-        <Route index element={<Dashboard />} />
-        <Route path="calendario" element={<Calendar />} />
-        <Route path="entrenamientos" element={<Training />} />
-        <Route path="plan" element={<Plan />} />
-        <Route path="ia-coach" element={<AiCoach />} />
-        <Route path="analisis" element={<Analysis />} />
-        <Route path="progreso" element={<Progress />} />
-        <Route path="conexiones" element={<Connections />} />
-        <Route path="segmentos" element={<Segments />} />
-        <Route path="ajustes" element={<Settings />} />
-      </Route>
+        {/* Protected app routes */}
+        <Route path="/app" element={<AuthGuard><AppLayout /></AuthGuard>}>
+          <Route index element={<Dashboard />} />
+          <Route path="calendario" element={<Calendar />} />
+          <Route path="entrenamientos" element={<Training />} />
+          <Route path="plan" element={<Plan />} />
+          <Route path="ia-coach" element={<AiCoach />} />
+          <Route path="analisis" element={<Analysis />} />
+          <Route path="progreso" element={<Progress />} />
+          <Route path="conexiones" element={<Connections />} />
+          <Route path="segmentos" element={<Segments />} />
+          <Route path="ajustes" element={<Settings />} />
+        </Route>
 
-      {/* Catch-all redirect */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Catch-all redirect */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <Analytics />
+    </>
   )
 }
