@@ -1,75 +1,83 @@
+// ─── Core App Types ───────────────────────────────────────────────────────────
+
 export type AppLanguage = 'es' | 'en'
-export type SourceType = 'strava' | 'garmin' | 'coros' | 'igpsport' | 'coospo'
-export type ZonePrecision = 'real' | 'estimated' | 'insufficient'
-export type SessionStatus = 'planned' | 'completed' | 'recovery' | 'race'
-export type AiActionKind = 'analyze_week' | 'adjust_plan' | 'detect_fatigue'
+export type ThemeMode = 'dark' | 'light' | 'midnight' | 'forest'
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export type AuthProfile = {
   id: string
-  email: string
-  displayName: string
-  avatarUrl: string | null
+  email: string | null
+  display_name: string | null
+  created_at: string | null
 }
 
-export type AthleteUser = {
-  name: string
-  email: string
-  role: string
-}
+// ─── Training ─────────────────────────────────────────────────────────────────
 
-export type SourceConnection = {
-  source: SourceType
-  label: string
-  status: 'connected' | 'coming_soon'
-  lastSync: string
-  connected: boolean
-  color: string
-}
+export type SessionStatus = 'planned' | 'completed' | 'skipped'
+export type SessionIntensity = 'low' | 'moderate' | 'high' | 'rest'
+export type SportType = 'run' | 'bike' | 'swim' | 'gym' | 'rest' | 'race' | 'other'
 
 export type TrainingSession = {
   id: string
+  user_id: string
   date: string
   title: string
-  sport: string
-  durationMinutes: number
+  sport: SportType
+  duration_minutes: number
   tss: number
   status: SessionStatus
-  intensity: 'low' | 'moderate' | 'high' | 'rest'
+  intensity: SessionIntensity
   notes: string
+  created_at: string
 }
 
-export type ImportedActivity = {
+// ─── Activities (from connected sources) ──────────────────────────────────────
+
+export type SourceType = 'strava' | 'garmin' | 'coros' | 'manual'
+export type ZonePrecision = 'real' | 'estimated' | 'insufficient'
+
+export type Activity = {
   id: string
-  sourceType: SourceType
+  user_id: string
+  source: SourceType
+  external_id: string | null
   title: string
   date: string
-  sport: string
-  durationMinutes: number
-  distanceKm: number
+  sport: SportType
+  duration_minutes: number
+  distance_km: number
   tss: number
-  avgHr: number
-  maxHr: number
-  elevationGain: number
-  zoneBreakdown: Record<'z1' | 'z2' | 'z3' | 'z4' | 'z5', number>
-  zonePrecision: ZonePrecision
+  avg_hr: number | null
+  max_hr: number | null
+  elevation_gain: number
+  zone_precision: ZonePrecision
+  zones: Record<string, number> | null
+  created_at: string
 }
+
+// ─── Connections ──────────────────────────────────────────────────────────────
+
+export type ConnectionStatus = 'connected' | 'disconnected' | 'coming_soon'
+
+export type SourceConnection = {
+  id: string
+  source: SourceType
+  label: string
+  status: ConnectionStatus
+  last_sync: string | null
+  color: string
+}
+
+// ─── AI Coach ─────────────────────────────────────────────────────────────────
+
+export type AiActionKind = 'analyze_week' | 'adjust_plan' | 'detect_fatigue'
 
 export type AiSettings = {
   tone: 'direct' | 'supportive'
   autonomy: 'proposal-only' | 'confirm-required'
   equipment: string
-  extraContext: string
-}
-
-export type AiUsage = {
-  used: number
-  limit: number
-  plan: 'free' | 'pro'
-}
-
-export type DateRange = {
-  start: string
-  end: string
+  extra_context: string
 }
 
 export type PendingAiAction = {
@@ -79,25 +87,31 @@ export type PendingAiAction = {
   summary: string
   reason: string
   impact: string
-  needsConfirmation: boolean
-  sessionEdits: Array<{
-    sessionId: string
+  needs_confirmation: boolean
+  session_edits: Array<{
+    session_id: string
     patch: Partial<TrainingSession>
   }>
 }
 
+// ─── Segments ─────────────────────────────────────────────────────────────────
+
 export type StravaSegment = {
   id: string
   name: string
-  distanceKm: number
-  elevationGain: number
+  distance_km: number
+  elevation_gain: number
   effort: string
   starred: boolean
   sport: 'running' | 'riding'
 }
 
-export type HermesStatus = {
-  connected: boolean
-  stravaConnected: boolean
-  weeklyReportEnabled: boolean
+// ─── Navigation ───────────────────────────────────────────────────────────────
+
+export type NavItem = {
+  id: string
+  path: string
+  icon: string
+  label_es: string
+  label_en: string
 }

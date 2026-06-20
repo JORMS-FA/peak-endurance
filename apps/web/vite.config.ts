@@ -13,4 +13,17 @@ export default defineConfig({
     host: true,
     port: 4173,
   },
+  build: {
+    target: 'es2022',
+    outDir: 'dist',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          icons: ['lucide-react'],
+        },
+      },
+    },
+  },
 })
