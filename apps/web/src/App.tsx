@@ -1,4 +1,5 @@
 import {
+  Bell,
   Bot,
   CalendarDays,
   Check,
@@ -7,6 +8,7 @@ import {
   Globe,
   Home,
   LineChart,
+  LogOut,
   MoreHorizontal,
   Mountain,
   Plug,
@@ -21,21 +23,21 @@ import {
   startTransition,
   useDeferredValue,
   useEffect,
-  useMemo,
   useState,
 } from 'react'
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import { appBrand, appNavigation, languages, mobileNavigation } from './lib/ui'
 import { createAiProposal } from './lib/ai-engine'
-import { AuthGuard, SignOutButton } from './components/auth/AuthGuard'
-import { LandingPage } from './components/landing/LandingPage'
-import { ConnectStrava } from './components/strava/ConnectStrava'
-import { useAuth } from './hooks/useAuth'
 import { buildCoachContext } from './lib/context-builder'
 import { t } from './lib/i18n'
+import { signOut } from './lib/auth'
+import { useAuth } from './hooks/useAuth'
+import { AuthScreen } from './components/auth/AuthScreen'
+import { AuthGuard, SignOutButton } from './components/auth/AuthGuard'
+import peakLogo from './assets/peak-logo.png'
 import {
   calendarMonths,
   hermesStatus as initialHermesStatus,
-  initialActivities,
   initialAiSettings,
   initialAiUsage,
   initialConnections,
@@ -44,13 +46,12 @@ import {
   raceDate,
   sparklineSets,
 } from './lib/mock-data'
-import { languages, mobileNavigation } from './lib/ui'
+import { supabaseConfigured } from './lib/supabase'
 import type {
   AiSettings,
   AppLanguage,
   DateRange,
   HermesStatus,
-  ImportedActivity,
   PendingAiAction,
   SourceConnection,
   StravaSegment,
@@ -72,7 +73,6 @@ const iconMap = {
 } as const
 
 const storageKeys = {
-  user: 'peak-v2-user',
   language: 'peak-v2-language',
   selectedDate: 'peak-v2-selected-date',
   dateRange: 'peak-v2-range',
@@ -95,10 +95,9 @@ function loadStored<T>(key: string, fallback: T): T {
 }
 
 function App() {
-  const { configured, status, user: authUser, profile } = useAuth()
+  const { status, profile, refresh, configured } = useAuth()
   const [language, setLanguage] = useState<AppLanguage>(() => loadStored(storageKeys.language, 'es'))
   const [sessions, setSessions] = useState<TrainingSession[]>(() => loadStored(storageKeys.sessions, initialSessions))
-  const [activities] = useState<ImportedActivity[]>(initialActivities)
   const [connections] = useState<SourceConnection[]>(initialConnections)
   const [selectedDate, setSelectedDate] = useState(() => loadStored(storageKeys.selectedDate, '2026-05-01'))
   const [range, setRange] = useState<DateRange>(() =>
@@ -112,15 +111,7 @@ function App() {
   const [segments, setSegments] = useState<StravaSegment[]>(() => loadStored(storageKeys.segments, initialSegments))
   const [hermes, setHermes] = useState<HermesStatus>(() => loadStored(storageKeys.hermes, initialHermesStatus))
   const deferredRange = useDeferredValue(range)
-
-  const user = useMemo(
-    () => ({
-      name: profile?.displayName || authUser?.email?.split('@')[0] || 'Atleta',
-      email: profile?.email || authUser?.email || '',
-      role: 'Athlete',
-    }),
-    [profile, authUser],
-  )
+  const activities: never[] = []
 
   useEffect(() => {
     localStorage.setItem(storageKeys.language, JSON.stringify(language))
@@ -134,15 +125,25 @@ function App() {
     localStorage.setItem(storageKeys.hermes, JSON.stringify(hermes))
   }, [language, selectedDate, range, aiSettings, aiUsage, sessions, pendingAction, segments, hermes])
 
-  if (!configured || status !== 'authenticated') {
-    return <LandingPage />
+  if (configured && status !== 'authenticated') {
+    return <AuthScreen language={language} setLanguage={setLanguage} />
+  }
+
+  if (!configured) {
+    return <AuthScreen language={language} setLanguage={setLanguage} />
+  }
+
+  const displayName = profile?.displayName ?? 'Atleta'
+
+  const handleSignOut = async () => {
+    await signOut()
+    await refresh()
   }
 
   const copy = (key: Parameters<typeof t>[1]) => t(language, key)
   const rangeActivities = activities.filter((activity) => activity.date >= deferredRange.start && activity.date <= deferredRange.end)
   const rangeSessions = sessions.filter((session) => session.date >= deferredRange.start && session.date <= deferredRange.end)
   const selectedSession = sessions.find((session) => session.date === selectedDate) ?? null
-  const selectedActivity = activities.find((activity) => activity.date === selectedDate) ?? null
   const coachContext = buildCoachContext({
     selectedDate,
     range: deferredRange,
@@ -185,153 +186,206 @@ function App() {
   return (
     <AuthGuard>
       <div className="app-shell">
-      <main className="app-stage">
-        <header className="top-header">
-          <div className="top-header-greet">
-            <div className="eyebrow">Peak Endurance</div>
-            <h1>{copy('greeting')}, {user.name}!</h1>
+        <aside className="sidebar">
+          <div className="brand-lockup">
+            <img src={peakLogo} alt={appBrand.name} className="brand-logo" />
           </div>
-          <div className="top-actions">
-            <label className="language-switch">
-              <Globe size={16} />
-              <select value={language} onChange={(event) => setLanguage(event.target.value as AppLanguage)}>
-                {languages.map((item) => (
-                  <option key={item.value} value={item.value}>{item.label}</option>
-                ))}
-              </select>
-            </label>
-            <div className="top-avatar">{user.name.slice(0, 1)}</div>
-          </div>
-        </header>
 
-        {pendingAction ? (
-          <section className="pending-banner">
+          <nav className="nav-stack">
+            {appNavigation.map((item) => {
+              const Icon = iconMap[item.icon]
+              return (
+                <NavLink key={item.id} to={item.path} className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+                  <Icon size={18} />
+                  <span>{copy(item.id as Parameters<typeof t>[1])}</span>
+                </NavLink>
+              )
+            })}
+          </nav>
+
+          <div className="sidebar-card">
+            <div className="eyebrow">{copy('sourceMix')}</div>
+            {connections.filter((item) => item.connected).length === 0 ? (
+              <p className="sidebar-empty">Sin conexiones activas. Conecta Strava desde {copy('connections')}.</p>
+            ) : (
+              connections
+                .filter((item) => item.connected)
+                .map((item) => (
+                  <div key={item.source} className="source-row">
+                    <span className="source-dot" style={{ backgroundColor: item.color }} />
+                    <div>
+                      <strong>{item.label}</strong>
+                      <small>{copy('connected')}</small>
+                    </div>
+                  </div>
+                ))
+            )}
+          </div>
+
+          <div className="pro-card">
             <div>
-              <div className="eyebrow">{copy('pending')}</div>
-              <strong>{pendingAction.headline}</strong>
-              <p>{pendingAction.summary}</p>
+              <div className="eyebrow">{copy('freePlan')}</div>
+              <strong>{remainingAi} {copy('aiLeft')}</strong>
             </div>
-            <div className="pending-actions">
-              <button type="button" className="primary-button" onClick={onApplyPendingAction}>{copy('confirm')}</button>
-              <button type="button" className="secondary-button" onClick={onDiscardPendingAction}>{copy('discard')}</button>
+            <button type="button" className="ghost-button">Mejorar</button>
+          </div>
+
+          <button type="button" className="profile-chip" onClick={handleSignOut}>
+            <span className="avatar">{displayName.slice(0, 1)}</span>
+            <span>{displayName}</span>
+            <LogOut size={14} aria-hidden style={{ marginLeft: 'auto', opacity: 0.6 }} />
+          </button>
+        </aside>
+
+        <main className="main-stage">
+          <header className="topbar">
+            <div>
+              <h1>{copy('greeting')}, {displayName}! <span className="wave">👋</span></h1>
+              <p>{copy('subtitle')}</p>
             </div>
-          </section>
-        ) : null}
 
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <DashboardPage
-                copy={copy}
-                coachContext={coachContext}
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-                range={range}
-                setRange={setRange}
-                sessions={sessions}
-                activities={activities}
-                rangeActivities={rangeActivities}
-                rangeSessions={rangeSessions}
-                selectedActivity={selectedActivity}
-                selectedSession={selectedSession}
-                todaySession={todaySession}
-                recoveryScore={recoveryScore}
-                aiUsage={aiUsage}
-                onCreateProposal={onCreateProposal}
-                language={language}
-              />
-            }
-          />
-          <Route
-            path="/calendario"
-            element={
-              <CalendarOnlyPage
-                copy={copy}
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-                sessions={sessions}
-                activities={activities}
-                selectedActivity={selectedActivity}
-              />
-            }
-          />
-          <Route path="/entrenamientos" element={<TrainingListPage copy={copy} sessions={sessions} />} />
-          <Route path="/plan" element={<PlanPage sessions={sessions} />} />
-          <Route
-            path="/ia-coach"
-            element={
-              <AiCoachPage
-                copy={copy}
-                aiUsage={aiUsage}
-                aiSettings={aiSettings}
-                coachContext={coachContext}
-                onCreateProposal={onCreateProposal}
-              />
-            }
-          />
-          <Route path="/analisis" element={<AnalysisPage copy={copy} rangeActivities={rangeActivities} />} />
-          <Route path="/progreso" element={<ProgressPage />} />
-          <Route path="/conexiones" element={<ConnectionsPage copy={copy} connections={connections} />} />
-          <Route
-            path="/segmentos"
-            element={
-              <StravaSegmentsPage
-                copy={copy}
-                segments={segments}
-                onToggleStar={(id) =>
-                  setSegments((current) =>
-                    current.map((segment) => (segment.id === id ? { ...segment, starred: !segment.starred } : segment)),
-                  )
-                }
-              />
-            }
-          />
-          <Route
-            path="/hermes"
-            element={
-              <HermesIntegrationPage
-                copy={copy}
-                status={hermes}
-                onToggleConnection={() =>
-                  setHermes((current) => ({ ...current, connected: !current.connected }))
-                }
-                onToggleWeeklyReport={() =>
-                  setHermes((current) => ({ ...current, weeklyReportEnabled: !current.weeklyReportEnabled }))
-                }
-              />
-            }
-          />
-          <Route
-            path="/ajustes"
-            element={
-              <SettingsPage
-                copy={copy}
-                aiSettings={aiSettings}
-                language={language}
-                setLanguage={setLanguage}
-                setAiSettings={setAiSettings}
-                supabaseConfigured={configured}
-              />
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            <div className="top-actions">
+              <button type="button" className="icon-button"><Search size={18} /></button>
+              <button type="button" className="icon-button"><Bell size={18} /></button>
+              <label className="language-switch">
+                <Globe size={16} />
+                <select value={language} onChange={(event) => setLanguage(event.target.value as AppLanguage)}>
+                  {languages.map((item) => (
+                    <option key={item.value} value={item.value}>{item.label}</option>
+                  ))}
+                </select>
+              </label>
+              <SignOutButton className="ghost-button signout-button" />
+              <div className="avatar hero-avatar">{displayName.slice(0, 1)}</div>
+            </div>
+          </header>
 
-        <nav className="bottom-nav">
-          {mobileNavigation.map((item) => {
-            const Icon = iconMap[item.icon]
-            return (
-              <NavLink key={item.id} to={item.path} className={({ isActive }) => `bottom-nav-item${isActive ? ' is-active' : ''}`}>
-                <Icon size={18} />
-                <span>{copy(item.id === 'mas' ? 'settings' : item.id as Parameters<typeof t>[1])}</span>
-              </NavLink>
-            )
-          })}
-        </nav>
-      </main>
-    </div>
-  </AuthGuard>
+          {pendingAction ? (
+            <section className="pending-banner">
+              <div>
+                <div className="eyebrow">{copy('pending')}</div>
+                <strong>{pendingAction.headline}</strong>
+                <p>{pendingAction.summary}</p>
+              </div>
+              <div className="pending-actions">
+                <button type="button" className="primary-button" onClick={onApplyPendingAction}>{copy('confirm')}</button>
+                <button type="button" className="secondary-button" onClick={onDiscardPendingAction}>{copy('discard')}</button>
+              </div>
+            </section>
+          ) : null}
+
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <DashboardPage
+                  copy={copy}
+                  coachContext={coachContext}
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                  range={range}
+                  setRange={setRange}
+                  sessions={sessions}
+                  activities={activities}
+                  rangeActivities={rangeActivities}
+                  rangeSessions={rangeSessions}
+                  selectedSession={selectedSession}
+                  todaySession={todaySession}
+                  recoveryScore={recoveryScore}
+                  aiUsage={aiUsage}
+                  onCreateProposal={onCreateProposal}
+                  language={language}
+                />
+              }
+            />
+            <Route
+              path="/calendario"
+              element={
+                <CalendarOnlyPage
+                  copy={copy}
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                  sessions={sessions}
+                  activities={activities}
+                />
+              }
+            />
+            <Route path="/entrenamientos" element={<TrainingListPage copy={copy} sessions={sessions} />} />
+            <Route path="/plan" element={<PlanPage sessions={sessions} />} />
+            <Route
+              path="/ia-coach"
+              element={
+                <AiCoachPage
+                  copy={copy}
+                  aiUsage={aiUsage}
+                  aiSettings={aiSettings}
+                  coachContext={coachContext}
+                  onCreateProposal={onCreateProposal}
+                />
+              }
+            />
+            <Route path="/analisis" element={<AnalysisPage copy={copy} rangeActivities={rangeActivities} />} />
+            <Route path="/progreso" element={<ProgressPage />} />
+            <Route path="/conexiones" element={<ConnectionsPage copy={copy} connections={connections} />} />
+            <Route
+              path="/segmentos"
+              element={
+                <StravaSegmentsPage
+                  copy={copy}
+                  segments={segments}
+                  onToggleStar={(id) =>
+                    setSegments((current) =>
+                      current.map((segment) => (segment.id === id ? { ...segment, starred: !segment.starred } : segment)),
+                    )
+                  }
+                />
+              }
+            />
+            <Route
+              path="/hermes"
+              element={
+                <HermesIntegrationPage
+                  copy={copy}
+                  status={hermes}
+                  onToggleConnection={() =>
+                    setHermes((current) => ({ ...current, connected: !current.connected }))
+                  }
+                  onToggleWeeklyReport={() =>
+                    setHermes((current) => ({ ...current, weeklyReportEnabled: !current.weeklyReportEnabled }))
+                  }
+                />
+              }
+            />
+            <Route
+              path="/ajustes"
+              element={
+                <SettingsPage
+                  copy={copy}
+                  aiSettings={aiSettings}
+                  language={language}
+                  setLanguage={setLanguage}
+                  setAiSettings={setAiSettings}
+                  supabaseConfigured={supabaseConfigured}
+                />
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+
+          <nav className="mobile-nav">
+            {mobileNavigation.map((item) => {
+              const Icon = iconMap[item.icon]
+              return (
+                <NavLink key={item.id} to={item.path} className={({ isActive }) => `mobile-item${isActive ? ' active' : ''}`}>
+                  <Icon size={18} />
+                  <span>{copy(item.id === 'mas' ? 'settings' : item.id as Parameters<typeof t>[1])}</span>
+                </NavLink>
+              )
+            })}
+          </nav>
+        </main>
+      </div>
+    </AuthGuard>
   )
 }
 
@@ -343,10 +397,9 @@ function DashboardPage(props: {
   range: DateRange
   setRange: (range: DateRange) => void
   sessions: TrainingSession[]
-  activities: ImportedActivity[]
-  rangeActivities: ImportedActivity[]
+  activities: never[]
+  rangeActivities: never[]
   rangeSessions: TrainingSession[]
-  selectedActivity: ImportedActivity | null
   selectedSession: TrainingSession | null
   todaySession: TrainingSession
   recoveryScore: number
@@ -513,8 +566,7 @@ function CalendarOnlyPage(props: {
   selectedDate: string
   setSelectedDate: (date: string) => void
   sessions: TrainingSession[]
-  activities: ImportedActivity[]
-  selectedActivity: ImportedActivity | null
+  activities: never[]
 }) {
   return (
     <section className="page-card">
@@ -534,9 +586,8 @@ function CalendarOnlyPage(props: {
       <section className="activity-detail">
         <div>
           <div className="eyebrow">Actividad real</div>
-          <strong>{props.selectedActivity?.title ?? 'Sin actividad registrada'}</strong>
+          <strong>Sin actividad registrada</strong>
         </div>
-        {props.selectedActivity ? <ZonePrecisionBlock activity={props.selectedActivity} /> : null}
       </section>
     </section>
   )
@@ -627,21 +678,16 @@ function AnalysisPage({
   rangeActivities,
 }: {
   copy: (key: Parameters<typeof t>[1]) => string
-  rangeActivities: ImportedActivity[]
+  rangeActivities: never[]
 }) {
   return (
     <section className="page-card">
       <div className="panel-head"><strong>{copy('analysis')}</strong></div>
       <div className="analysis-grid">
-        {rangeActivities.map((activity) => (
-          <article key={activity.id} className="analysis-card">
-            <div className="analysis-head">
-              <strong>{activity.title}</strong>
-              <span className={`precision precision-${activity.zonePrecision}`}>{copy(activity.zonePrecision === 'real' ? 'precisionReal' : activity.zonePrecision === 'estimated' ? 'precisionEstimated' : 'precisionMissing')}</span>
-            </div>
-            <ZonePrecisionBlock activity={activity} />
-          </article>
-        ))}
+        <article className="analysis-card analysis-card-empty">
+          <strong>Sin actividades en el rango seleccionado</strong>
+          <p>Conecta Strava desde {copy('connections')} para importar tus actividades reales.</p>
+        </article>
       </div>
     </section>
   )
@@ -671,17 +717,20 @@ function ConnectionsPage({
     <section className="page-card">
       <div className="panel-head"><strong>{copy('connections')}</strong></div>
       <div className="connection-grid">
-        <ConnectStrava copy={copy} />
         {connections.map((connection) => (
           <article key={connection.source} className="connection-card">
             <div className="source-row">
               <span className="source-dot" style={{ backgroundColor: connection.color }} />
               <div>
                 <strong>{connection.label}</strong>
-                <small>{connection.connected ? copy('connected') : 'Próximamente'}</small>
+                <small>{connection.connected ? copy('connected') : copy('disconnected')}</small>
               </div>
             </div>
-            <p>{connection.connected ? `Última sincronización ${connection.lastSync.slice(0, 10)}` : 'Adaptador preparado para la siguiente fase.'}</p>
+            <p>
+              {connection.connected
+                ? `Última sincronización ${connection.lastSync.slice(0, 10)}`
+                : 'Adaptador preparado para la siguiente fase.'}
+            </p>
           </article>
         ))}
       </div>
@@ -736,11 +785,6 @@ function SettingsPage(props: {
       </div>
       <div className="status-callout">
         Supabase: {props.supabaseConfigured ? 'configurado' : 'pendiente de variables de entorno'}
-      </div>
-      <div style={{ marginTop: 14 }}>
-        <SignOutButton className="primary-button full-width">
-          Cerrar sesión
-        </SignOutButton>
       </div>
     </section>
   )
@@ -852,7 +896,7 @@ function HermesIntegrationPage({
               className="source-dot"
               style={{ backgroundColor: status.connected ? 'var(--accent)' : 'var(--muted)' }}
             />
-            <strong>{status.connected ? 'Conectado' : 'Desconectado'}</strong>
+            <strong>{status.connected ? copy('connected') : copy('disconnected')}</strong>
           </div>
           <p style={{ color: 'var(--muted)', fontSize: '0.86rem', margin: '10px 0 0' }}>
             Hermes Agent puede supervisar tu entrenamiento y generar reportes autónomos cada lunes.
@@ -869,12 +913,17 @@ function HermesIntegrationPage({
 
         <article className="hermes-card">
           <div className="eyebrow">{copy('stravaSync')}</div>
-          <div className="hermes-status connected" style={{ marginTop: 10 }}>
-            <span className="source-dot" style={{ backgroundColor: 'var(--accent)' }} />
-            <strong>Strava sincronizado</strong>
+          <div className={`hermes-status ${status.stravaConnected ? 'connected' : ''}`} style={{ marginTop: 10 }}>
+            <span
+              className="source-dot"
+              style={{ backgroundColor: status.stravaConnected ? 'var(--accent)' : 'var(--muted)' }}
+            />
+            <strong>{status.stravaConnected ? copy('connected') : copy('disconnected')}</strong>
           </div>
           <p style={{ color: 'var(--muted)', fontSize: '0.86rem', margin: '10px 0 0' }}>
-            Las actividades de Strava se importan automáticamente. Última sync: 24 abr 2026.
+            {status.stravaConnected
+              ? 'Las actividades de Strava se importan automáticamente.'
+              : 'Conecta Strava desde la sección de conexiones para activar la sincronización.'}
           </p>
         </article>
 
@@ -922,7 +971,7 @@ function CalendarBoard({
   months: string[]
   selectedDate: string
   sessions: TrainingSession[]
-  activities: ImportedActivity[]
+  activities: never[]
   onSelectDate: (date: string) => void
 }) {
   return (
@@ -951,7 +1000,7 @@ function MonthCard({
   month: string
   selectedDate: string
   sessions: TrainingSession[]
-  activities: ImportedActivity[]
+  activities: never[]
   onSelectDate: (date: string) => void
 }) {
   const [year, monthValue] = month.split('-').map(Number)
@@ -1017,20 +1066,6 @@ function MetricCard({
         <path d={toSparklinePath(series)} />
       </svg>
     </article>
-  )
-}
-
-function ZonePrecisionBlock({ activity }: { activity: ImportedActivity }) {
-  return (
-    <div className="zone-stack">
-      {Object.entries(activity.zoneBreakdown).map(([zone, value]) => (
-        <div key={zone} className="zone-row">
-          <span>{zone.toUpperCase()}</span>
-          <div className="zone-bar"><i style={{ width: `${Math.max(6, value)}%` }} /></div>
-          <strong>{value}m</strong>
-        </div>
-      ))}
-    </div>
   )
 }
 

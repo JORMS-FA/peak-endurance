@@ -1,64 +1,50 @@
 import type { ReactNode } from 'react'
-import { LogOut, Loader2 } from 'lucide-react'
+import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
-import { signOut } from '../../lib/auth'
+import { t } from '../../lib/i18n'
+import type { AppLanguage } from '../../lib/types'
+import { AuthScreen } from './AuthScreen'
 
-type Props = {
+export type AuthGuardProps = {
+  language: AppLanguage
+  setLanguage: (language: AppLanguage) => void
   children: ReactNode
-  fallback?: ReactNode
 }
 
-export function AuthGuard({ children, fallback }: Props) {
+export function AuthGuard({ language, setLanguage, children }: AuthGuardProps) {
   const { status, configured } = useAuth()
+  const [stuck] = useState(false)
 
-  if (!configured) {
+  if (status === 'loading' && !stuck) {
     return (
-      fallback ?? (
-        <div className="status-callout" role="alert">
-          Supabase no está configurado. Agrega las variables de entorno para continuar.
-        </div>
-      )
+      <div className="auth-loading" role="status" aria-live="polite">
+        <div className="auth-loading-pulse" />
+        <p>{t(language, 'authLoading')}</p>
+      </div>
     )
   }
 
-  if (status === 'loading') {
+  if (!configured) {
     return (
-      <div className="auth-loading" role="status" aria-live="polite">
-        <Loader2 size={20} className="auth-loading-spinner" />
-        <span>Verificando sesión…</span>
+      <div className="auth-shell">
+        <main className="auth-main">
+          <section className="auth-card">
+            <header>
+              <h2>{t(language, 'authConfigTitle')}</h2>
+              <p>{t(language, 'authConfigHint')}</p>
+            </header>
+            <div className="magic-warning">
+              <span>{t(language, 'authNotConfigured')}</span>
+            </div>
+          </section>
+        </main>
       </div>
     )
   }
 
   if (status !== 'authenticated') {
-    return null
+    return <AuthScreen configured={configured} language={language} setLanguage={setLanguage} />
   }
 
   return <>{children}</>
-}
-
-export function SignOutButton({
-  className,
-  children,
-}: {
-  className?: string
-  children?: ReactNode
-}) {
-  const { refresh } = useAuth()
-
-  async function handleSignOut() {
-    await signOut()
-    await refresh()
-  }
-
-  return (
-    <button type="button" className={className ?? 'ghost-button'} onClick={handleSignOut}>
-      {children ?? (
-        <>
-          <LogOut size={16} />
-          <span>Cerrar sesión</span>
-        </>
-      )}
-    </button>
-  )
 }

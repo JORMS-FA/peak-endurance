@@ -1,65 +1,30 @@
-import { Globe } from 'lucide-react'
-import { useAuth } from '../../hooks/useAuth'
-import { appBrand, languages } from '../../lib/ui'
-import type { AppLanguage } from '../../lib/types'
+import { Globe, ShieldCheck, Sparkles } from 'lucide-react'
+import { MagicLinkForm } from './MagicLinkForm'
 import peakLogo from '../../assets/peak-logo.png'
-import { LoginForm } from './LoginForm'
-import { supabase } from '../../lib/supabase'
+import type { AppLanguage } from '../../lib/types'
+import { t } from '../../lib/i18n'
+import { languages } from '../../lib/ui'
 
-type Props = {
+export type AuthScreenProps = {
+  configured: boolean
   language: AppLanguage
   setLanguage: (language: AppLanguage) => void
 }
 
-export function AuthScreen({ language, setLanguage }: Props) {
-  const { configured } = useAuth()
-
-  async function handleGoogleLogin() {
-    if (!supabase) return
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin }
-    })
-  }
+export function AuthScreen({ configured, language, setLanguage }: AuthScreenProps) {
+  const copy = (key: Parameters<typeof t>[1]) => t(language, key)
 
   return (
-    <div className="signin-shell">
-      <div className="signin-panel">
-        <div className="brand-lockup">
-          <img src={peakLogo} alt={appBrand.name} className="brand-logo signin-logo" />
-        </div>
-
-        <h1>{appBrand.name}</h1>
-        <p>Tu panel de rendimiento para planificar, ajustar y optimizar cada semana.</p>
-
-        {configured ? (
-          <>
-            <button type="button" className="google-btn" onClick={handleGoogleLogin}>
-              <svg width="20" height="20" viewBox="0 0 48 48" fill="none">
-                <path d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" fill="#FFC107"/>
-                <path d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z" fill="#FF3D00"/>
-                <path d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0124 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z" fill="#4CAF50"/>
-                <path d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 01-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z" fill="#1976D2"/>
-              </svg>
-              Continuar con Google
-            </button>
-
-            <div className="divider">
-              <span>o con correo y contraseña</span>
-            </div>
-
-            <LoginForm />
-          </>
-        ) : (
-          <div className="status-callout" role="alert">
-            La autenticación aún no está configurada. Define <code>VITE_SUPABASE_URL</code> y
-            <code> VITE_SUPABASE_ANON_KEY</code> en <code>.env.local</code> para habilitar el acceso.
-          </div>
-        )}
-
-        <label className="language-switch inline-switch">
-          <Globe size={16} />
-          <select value={language} onChange={(event) => setLanguage(event.target.value as AppLanguage)}>
+    <div className="auth-shell">
+      <header className="auth-topbar">
+        <img src={peakLogo} alt="Peak Endurance" className="auth-logo" />
+        <label className="auth-lang">
+          <Globe size={16} aria-hidden="true" />
+          <select
+            value={language}
+            onChange={(event) => setLanguage(event.target.value as AppLanguage)}
+            aria-label={copy('language')}
+          >
             {languages.map((item) => (
               <option key={item.value} value={item.value}>
                 {item.label}
@@ -67,7 +32,47 @@ export function AuthScreen({ language, setLanguage }: Props) {
             ))}
           </select>
         </label>
-      </div>
+      </header>
+
+      <main className="auth-main">
+        <section className="auth-hero">
+          <span className="auth-tag">{copy('authTagline')}</span>
+          <h1>{copy('authTitle')}</h1>
+          <p>{copy('authSubtitle')}</p>
+
+          <ul className="auth-bullets">
+            <li>
+              <Sparkles size={16} aria-hidden="true" />
+              <span>{copy('authBulletAi')}</span>
+            </li>
+            <li>
+              <ShieldCheck size={16} aria-hidden="true" />
+              <span>{copy('authBulletPrivacy')}</span>
+            </li>
+          </ul>
+        </section>
+
+        <section className="auth-card">
+          <header>
+            <h2>{copy('authCardTitle')}</h2>
+            <p>{copy('authCardHint')}</p>
+          </header>
+          <MagicLinkForm
+            configured={configured}
+            configuredLabel={copy('authNotConfigured')}
+            emailLabel={copy('authEmailLabel')}
+            emailPlaceholder={copy('authEmailPlaceholder')}
+            submitLabel={copy('authSubmit')}
+            successHeadline={copy('authSuccessHeadline')}
+            successHint={copy('authSuccessHint')}
+            invalidEmailMessage={copy('authInvalidEmail')}
+          />
+        </section>
+
+        <footer className="auth-foot">
+          <small>{copy('authTerms')}</small>
+        </footer>
+      </main>
     </div>
   )
 }
