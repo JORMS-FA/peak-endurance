@@ -1,6 +1,6 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { AppLanguage, ThemeMode } from '../lib/types'
+import type { AccentColor, AppLanguage, ThemeMode } from '../lib/types'
 import { STORAGE_KEYS } from '../lib/constants'
 
 export type ThemeContextValue = {
@@ -8,12 +8,15 @@ export type ThemeContextValue = {
   setTheme: (theme: ThemeMode) => void
   language: AppLanguage
   setLanguage: (lang: AppLanguage) => void
+  accentColor: AccentColor
+  setAccentColor: (color: AccentColor) => void
 }
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 const VALID_THEMES: ThemeMode[] = ['dark', 'light', 'midnight', 'forest']
 const VALID_LANGS: AppLanguage[] = ['es', 'en']
+const VALID_ACCENTS: AccentColor[] = ['green', 'orange', 'yellow', 'blue', 'purple', 'red', 'pink', 'cyan']
 
 function loadTheme(): ThemeMode {
   try {
@@ -39,9 +42,22 @@ function loadLanguage(): AppLanguage {
   }
 }
 
+function loadAccentColor(): AccentColor {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.accent)
+    if (!raw) return 'green'
+    const parsed = JSON.parse(raw)
+    if (VALID_ACCENTS.includes(parsed)) return parsed
+    return 'green'
+  } catch {
+    return 'green'
+  }
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemeMode>(loadTheme)
   const [language, setLanguageState] = useState<AppLanguage>(loadLanguage)
+  const [accentColor, setAccentColorState] = useState<AccentColor>(loadAccentColor)
 
   const setTheme = useCallback((t: ThemeMode) => {
     setThemeState(t)
@@ -53,6 +69,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEYS.language, JSON.stringify(l))
   }, [])
 
+  const setAccentColor = useCallback((c: AccentColor) => {
+    setAccentColorState(c)
+    localStorage.setItem(STORAGE_KEYS.accent, JSON.stringify(c))
+  }, [])
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
@@ -61,9 +82,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute('lang', language)
   }, [language])
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-accent', accentColor)
+  }, [accentColor])
+
   const value = useMemo<ThemeContextValue>(
-    () => ({ theme, setTheme, language, setLanguage }),
-    [theme, setTheme, language, setLanguage]
+    () => ({ theme, setTheme, language, setLanguage, accentColor, setAccentColor }),
+    [theme, setTheme, language, setLanguage, accentColor, setAccentColor]
   )
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

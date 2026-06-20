@@ -2,6 +2,7 @@
 
 export type AppLanguage = 'es' | 'en'
 export type ThemeMode = 'dark' | 'light' | 'midnight' | 'forest'
+export type AccentColor = 'green' | 'orange' | 'yellow' | 'blue' | 'purple' | 'red' | 'pink' | 'cyan'
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
