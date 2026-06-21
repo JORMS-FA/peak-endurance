@@ -110,22 +110,50 @@ export async function ensureProfile(user: User): Promise<AuthProfile | null> {
   const displayName = deriveDisplayName(user)
   const avatarUrl = deriveAvatarUrl(user)
   const email = user.email ?? null
-  const upsertPayload: Record<string, unknown> = {
-    id: user.id,
-    email,
-    updated_at: new Date().toISOString(),
-  }
-  if (displayName) upsertPayload.display_name = displayName
-  if (avatarUrl) upsertPayload.avatar_url = avatarUrl
 
-  const { data, error } = await supabase
+  // First, try to read the existing profile
+  const { data: existing } = await supabase
     .from(PROFILES_TABLE)
-    .upsert(upsertPayload, { onConflict: 'id', ignoreDuplicates: false })
+    .select('id, email, display_name, avatar_url, created_at, onboarding_completed')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (existing) {
+    // Profile exists — only update non-critical fields (never touch onboarding_completed)
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
+    if (email && email !== existing.email) updates.email = email
+    if (displayName && displayName !== existing.display_name) updates.display_name = displayName
+    if (avatarUrl && avatarUrl !== existing.avatar_url) updates.avatar_url = avatarUrl
+
+    if (Object.keys(updates).length > 1) {
+      await supabase.from(PROFILES_TABLE).update(updates).eq('id', user.id)
+    }
+
+    return {
+      id: existing.id,
+      email: existing.email ?? email,
+      display_name: existing.display_name ?? displayName,
+      avatar_url: existing.avatar_url ?? avatarUrl,
+      created_at: existing.created_at,
+      onboarding_completed: existing.onboarding_completed ?? false,
+    }
+  }
+
+  // Profile doesn't exist — create it (new user)
+  const { data: created, error } = await supabase
+    .from(PROFILES_TABLE)
+    .insert({
+      id: user.id,
+      email,
+      display_name: displayName,
+      avatar_url: avatarUrl,
+      onboarding_completed: false,
+    })
     .select('id, email, display_name, avatar_url, created_at, onboarding_completed')
     .maybeSingle()
 
   if (error) {
-    console.warn('[auth] ensureProfile error:', error.message)
+    console.warn('[auth] ensureProfile insert error:', error.message)
     return {
       id: user.id,
       email,
@@ -135,12 +163,13 @@ export async function ensureProfile(user: User): Promise<AuthProfile | null> {
       onboarding_completed: false,
     }
   }
+
   return {
-    id: data?.id ?? user.id,
-    email: data?.email ?? email,
-    display_name: data?.display_name ?? displayName,
-    avatar_url: data?.avatar_url ?? avatarUrl,
-    created_at: data?.created_at ?? null,
-    onboarding_completed: data?.onboarding_completed ?? false,
+    id: created?.id ?? user.id,
+    email: created?.email ?? email,
+    display_name: created?.display_name ?? displayName,
+    avatar_url: created?.avatar_url ?? avatarUrl,
+    created_at: created?.created_at ?? null,
+    onboarding_completed: created?.onboarding_completed ?? false,
   }
 }
