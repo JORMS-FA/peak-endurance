@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -12,6 +13,23 @@ import {
   Waves,
   Zap,
 } from 'lucide-react'
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  ComposedChart,
+} from 'recharts'
 import { useI18n } from '../hooks/useI18n'
 import { useAuth } from '../hooks/useAuth'
 import { useDashboardMetrics } from '../hooks/useDashboardMetrics'
@@ -20,6 +38,7 @@ import { useStravaConnection } from '../hooks/useStrava'
 import { AnimatedNumber } from '../components/ui/AnimatedNumber'
 import type { ReactNode } from 'react'
 
+// ─── Animation Variants ─────────────────────────────────────────────────────
 const cardVariants = {
   hidden: { opacity: 0, y: 16 },
   visible: (i: number) => ({
@@ -29,6 +48,7 @@ const cardVariants = {
   }),
 }
 
+// ─── Sport Icons & Colors ───────────────────────────────────────────────────
 const sportIcon: Record<string, ReactNode> = {
   run: <Footprints size={14} />,
   bike: <Bike size={14} />,
@@ -38,6 +58,69 @@ const sportIcon: Record<string, ReactNode> = {
   other: <Activity size={14} />,
 }
 
+const SPORT_COLORS: Record<string, string> = {
+  run: '#22c55e',
+  bike: '#3b82f6',
+  swim: '#06b6d4',
+  gym: '#f97316',
+  other: '#8b5cf6',
+}
+
+// ─── PMC Computation ────────────────────────────────────────────────────────
+type PmcPoint = { date: string; ctl: number; atl: number; tsb: number; tss: number }
+
+function computePmcSeries(daily: { date: string; tss: number }[]): PmcPoint[] {
+  let ctl = 0
+  let atl = 0
+  return daily.map((d) => {
+    ctl += (d.tss - ctl) / 42
+    atl += (d.tss - atl) / 7
+    return { date: d.date, ctl: Math.round(ctl), atl: Math.round(atl), tsb: Math.round(ctl - atl), tss: d.tss }
+  })
+}
+
+// ─── Chart Theme Constants ──────────────────────────────────────────────────
+const CHART_GRID_STROKE = 'rgba(255,255,255,0.06)'
+const CHART_TEXT_COLOR = '#b8bcc8'
+const TOOLTIP_BG = '#1a1a2e'
+const TOOLTIP_BORDER = '#2a2a3e'
+
+// ─── Custom Tooltips ────────────────────────────────────────────────────────
+interface PmcTooltipPayloadItem {
+  name: string
+  value: number
+  color: string
+}
+
+function PmcTooltip({ active, payload, label }: { active?: boolean; payload?: PmcTooltipPayloadItem[]; label?: string }) {
+  if (!active || !payload?.length) return null
+  return (
+    <div style={{ background: TOOLTIP_BG, border: `1px solid ${TOOLTIP_BORDER}`, borderRadius: 8, padding: '10px 14px', fontSize: 12, color: CHART_TEXT_COLOR }}>
+      <p style={{ margin: 0, fontWeight: 600, marginBottom: 4, color: '#fff' }}>{label}</p>
+      {payload.map((entry) => (
+        <p key={entry.name} style={{ margin: '2px 0', color: entry.color }}>
+          {entry.name}: <strong>{entry.value}</strong>
+        </p>
+      ))}
+    </div>
+  )
+}
+
+interface WeeklyTooltipPayloadItem {
+  value: number
+}
+
+function WeeklyTooltip({ active, payload, label }: { active?: boolean; payload?: WeeklyTooltipPayloadItem[]; label?: string }) {
+  if (!active || !payload?.length) return null
+  return (
+    <div style={{ background: TOOLTIP_BG, border: `1px solid ${TOOLTIP_BORDER}`, borderRadius: 8, padding: '10px 14px', fontSize: 12, color: CHART_TEXT_COLOR }}>
+      <p style={{ margin: 0, fontWeight: 600, color: '#fff' }}>{label}</p>
+      <p style={{ margin: '4px 0', color: '#06b6d4' }}>TSS: <strong>{Math.round(payload[0].value)}</strong></p>
+    </div>
+  )
+}
+
+// ─── Dashboard Component ────────────────────────────────────────────────────
 export function Dashboard() {
   const { t } = useI18n()
   const { profile } = useAuth()
@@ -46,8 +129,20 @@ export function Dashboard() {
   const { status: stravaStatus } = useStravaConnection()
 
   const stravaConnected = Boolean(stravaStatus?.connected)
-  const maxWeeklyTss = Math.max(...metrics.weeklySeries.map((d) => d.tss), 1)
   const showEmpty = !loading && !hasData
+
+  // Compute PMC series for chart
+  const pmcSeries = useMemo(() => computePmcSeries(metrics.daily), [metrics.daily])
+
+  // Compute sport distribution from recent activities
+  const pieData = useMemo(() => {
+    const sportCounts = metrics.recent.reduce<Record<string, number>>((acc, a) => {
+      const sport = a.sport || 'other'
+      acc[sport] = (acc[sport] || 0) + 1
+      return acc
+    }, {})
+    return Object.entries(sportCounts).map(([name, value]) => ({ name, value }))
+  }, [metrics.recent])
 
   return (
     <div className="page-dashboard">
@@ -126,12 +221,191 @@ export function Dashboard() {
         ))}
       </section>
 
+      {/* ── Performance Management Chart (PMC) ─────────────────────────── */}
+      <motion.section
+        className="card chart-card"
+        custom={4}
+        initial="hidden"
+        animate="visible"
+        variants={cardVariants}
+      >
+        <div className="card-header">
+          <TrendingUp size={16} />
+          <span>{t('weeklyState')} — PMC (90 días)</span>
+        </div>
+        {showEmpty ? (
+          <div className="empty-state"><p>{t('noData')}</p></div>
+        ) : (
+          <div style={{ width: '100%', height: 280 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={pmcSeries} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="tsbGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#22c55e" stopOpacity={0.4} />
+                    <stop offset="100%" stopColor="#22c55e" stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: CHART_TEXT_COLOR, fontSize: 11 }}
+                  tickFormatter={(val: string) => val.slice(5)}
+                  interval="preserveStartEnd"
+                  axisLine={{ stroke: CHART_GRID_STROKE }}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fill: CHART_TEXT_COLOR, fontSize: 11 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip content={<PmcTooltip />} />
+                <Legend
+                  wrapperStyle={{ fontSize: 12, color: CHART_TEXT_COLOR }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="tsb"
+                  name="TSB (Form)"
+                  stroke="#22c55e"
+                  fill="url(#tsbGradient)"
+                  strokeWidth={1.5}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="ctl"
+                  name="CTL (Fitness)"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4, fill: '#3b82f6' }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="atl"
+                  name="ATL (Fatigue)"
+                  stroke="#f97316"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4, fill: '#f97316' }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </motion.section>
+
       {/* ── Two-column dashboard grid ──────────────────────────────────── */}
       <div className="dashboard-grid">
+        {/* Weekly Load BarChart */}
+        <motion.section
+          className="card chart-card"
+          custom={5}
+          initial="hidden"
+          animate="visible"
+          variants={cardVariants}
+        >
+          <div className="card-header">
+            <Zap size={16} />
+            <span>Carga Semanal (TSS)</span>
+          </div>
+          {showEmpty ? (
+            <div className="empty-state"><p>{t('noData')}</p></div>
+          ) : (
+            <div style={{ width: '100%', height: 220 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={metrics.weeklySeries} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#a855f7" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#06b6d4" stopOpacity={1} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} vertical={false} />
+                  <XAxis
+                    dataKey="day"
+                    tick={{ fill: CHART_TEXT_COLOR, fontSize: 12 }}
+                    axisLine={{ stroke: CHART_GRID_STROKE }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fill: CHART_TEXT_COLOR, fontSize: 11 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip content={<WeeklyTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                  <Bar
+                    dataKey="tss"
+                    fill="url(#barGradient)"
+                    radius={[6, 6, 0, 0]}
+                    maxBarSize={40}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </motion.section>
+
+        {/* Sport Distribution PieChart */}
+        <motion.section
+          className="card chart-card"
+          custom={6}
+          initial="hidden"
+          animate="visible"
+          variants={cardVariants}
+        >
+          <div className="card-header">
+            <Activity size={16} />
+            <span>Distribución por Deporte</span>
+          </div>
+          {pieData.length === 0 ? (
+            <div className="empty-state"><p>{t('noData')}</p></div>
+          ) : (
+            <div style={{ width: '100%', height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={80}
+                    paddingAngle={3}
+                    dataKey="value"
+                    nameKey="name"
+                    stroke="none"
+                  >
+                    {pieData.map((entry) => (
+                      <Cell
+                        key={entry.name}
+                        fill={SPORT_COLORS[entry.name] || SPORT_COLORS.other}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      background: TOOLTIP_BG,
+                      border: `1px solid ${TOOLTIP_BORDER}`,
+                      borderRadius: 8,
+                      fontSize: 12,
+                      color: CHART_TEXT_COLOR,
+                    }}
+                    formatter={(value: number, name: string) => [`${value} actividades`, name]}
+                  />
+                  <Legend
+                    wrapperStyle={{ fontSize: 12, color: CHART_TEXT_COLOR }}
+                    formatter={(value: string) => <span style={{ color: CHART_TEXT_COLOR }}>{value}</span>}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </motion.section>
+
         {/* Today's session */}
         <motion.section
           className="card"
-          custom={4}
+          custom={7}
           initial="hidden"
           animate="visible"
           variants={cardVariants}
@@ -168,7 +442,7 @@ export function Dashboard() {
         {/* Recovery / Quick read */}
         <motion.section
           className="card"
-          custom={5}
+          custom={8}
           initial="hidden"
           animate="visible"
           variants={cardVariants}
@@ -193,41 +467,10 @@ export function Dashboard() {
           </div>
         </motion.section>
 
-        {/* Weekly TSS bars */}
-        <motion.section
-          className="card"
-          custom={6}
-          initial="hidden"
-          animate="visible"
-          variants={cardVariants}
-        >
-          <div className="card-header">
-            <TrendingUp size={16} />
-            <span>{t('weeklyState')}</span>
-          </div>
-          <div className="week-bars">
-            {metrics.weeklySeries.map((d) => {
-              const heightPct = Math.max(8, (d.tss / maxWeeklyTss) * 100)
-              return (
-                <div key={d.iso} className="week-bar-item" title={`${d.iso}: ${Math.round(d.tss)} TSS`}>
-                  <motion.div
-                    className="week-bar"
-                    initial={{ height: 0 }}
-                    animate={{ height: showEmpty ? '20%' : `${heightPct}%` }}
-                    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                    style={{ background: d.tss > 0 ? 'var(--accent)' : 'var(--bg-3)' }}
-                  />
-                  <span>{d.day}</span>
-                </div>
-              )
-            })}
-          </div>
-        </motion.section>
-
         {/* Recent activities */}
         <motion.section
           className="card"
-          custom={7}
+          custom={9}
           initial="hidden"
           animate="visible"
           variants={cardVariants}
