@@ -13,6 +13,8 @@ import { Progress } from './pages/Progress'
 import { Connections } from './pages/Connections'
 import { Segments } from './pages/Segments'
 import { Settings } from './pages/Settings'
+import { Privacy } from './pages/Privacy'
+import { Terms } from './pages/Terms'
 
 export default function App() {
   return (
@@ -20,6 +22,8 @@ export default function App() {
       {/* Public routes */}
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<AuthScreen />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
 
       {/* Protected app routes */}
       <Route path="/app" element={<AuthGuard><AppLayout /></AuthGuard>}>

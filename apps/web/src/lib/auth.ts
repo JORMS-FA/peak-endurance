@@ -97,9 +97,18 @@ function deriveDisplayName(user: User | null): string | null {
   return null
 }
 
+function deriveAvatarUrl(user: User | null): string | null {
+  if (!user) return null
+  const meta: Record<string, unknown> = (user.user_metadata ?? {})
+  return (typeof meta.avatar_url === 'string' && meta.avatar_url) ||
+    (typeof meta.picture === 'string' && meta.picture) ||
+    null
+}
+
 export async function ensureProfile(user: User): Promise<AuthProfile | null> {
   if (!supabase) return null
   const displayName = deriveDisplayName(user)
+  const avatarUrl = deriveAvatarUrl(user)
   const email = user.email ?? null
   const upsertPayload: Record<string, unknown> = {
     id: user.id,
@@ -107,11 +116,12 @@ export async function ensureProfile(user: User): Promise<AuthProfile | null> {
     updated_at: new Date().toISOString(),
   }
   if (displayName) upsertPayload.display_name = displayName
+  if (avatarUrl) upsertPayload.avatar_url = avatarUrl
 
   const { data, error } = await supabase
     .from(PROFILES_TABLE)
     .upsert(upsertPayload, { onConflict: 'id' })
-    .select('id, email, display_name, created_at')
+    .select('id, email, display_name, avatar_url, created_at, onboarding_completed')
     .maybeSingle()
 
   if (error) {
@@ -120,13 +130,17 @@ export async function ensureProfile(user: User): Promise<AuthProfile | null> {
       id: user.id,
       email,
       display_name: displayName,
+      avatar_url: avatarUrl,
       created_at: null,
+      onboarding_completed: false,
     }
   }
-  return (data ?? {
-    id: user.id,
-    email,
-    display_name: displayName,
-    created_at: null,
-  }) satisfies AuthProfile
+  return {
+    id: data?.id ?? user.id,
+    email: data?.email ?? email,
+    display_name: data?.display_name ?? displayName,
+    avatar_url: data?.avatar_url ?? avatarUrl,
+    created_at: data?.created_at ?? null,
+    onboarding_completed: data?.onboarding_completed ?? false,
+  }
 }

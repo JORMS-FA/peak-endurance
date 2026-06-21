@@ -2,8 +2,7 @@
   "name": "peak-endurace-coach",
   "private": true,
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/*"
   ],
   "scripts": {
     "dev:web": "npm --workspace apps/web run dev",

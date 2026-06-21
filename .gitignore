@@ -1,36 +1,37 @@
-# API keys and environment variables
-api key*.txt
-*apikey*.txt
-*.env
-.env*
-xco_calendar_coach_abril (ultima version).html
+# Environment variables
+.env
+.env.*
+.env.local
 
-# Secrets and backups
-secrets/
-backup/
-backup-old-app/
-
-# Node/Vite dependencies and builds
+# Dependencies and builds
 node_modules/
 dist/
-.wrangler/
-.supabase/
 coverage/
 
-# Gradle / IDE files
-.gradle/
-local.properties
+# Supabase local
+.supabase/
+supabase/.temp
+
+# IDE
 .idea/
 *.iml
-build/
-app/build/
+.vscode/
 
-modules/
-
+# Vercel
 .vercel
-.vercel-token
-apps/web/.env.local
-redesign.html
-implementation.md
-supabase/.temp
-deploy-strava.bat
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log
+
+# Legacy / excluded folders
+_openathlete_ref/
+backup/
+backup-old-app/
+secrets/
+pictures/
+.hermes/
+.opencode/

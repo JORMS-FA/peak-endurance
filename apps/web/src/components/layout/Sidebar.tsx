@@ -51,7 +51,11 @@ export function Sidebar() {
 
       <div className="sidebar-footer">
         <button className="sidebar-profile" onClick={handleSignOut} type="button">
-          <div className="avatar-sm">{displayName.charAt(0).toUpperCase()}</div>
+          {profile?.avatar_url ? (
+            <img src={profile.avatar_url} alt="" className="avatar-sm avatar-img" />
+          ) : (
+            <div className="avatar-sm">{displayName.charAt(0).toUpperCase()}</div>
+          )}
           <span className="sidebar-profile-name">{displayName}</span>
           <LogOut size={14} />
         </button>

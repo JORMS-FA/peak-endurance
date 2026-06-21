@@ -1,158 +1,127 @@
 # Peak Endurance
 
-> **Tagline:** la fusión de Strava y TrainingPeaks, con un coach de IA que vive contigo.
+**Plataforma inteligente de entrenamiento para atletas de resistencia.**
 
-Plataforma multi-deporte para atletas de resistencia (running, ciclismo, natación, gimnasio, triatlón) que combina:
-
-- **Datos reales** de Strava (vía OAuth oficial, no MCP).
-- **Planificación estructurada** por bloques (base, construcción, pico, tapering) tipo TrainingPeaks.
-- **Coach de IA adaptativo** que ajusta tu plan según tu fatiga real (CTL, ATL, TSB).
+Peak Endurance combina datos reales de Strava con planificación estructurada y un coach de IA adaptativo que ajusta tu plan según tu fatiga real.
 
 ---
 
-## 🎯 Estado actual
+## Características
 
-| Capa | Estado |
-|---|---|
-| Auth (Google OAuth + email/password) | ✅ |
-| Strava OAuth real (edge function `strava-auth`) | ✅ |
-| Sincronización Strava → BD (edge function `strava-sync`) | ✅ |
-| Cálculo PMC (TSS / CTL / ATL / TSB / Forma) en cliente | ✅ |
-| Dashboard con datos reales y animaciones | ✅ |
-| Landing v2 orientada a conversión de descarga | ✅ |
-| RLS habilitado en todas las tablas de usuario | ✅ |
-| Plan multi-deporte editable | 🟡 En progreso |
-| IA Coach adaptativa (workers + LLM) | 🟡 Pendiente |
-| Apps móviles nativas (iOS / Android) | 🟡 Pendiente |
-| Garmin / COROS / Wahoo / iGPSPORT | 🟡 Próximamente |
+- **Dashboard en tiempo real** — CTL, ATL, TSB, forma % calculados sobre tus actividades importadas
+- **Conexión Strava** — OAuth oficial, importación automática de actividades con cálculo heurístico de TSS
+- **Coach IA** — Análisis semanal, detección de fatiga, ajuste de plan (soporta Gemini, GPT, Claude)
+- **BYOK (Bring Your Own Key)** — Plan gratuito con tu propia API key de IA
+- **Suscripción Pro** — 500 consultas IA/mes vía Lemon Squeezy
+- **Multi-deporte** — Running, ciclismo, natación, triatlón, gimnasio
+- **Zonas FC personalizables** — Método Karvonen o manual
+- **Onboarding** — Configuración guiada de datos corporales, ritmo 10K, zonas
+- **Multi-idioma** — Español e inglés
+- **Temas** — Dark, light, midnight, forest + colores de acento
 
 ---
 
-## 🏗️ Estructura del proyecto
-
-```
-peak-endurance/
-├── apps/web/                 → Frontend React + Vite (production)
-│   ├── src/components/       → Layout, auth, UI
-│   ├── src/pages/            → Landing, Dashboard, Connections, etc.
-│   ├── src/hooks/            → useStrava, useDashboardMetrics, useAuth, useI18n
-│   ├── src/lib/              → supabase, strava, auth, i18n
-│   └── src/providers/        → AuthProvider, ThemeProvider
-├── supabase/
-│   ├── schema.sql            → Esquema base
-│   ├── seed.sql              → Tablas Strava (oauth_states, tokens) + RLS
-│   ├── migrations/           → 0001_rls_and_imported_activities.sql
-│   └── functions/
-│       ├── strava-auth/      → OAuth flow (auth/callback/status/refresh/disconnect)
-│       └── strava-sync/      → Importar actividades + cómputo TSS heurístico
-├── docs/                     → Arquitectura, OpenAthlete reference
-├── docs/legacy/              → Docs históricos del prototipo legacy
-├── frd.md                    → Functional Requirements
-├── fdd.md                    → Functional Design
-└── sdd peak endurance.md     → Software Design Doc base
-```
-
----
-
-## 🧠 Stack tecnológico
+## Stack
 
 | Capa | Tecnología |
 |------|-----------|
 | Frontend | React 19 + TypeScript + Vite 8 |
-| UI | Lucide React + CSS variables (multi-theme) + framer-motion |
-| Backend | Supabase (PostgreSQL + Auth + Edge Functions Deno) |
-| Integraciones | Strava OAuth 2.0 (oficial, server-side) |
-| IA (futuro) | Cloudflare Workers + Ollama / OpenRouter |
-| Auth providers | Google OAuth + Email/Password |
+| UI | Lucide React + framer-motion + CSS variables |
+| Backend | Supabase (PostgreSQL + Auth + Edge Functions) |
+| Pagos | Lemon Squeezy (Merchant of Record) |
+| IA | Gemini 2.0 Flash / GPT-4o / Claude (multi-provider) |
+| Integraciones | Strava OAuth 2.0 |
+| Deploy | Vercel (frontend) + Supabase (backend) |
 
 ---
 
-## 🔌 Conexiones deportivas
+## Estructura
 
-| Fuente | Estado | Notas |
-|---|---|---|
-| **Strava** | ✅ OAuth oficial vía edge function `strava-auth` | Importa actividades, refresca tokens, calcula TSS heurístico |
-| Garmin Connect | 🟡 Próximamente | Vía Garmin OAuth |
-| COROS | 🟡 Próximamente | API privada en evaluación |
-| Wahoo | 🟡 Próximamente | Vía Wahoo Cloud API |
-| iGPSPORT | 🟡 Próximamente | Sin API pública oficial todavía |
-
-> Nota: este proyecto usó internamente un **MCP de Strava** durante prototipado, pero la conexión real para usuarios finales **siempre va por OAuth server-side** (única forma escalable y multi-tenant).
-
----
-
-## 🚀 Puesta en marcha (local)
-
-1. **Variables de entorno (frontend)** — `apps/web/.env.local`:
-   ```bash
-   VITE_SUPABASE_URL=https://<project-ref>.supabase.co
-   VITE_SUPABASE_ANON_KEY=<anon-key>
-   VITE_SITE_URL=http://localhost:5173
-   ```
-
-2. **Secrets en Supabase Edge Functions** (Dashboard → Edge Functions → Secrets):
-   ```
-   STRAVA_CLIENT_ID=<tu-client-id>
-   STRAVA_CLIENT_SECRET=<tu-client-secret>
-   STRAVA_REDIRECT_URI=https://<project-ref>.supabase.co/functions/v1/strava-auth/callback
-   APP_URL=https://<tu-dominio-en-producción>
-   ```
-
-3. **Aplicar migraciones**: en Supabase SQL Editor, ejecutar en orden:
-   ```sql
-   -- 1) supabase/schema.sql
-   -- 2) supabase/seed.sql
-   -- 3) supabase/migrations/0001_rls_and_imported_activities.sql
-   ```
-
-4. **Desplegar edge functions** (con Supabase CLI):
-   ```bash
-   supabase functions deploy strava-auth --no-verify-jwt
-   supabase functions deploy strava-sync
-   ```
-
-5. **Configurar app de Strava** ([www.strava.com/settings/api](https://www.strava.com/settings/api)):
-   - Authorization Callback Domain: `<project-ref>.supabase.co`
-   - Website: tu dominio de producción
-
-6. **Configurar Google OAuth** ([Google Cloud Console](https://console.cloud.google.com)):
-   - OAuth Client (Web), redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback`
-   - Pegar Client ID/Secret en Supabase → Authentication → Providers → Google.
-
-7. **Frontend**:
-   ```bash
-   cd apps/web
-   npm install
-   npm run dev
-   ```
+```
+peak-endurance/
+├── apps/web/               → Frontend React (producción)
+│   ├── src/pages/          → Landing, Dashboard, Training, AI Coach, Settings...
+│   ├── src/hooks/          → useStrava, useSubscription, useApiKey, useAiCoach...
+│   ├── src/lib/            → supabase, auth, strava, i18n, types
+│   └── src/providers/      → AuthProvider, ThemeProvider
+├── supabase/
+│   ├── schema.sql          → Esquema base
+│   ├── migrations/         → 4 migraciones incrementales
+│   └── functions/          → 7 edge functions desplegadas
+│       ├── strava-auth/
+│       ├── strava-sync/
+│       ├── ai-coach/
+│       ├── ai-validate-key/
+│       ├── lemonsqueezy-checkout/
+│       ├── lemonsqueezy-webhook/
+│       └── lemonsqueezy-portal/
+├── docs/
+│   ├── LAUNCH_PLAN.md      → Plan maestro de lanzamiento
+│   └── v2-architecture.md  → Arquitectura v2
+├── frd.md                  → Requisitos funcionales
+├── fdd.md                  → Diseño funcional
+└── package.json            → Monorepo workspace
+```
 
 ---
 
-## 📊 Cómputo de métricas
+## Desarrollo local
 
-El dashboard calcula PMC (Performance Management Chart) **client-side** sobre `imported_activities`:
+```bash
+# 1. Instalar dependencias
+npm install
 
-- **TSS** (heurístico, vía edge function al importar):
-  - Si hay `avg_hr`: `TSS ≈ horas × (avg_hr / threshold_hr)² × 100`, con `threshold_hr ≈ 0.85 × max_hr`.
-  - Fallback 1: `suffer_score` de Strava (solo subscribers).
-  - Fallback 2: estimación conservadora a IF≈0.65 (Z2).
-- **CTL** (aptitud, fitness): EMA 42 días sobre TSS diario.
-- **ATL** (fatiga aguda): EMA 7 días.
-- **TSB** (forma): CTL − ATL.
-- **Forma %**: TSB normalizado a [-100, +100].
+# 2. Variables de entorno
+cp apps/web/.env.example apps/web/.env.local
+# Editar con tus credenciales de Supabase
 
----
+# 3. Iniciar dev server
+npm run dev:web
+```
 
-## 📋 Documentos
+### Variables requeridas (`apps/web/.env.local`)
 
-| Documento | Descripción |
-|---|---|
-| `frd.md` | Requisitos funcionales |
-| `fdd.md` | Diseño funcional + arquitectura |
-| `sdd peak endurance.md` | Diseño de software |
-| `COMPARISON.md` | Análisis Peak vs OpenAthlete vs TrainingPeaks |
-| `docs/legacy/*` | Documentación del prototipo previo (XCO Training Analyzer) |
+```
+VITE_SUPABASE_URL=https://<project-ref>.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon-key>
+VITE_SITE_URL=http://localhost:5173
+```
 
 ---
 
-*Versión: 2.0 — Actualizado: 20 de junio de 2026*
+## Deploy
+
+**Frontend:** Vercel (auto-deploy desde `main`)
+
+**Edge Functions:**
+```bash
+npx supabase functions deploy strava-auth --no-verify-jwt --project-ref <ref>
+npx supabase functions deploy strava-sync --project-ref <ref>
+npx supabase functions deploy ai-coach --no-verify-jwt --project-ref <ref>
+npx supabase functions deploy ai-validate-key --no-verify-jwt --project-ref <ref>
+npx supabase functions deploy lemonsqueezy-checkout --no-verify-jwt --project-ref <ref>
+npx supabase functions deploy lemonsqueezy-webhook --no-verify-jwt --project-ref <ref>
+npx supabase functions deploy lemonsqueezy-portal --no-verify-jwt --project-ref <ref>
+```
+
+**Migraciones:**
+```bash
+npx supabase db push --linked
+```
+
+---
+
+## Modelo de negocio
+
+| Plan | Precio | Incluye |
+|------|--------|---------|
+| Free | $0 | Dashboard, Strava sync, 20 consultas IA/mes (BYOK) |
+| Pro | COP$37.000/mes | 500 consultas IA/mes (server key), soporte prioritario |
+
+Pagos procesados por Lemon Squeezy (Merchant of Record). No requiere empresa en USA.
+
+---
+
+## Licencia
+
+Propietario. © 2026 Jorman Fagua.
