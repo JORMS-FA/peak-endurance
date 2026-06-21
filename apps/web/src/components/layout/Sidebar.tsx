@@ -59,6 +59,9 @@ export function Sidebar() {
           <span className="sidebar-profile-name">{displayName}</span>
           <LogOut size={14} />
         </button>
+        <div className="app-credits">
+          Peak Endurance © 2026 · <a href="https://github.com/JORMS-FA" target="_blank" rel="noopener noreferrer">Jorman Fagua</a>
+        </div>
       </div>
     </aside>
   )

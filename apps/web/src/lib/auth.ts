@@ -120,7 +120,7 @@ export async function ensureProfile(user: User): Promise<AuthProfile | null> {
 
   const { data, error } = await supabase
     .from(PROFILES_TABLE)
-    .upsert(upsertPayload, { onConflict: 'id' })
+    .upsert(upsertPayload, { onConflict: 'id', ignoreDuplicates: false })
     .select('id, email, display_name, avatar_url, created_at, onboarding_completed')
     .maybeSingle()
 

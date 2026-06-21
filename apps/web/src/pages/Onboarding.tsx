@@ -94,16 +94,22 @@ export function Onboarding() {
     if (data.weekly_hours) payload.weekly_hours = parseFloat(data.weekly_hours)
 
     await supabase.from('profiles').update(payload).eq('id', profile.id)
-    await refresh()
-    setSaving(false)
+    // Force reload to avoid stale profile cache
+    window.location.href = '/app'
   }
 
   async function handleSkip() {
     if (!supabase || !profile) return
     setSaving(true)
-    await supabase.from('profiles').update({ onboarding_completed: true }).eq('id', profile.id)
-    await refresh()
-    setSaving(false)
+    const { error } = await supabase
+      .from('profiles')
+      .update({ onboarding_completed: true })
+      .eq('id', profile.id)
+    if (error) {
+      console.error('[onboarding] skip error:', error)
+    }
+    // Force reload to avoid stale profile
+    window.location.href = '/app'
   }
 
   return (

@@ -5,6 +5,33 @@
    Production-ready, mobile-first, responsive
    ═══════════════════════════════════════════════════════════════ */
 
+/* ─── RGB Wave Animation (gaming keyboard effect) ──────────── */
+@keyframes rgb-wave {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes rgb-glow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+:root {
+  --rgb-gradient: linear-gradient(
+    90deg,
+    #ff0080,
+    #ff8c00,
+    #ffef00,
+    #00ff87,
+    #00bfff,
+    #8b5cf6,
+    #ff0080
+  );
+  --rgb-gradient-size: 300% 100%;
+  --rgb-speed: 4s;
+}
+
 /* ─── Theme: Dark (default) ─────────────────────────────────── */
 :root,
 [data-theme="dark"] {
@@ -4060,4 +4087,165 @@ input, select, textarea { font: inherit; color: inherit; }
   height: 28px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   RGB WAVE EFFECTS — Gaming keyboard style animated gradients
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* RGB border effect on cards */
+.card,
+.connection-card,
+.sidebar,
+.onboarding-card {
+  position: relative;
+}
+
+.card::before,
+.connection-card-primary::before,
+.onboarding-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--rgb-gradient);
+  background-size: var(--rgb-gradient-size);
+  animation: rgb-wave var(--rgb-speed) ease infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.3;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover::before,
+.connection-card-primary:hover::before {
+  opacity: 0.6;
+}
+
+/* RGB glow under the sidebar brand */
+.sidebar-brand::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: var(--rgb-gradient);
+  background-size: var(--rgb-gradient-size);
+  animation: rgb-wave var(--rgb-speed) ease infinite;
+  border-radius: 2px;
+  opacity: 0.5;
+}
+
+.sidebar-brand {
+  position: relative;
+}
+
+/* RGB accent on primary buttons */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--rgb-gradient);
+  background-size: var(--rgb-gradient-size);
+  animation: rgb-wave var(--rgb-speed) ease infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  border-radius: inherit;
+  mix-blend-mode: overlay;
+}
+
+.btn-primary:hover::after {
+  opacity: 0.3;
+}
+
+/* RGB top bar accent line */
+.topbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--rgb-gradient);
+  background-size: var(--rgb-gradient-size);
+  animation: rgb-wave var(--rgb-speed) ease infinite;
+  opacity: 0.3;
+}
+
+.topbar {
+  position: relative;
+}
+
+/* RGB effect on the onboarding progress dots */
+.onboarding-dot.active {
+  background: var(--rgb-gradient);
+  background-size: var(--rgb-gradient-size);
+  animation: rgb-wave var(--rgb-speed) ease infinite;
+}
+
+/* RGB bottom glow for the landing page */
+.landing-rgb-glow {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--rgb-gradient);
+  background-size: var(--rgb-gradient-size);
+  animation: rgb-wave var(--rgb-speed) ease infinite;
+  z-index: 9999;
+}
+
+/* RGB wave on auth screen hero */
+.auth-hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--rgb-gradient);
+  background-size: var(--rgb-gradient-size);
+  animation: rgb-wave var(--rgb-speed) ease infinite;
+}
+
+/* Active sidebar link RGB underline */
+.sidebar-link.active {
+  border-left: 2px solid transparent;
+  border-image: var(--rgb-gradient) 1;
+  background-size: var(--rgb-gradient-size);
+  animation: rgb-wave var(--rgb-speed) ease infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   FOOTER CREDITS
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.app-credits {
+  text-align: center;
+  padding: 12px 16px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.app-credits a {
+  color: var(--text-2);
+  text-decoration: none;
+}
+
+.app-credits a:hover {
+  color: var(--accent);
 }

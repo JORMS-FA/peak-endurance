@@ -346,8 +346,16 @@ export function Landing() {
             <span>{APP_NAME}</span>
           </div>
           <p>&copy; 2026 {APP_NAME}. {t('allRightsReserved')}</p>
+          <div className="app-credits" style={{ marginTop: 8 }}>
+            <a href="https://github.com/JORMS-FA" target="_blank" rel="noopener noreferrer">
+              Developed by Jorman Fagua
+            </a>
+          </div>
         </div>
       </footer>
+
+      {/* RGB wave bar */}
+      <div className="landing-rgb-glow" />
     </div>
   )
 }
