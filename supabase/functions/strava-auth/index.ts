@@ -40,7 +40,7 @@ serve(async (req) => {
       return json({ error: 'Not found' }, 404)
     }
 
-    // POST — body-routed: { action: 'auth' | 'status' | 'refresh' }
+    // POST — body-routed: { action: 'auth' | 'status' | 'refresh' | 'disconnect' }
     const body = await req.json()
     switch (body.action) {
       case 'auth':
@@ -49,6 +49,8 @@ serve(async (req) => {
         return handleStatus(req, supabase)
       case 'refresh':
         return handleRefresh(req, supabase, clientId, clientSecret)
+      case 'disconnect':
+        return handleDisconnect(req, supabase)
       default:
         return json({ error: 'Unknown action' }, 400)
     }
@@ -153,7 +155,7 @@ async function handleCallback(
 
   return new Response(null, {
     status: 302,
-    headers: { Location: `${appUrl}/conexiones?strava=success` },
+    headers: { Location: `${appUrl}/app/conexiones?strava=success` },
   })
 }
 
@@ -235,6 +237,35 @@ async function handleRefresh(
     .eq('profile_id', user.id)
 
   return json({ success: true, expiresAt })
+}
+
+async function handleDisconnect(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+) {
+  const user = await getUser(req, supabase)
+  if (!user) return json({ error: 'Unauthorized' }, 401)
+
+  // Best-effort token revoke at Strava (ignore errors).
+  const { data: token } = await supabase
+    .from('strava_tokens')
+    .select('access_token')
+    .eq('profile_id', user.id)
+    .maybeSingle()
+
+  if (token?.access_token) {
+    try {
+      await fetch('https://www.strava.com/oauth/deauthorize', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token.access_token}` },
+      })
+    } catch (err) {
+      console.warn('[strava-auth] deauthorize warning:', err)
+    }
+  }
+
+  await supabase.from('strava_tokens').delete().eq('profile_id', user.id)
+  return json({ success: true })
 }
 
 async function getUser(

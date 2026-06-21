@@ -1,344 +1,341 @@
 # FDD — Functional Design Document
-## Peak Endurance Coach
+## Peak Endurance
 
-> **Versión:** 1.1  
-> **Fecha:** 18 de junio de 2026  
-> **Basado en:** FRD v1.1, SDD existente, esquema Supabase actual  
-
----
-
-## 1. Arquitectura General
-
-```
-┌─────────────────────────────────────────────────────┐
-│                    HERMES AGENT                      │
-│  ┌──────────────┐  ┌────────────┐  ┌──────────────┐ │
-│  │ MCP Strava   │  │ Cronjob    │  │ Memoria      │ │
-│  │ (datos reales)│  │ (reportes) │  │ (perfil atl.)│ │
-│  └──────┬───────┘  └─────┬──────┘  └──────┬───────┘ │
-│         │                │                │          │
-└─────────┼────────────────┼────────────────┼──────────┘
-          │                │                │
-          ▼                ▼                ▼
-┌─────────────────────────────────────────────────────┐
-│              PEAK ENDURACE COACH (Web App)            │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐   │
-│  │ Frontend │  │ Backend  │  │ Cloudflare       │   │
-│  │ React    │  │ Supabase │  │ Workers (IA)     │   │
-│  │ + Vite   │  │ + Auth   │  │ + Proxy          │   │
-│  └──────────┘  └──────────┘  └──────────────────┘   │
-└─────────────────────────────────────────────────────┘
-```
+> **Versión:** 2.0
+> **Fecha:** 20 de junio de 2026
+> **Basado en:** FRD v2.0, schema actual de Supabase, edge functions desplegadas.
 
 ---
 
-## 2. Stack Tecnológico
+## 1. Arquitectura general
 
-| Capa | Tecnología | Versión/Nota |
-|------|-----------|--------------|
-| Frontend | React + TypeScript + Vite | Ya en `apps/web/` |
-| UI Components | Lucide React + CSS custom | Ya instalado |
-| **Design System** | **Linear-inspired (oscuro, preciso, violeta)** | **Basado en `popular-web-designs/templates/linear.app.md`** |
-| Ruteo | React Router DOM | Ya en package.json |
-| Backend/Datos | Supabase (PostgreSQL + Auth) | Schema listo en `supabase/schema.sql` |
-| IA/Proxy | Cloudflare Workers + Ollama | Worker ya existe (`cloudflare-worker.js`) |
-| Automatización | Hermes Agent (MCP + Cron) | Strava ya conectado |
-| Estilos | CSS Modules + CSS variables (Linear tokens) | Rediseño planificado |
-| Monorepo | Turborepo o manual | Estructura actual: apps/, packages/ |
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                         CLIENTES                                      │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐               │
+│  │  Web (React) │  │   iOS (RN)   │  │ Android (RN) │  (roadmap)    │
+│  │  Vite + TS   │  │   roadmap    │  │   roadmap    │               │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘               │
+│         │                  │                  │                      │
+└─────────┼──────────────────┼──────────────────┼─────────────────────┘
+          │                  │                  │
+          └──────────────────┼──────────────────┘
+                             │ Supabase JS Client
+                             ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                       SUPABASE                                        │
+│  ┌────────────────┐  ┌────────────────┐  ┌──────────────────────┐   │
+│  │   PostgreSQL   │  │      Auth      │  │   Edge Functions     │   │
+│  │  + RLS por     │  │  Google OAuth  │  │  - strava-auth       │   │
+│  │   profile_id   │  │  Email+Pass    │  │  - strava-sync       │   │
+│  │                │  │                │  │  - (futuro: ai-*)    │   │
+│  └────────┬───────┘  └────────────────┘  └──────────┬───────────┘   │
+└───────────┼─────────────────────────────────────────┼────────────────┘
+            │                                          │
+            │                                          │ HTTPS
+            │                                          ▼
+            │                            ┌─────────────────────────┐
+            │                            │     Strava API v3       │
+            │                            │  (OAuth + activities)   │
+            │                            └─────────────────────────┘
+            ▼
+   (futuro) Cloudflare Worker → OpenRouter/Ollama → IA Coach
+```
 
 ---
 
-## 3. Modelo de Datos (basado en schema.sql existente)
+## 2. Stack tecnológico
 
-### 3.1 Perfil y Suscripción
-```
+| Capa | Tecnología | Versión |
+|------|-----------|---------|
+| Frontend (web) | React 19 + TypeScript + Vite 8 | actual |
+| Animaciones | framer-motion | 12.x |
+| Iconos | lucide-react | 1.x |
+| Routing | react-router-dom | 7.x |
+| State auth | Context API + Supabase Auth | — |
+| Backend | Supabase (PostgreSQL 15 + Auth + Edge Functions Deno) | hosted |
+| Edge runtime | Deno | última estable de Supabase |
+| IA (futuro) | Cloudflare Workers + LLM (OpenRouter/Ollama) | — |
+| Mobile (futuro) | React Native (probable) | — |
+| Hosting web | Vercel | — |
+
+---
+
+## 3. Modelo de datos
+
+### 3.1 Auth y perfil
+
+```sql
 profiles
-├── id (uuid PK → auth.users)
-├── display_name, email, avatar_url
-├── preferred_language (default 'es')
-└── created_at
+  id (uuid PK → auth.users)
+  display_name, email, avatar_url
+  preferred_language ('es'|'en')
+  created_at
 
 subscriptions
-├── id (uuid PK)
-├── profile_id → profiles.id
-├── plan_key ('free'), status
-├── ai_quota_limit (20), ai_quota_window ('monthly')
-└── created_at
+  id (uuid PK)
+  profile_id → profiles.id
+  plan_key ('free'|'pro')
+  ai_quota_limit, ai_quota_window
+  created_at
+
+ai_usage_counters (profile_id, window_key, used_queries)
+ui_preferences (profile_id, language, timezone, density)
+ai_preferences (profile_id, tone, equipment, autonomy_level, extra_context)
 ```
 
-### 3.2 Conexiones Deportivas
-```
-activity_sources
-├── id (uuid PK)
-├── source_type (unique: 'strava', 'garmin', etc.)
-└── display_name
+### 3.2 Conexiones deportivas
 
-source_connections
-├── id (uuid PK)
-├── profile_id → profiles.id
-├── source_id → activity_sources.id
-├── external_athlete_id
-├── access_token_encrypted, refresh_token_encrypted
-├── status ('connected')
-└── created_at
+```sql
+activity_sources           -- catálogo: strava, garmin, coros, etc.
+  id, source_type (unique), display_name
+
+source_connections          -- una por (profile, source)
+  id, profile_id, source_id, external_athlete_id, status
+
+strava_oauth_states         -- CSRF para OAuth (efímero, expira en 10 min)
+  state (PK), profile_id, created_at
+
+strava_tokens               -- tokens OAuth cifrados de Strava
+  profile_id (PK)
+  athlete_id, athlete_name
+  access_token, refresh_token (encrypted at rest by Supabase)
+  expires_at, scopes
+  created_at, updated_at
 ```
 
-### 3.3 Actividades
-```
+### 3.3 Actividades importadas
+
+```sql
 imported_activities
-├── id (uuid PK)
-├── profile_id → profiles.id
-├── source_connection_id → source_connections.id
-├── external_activity_id (unique por source)
-├── source_type, activity_date, title, sport
-├── duration_minutes, distance_km, elevation_gain_m
-├── avg_hr, max_hr
-├── zone_breakdown (jsonb)
-├── zone_precision ('insufficient')
-└── raw_payload (jsonb)
+  id, profile_id, source_connection_id
+  external_activity_id, source_type (unique pair)
+  activity_date, title, sport
+  duration_minutes, distance_km, elevation_gain_m
+  avg_hr, max_hr
+  tss                      -- calculado heurísticamente al importar
+  zone_breakdown (jsonb)
+  zone_precision ('real'|'estimated'|'insufficient')
+  raw_payload (jsonb)      -- payload completo de Strava
+  created_at
 ```
 
 ### 3.4 Planificación
-```
+
+```sql
 training_blocks
-├── id (uuid PK)
-├── profile_id → profiles.id
-├── title, starts_on, ends_on, goal
-└── created_at
+  id, profile_id
+  title, starts_on, ends_on, goal
 
 training_sessions
-├── id (uuid PK)
-├── profile_id → profiles.id
-├── block_id → training_blocks.id (nullable)
-├── session_date, title, sport, status
-├── intensity, duration_minutes, tss, notes
-└── created_at
-```
-
-### 3.5 IA y Ajustes
-```
-pending_ai_actions
-├── id (uuid PK)
-├── profile_id → profiles.id
-├── action_type, summary, reason, impact
-├── payload (jsonb), status ('pending')
-└── created_at
-
-ai_preferences
-├── profile_id (PK → profiles.id)
-├── tone ('direct'), equipment ('heart-rate only')
-├── autonomy_level ('proposal-only')
-├── extra_context (text)
-└── updated_at
+  id, profile_id, block_id (nullable)
+  session_date, title, sport
+  status ('planned'|'completed'|'skipped')
+  intensity, duration_minutes, tss, notes
 
 session_adjustments
-├── id (uuid PK)
-├── session_id → training_sessions.id
-├── requested_by, reason
-├── before_snapshot (jsonb), after_snapshot (jsonb)
-└── created_at
+  id, session_id, requested_by, reason
+  before_snapshot (jsonb), after_snapshot (jsonb)
+
+pending_ai_actions
+  id, profile_id, action_type
+  summary, reason, impact, payload (jsonb)
+  status ('pending'|'accepted'|'rejected')
 ```
 
-### 3.6 UI
+### 3.5 RLS
+
+Todas las tablas tienen RLS habilitado (migración `0001_rls_and_imported_activities.sql`).
+Las políticas siguen el patrón **"el usuario solo ve lo suyo"**: `auth.uid() = profile_id`.
+Las edge functions usan `SERVICE_ROLE_KEY`, que bypasea RLS para operaciones server-side.
+
+---
+
+## 4. Edge Functions
+
+### 4.1 `strava-auth` — OAuth flow
+
+| Acción | Body / método | Descripción |
+|---|---|---|
+| `auth` | `POST { action: 'auth' }` | Genera state CSRF, devuelve URL de autorización de Strava |
+| callback | `GET /callback?code=...&state=...` | Intercambia code por tokens, los persiste en `strava_tokens`, redirige a `${APP_URL}/app/conexiones?strava=success` |
+| `status` | `POST { action: 'status' }` | Devuelve `{ connected, athlete, expiresAt, scopes, needsRefresh }` |
+| `refresh` | `POST { action: 'refresh' }` | Refresca el access token usando el refresh token |
+| `disconnect` | `POST { action: 'disconnect' }` | Llama a `/oauth/deauthorize` de Strava y borra el token |
+
+Variables de entorno requeridas en Supabase Edge Functions Secrets:
+- `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`
+- `STRAVA_REDIRECT_URI` = `https://<project>.supabase.co/functions/v1/strava-auth/callback`
+- `APP_URL` = URL pública del frontend
+
+### 4.2 `strava-sync` — importación de actividades
+
+`POST { days?: number }` (default 60, max 180)
+
+Flujo:
+1. Verifica auth del usuario.
+2. Lee `strava_tokens` por `profile_id`. Si está expirado, refresca antes de continuar.
+3. Crea/recupera la fila en `source_connections` (Strava) para enlazarla.
+4. Llama a `GET /api/v3/athlete/activities?after=<unix>&per_page=100` (paginado, hasta 5 páginas / 500 actividades).
+5. Para cada actividad:
+   - Mapea `sport_type` → `sport` interno (`run`, `bike`, `swim`, `gym`, `other`).
+   - Calcula TSS heurístico (ver §5).
+   - Hace upsert sobre `imported_activities` (`onConflict: 'source_type,external_activity_id'`).
+6. Devuelve `{ synced, skipped, total, since }`.
+
+---
+
+## 5. Cómputo de métricas (PMC)
+
+### 5.1 TSS heurístico (server-side, en `strava-sync`)
+
 ```
-ui_preferences
-├── profile_id (PK → profiles.id)
-├── language ('es'), timezone ('America/Bogota')
-├── density ('comfortable')
-└── updated_at
+Path 1 — HR-based (preferido):
+  duration = moving_time || elapsed_time
+  threshold_hr = 0.85 × (max_hr_actividad || 185)
+  IF = avg_hr / threshold_hr
+  TSS = (duration_seconds / 3600) × IF² × 100
+  TSS = clamp(TSS, 0, 600)
+
+Path 2 — Strava suffer_score (solo subscribers):
+  TSS = min(suffer_score, 600)
+
+Path 3 — Solo duración (fallback):
+  TSS = horas × 0.65² × 100        (≈ Z2 conservador)
+```
+
+### 5.2 PMC client-side (en `useDashboardMetrics`)
+
+```ts
+// Sobre la serie diaria (90 días) de TSS:
+ctl = ctl + (tss_today - ctl) / 42      // CTL = EMA42 (aptitud / fitness)
+atl = atl + (tss_today - atl) / 7       // ATL = EMA7  (fatiga aguda)
+tsb = ctl - atl                          // TSB = forma
+formPct = round(clamp(tsb, -20, 20) / 20 × 100)
 ```
 
 ---
 
-## 4. Flujos Principales
+## 6. Mapa de rutas (frontend)
 
-### 4.1 Importación de Actividad (Strava → App)
 ```
-[MCP Strava] → Hermes consulta actividades recientes
-    ↓
-Hermes escribe en imported_activities (vía API de la app o Supabase directo)
-    ↓
-App web muestra en Dashboard y Calendario
-    ↓
-Hermes analiza + genera recomendaciones para entrenamiento
-```
+/                  → Landing (público, embudo de descarga)
+/login             → Auth screen (Google + email/pass)
 
-### 4.2 Planificación de Bloques
-```
-Usuario (o Hermes) crea training_block con objetivo
-    ↓
-Plan de 15K: 9 semanas, 3 fases
-    ↓
-Sesiones planificadas con sport, duración, intensidad, TSS
-    ↓
-Cada día, se compara con lo importado de Strava
-```
+/app               → Dashboard (protegido, AuthGuard)
+/app/calendario    → Calendario (planning vs ejecutado)
+/app/entrenamientos→ Lista de sesiones
+/app/plan          → Plan + bloques
+/app/ia-coach      → Panel IA Coach
+/app/analisis      → Análisis avanzado / curva de forma
+/app/progreso      → Tendencias semanales
+/app/conexiones    → Strava + futuras integraciones
+/app/segmentos     → Segmentos Strava
+/app/ajustes       → Tema, idioma, perfil
 
-### 4.3 Propuesta IA Adaptativa
-```
-Usuario selecciona día/semana/bloque
-    ↓
-Sistema arma contexto completo: plan + actividades ejecutadas + ATL/CTL/TSB + fatiga acumulada + configuración IA
-    ↓
-Workers llama a modelo (vía Ollama/OpenRouter)
-    ↓
-**IA Coach evalúa si el plan actual sigue siendo óptimo**
-    ↓
-  ┌─ Si todo bien → confirma plan actual sin cambios
-  └─ Si detecta desviación → genera propuesta de ajuste estructurada
-       ↓
-Propuesta → pending_ai_actions (status='pending')
-       ↓
-Usuario revisa y confirma/rechaza
-       ↓
-Si confirma → se aplica cambio + se guarda en session_adjustments + se actualiza ATL/CTL/TSB
-```
-
-### 4.4 Detección Automática de Cambios
-- Si el usuario NO completa una sesión (actividad real ausente o muy por debajo del plan)
-- Si el usuario completa una sesión extra no planificada
-- Si la fatiga (ATL) supera umbral configurable
-- Si hay N días consecutivos sin entrenar
-→ La IA Coach recalcula el bloque y propone ajustes automáticamente
-
-### 4.5 Supervisión Autónoma (Hermes)
-```
-Cronjob: cada lunes 8:00 AM
-    ↓
-Hermes lee imported_activities de la semana pasada
-    ↓
-Analiza: distancia total, TSS acumulado, fatiga, zonas HR, comparación con plan
-    ↓
-Genera reporte en lenguaje natural
-    ↓
-Entrega por chat + sugiere ajustes para la semana entrante
+*                  → Redirect a /
 ```
 
 ---
 
-## 5. Mapa de Rutas (Routing — apps/web)
+## 7. Flujos principales
 
-Basado en la estructura React existente:
-
+### 7.1 Conectar Strava
 ```
-/                  → Landing / Login (si no autenticado)
-/dashboard         → Dashboard principal (métricas, última semana)
-/calendar          → Calendario con plan vs real
-/calendar/:date    → Detalle del día (plan + actividad real)
-/blocks            → Bloques de entrenamiento (macrociclos)
-/blocks/:id        → Detalle de bloque con progreso
-/plan/15k-2026     → Plan específico para la carrera de 15K
-/activities        → Historial de actividades importadas
-/activities/:id    → Detalle de actividad con streams
-/ai-settings       → Configuración de IA Coach
-/settings          → Preferencias de usuario
-/export            → Exportación de datos (JSON/CSV)
-```
-
----
-
-## 6. Pantallas Clave (Wireframes funcionales — Rediseño Linear)
-
-> La interfaz será rediseñada con el sistema de diseño de **Linear**: fondo casi negro `#08090a`, tipografía Inter con peso 510 característico, bordes semitransparentes, acento violeta `#5e6ad2`/`#7170ff`, tarjetas con opacidad `rgba(255,255,255,0.02-0.05)`, sin colores cálidos en la UI.
-
-### 6.1 Dashboard
-```
-┌─────────────────────────────────────────┐
-│  📊 Resumen Semanal     │  📅 Hoy       │
-│  Distancia: 42.5 km     │  Plan: 10 km  │
-│  Tiempo: 3h 12m         │  Real: —      │
-│  TSS: 245               │  🔘 Completar │
-│  Días entrenados: 5/7   │               │
-├─────────────────────────────────────────┤
-│  📈 Comparativa Plan vs Real            │
-│  ┌───────────────────────┐              │
-│  │ [Gráfico de barras]   │              │
-│  │ Sem 1 ████░░ 80%      │              │
-│  │ Sem 2 ██████░ 92%     │              │
-│  │ Sem 3 ███░░░░ 55%     │              │
-│  └───────────────────────┘              │
-├─────────────────────────────────────────┤
-│  🤖 Propuestas IA Pendientes (2)        │
-│  [Ajustar sesión viernes] [Ver...]      │
-└─────────────────────────────────────────┘
+Usuario click "Conectar Strava"
+  → POST strava-auth { action: 'auth' }
+  → strava-auth genera state CSRF, lo guarda en strava_oauth_states
+  → strava-auth devuelve URL https://www.strava.com/oauth/authorize?...
+  → window.location.assign(url)
+  → Usuario autoriza en Strava
+  → Strava redirige a STRAVA_REDIRECT_URI (= edge function /callback)
+  → strava-auth valida state, intercambia code → tokens
+  → strava-auth persiste en strava_tokens
+  → strava-auth redirige 302 a APP_URL/app/conexiones?strava=success
+  → Connections.tsx detecta ?strava=success y dispara strava-sync(60)
+  → Dashboard refresca métricas
 ```
 
-### 6.2 Calendario
+### 7.2 Sincronización de actividades
 ```
-┌─────────────────────────────────────────┐
-│  ← Agosto 2026 →        [Plan/Real]     │
-│  L   M   X   J   V   S   D              │
-│      1   2   3   4   5   6               │
-│      5km 8km DES 10km 6km  DES          │
-│      5km 8km  —  10km 6km   —           │
-│  7   8   9  10  11  12  13              │
-│ DES 10km 6km 12km 8km  DES 15K🏁       │
-│  —  10km 7km 12km 8km   —   🏆          │
-├─────────────────────────────────────────┤
-│  📊 Leyenda: █ 0-50% █ 51-80% █ >80%   │
-└─────────────────────────────────────────┘
+useStravaSync → POST strava-sync { days: 60 }
+  → strava-sync refresca token si vencido
+  → strava-sync llama Strava API (paginado)
+  → Para cada activity: computeTss() → upsert imported_activities
+  → Devuelve { synced, skipped, total, since }
+useDashboardMetrics → SELECT imported_activities WHERE profile_id = me
+  → Construye serie diaria 90d, computa CTL/ATL/TSB
+  → Renderiza dashboard
+```
+
+### 7.3 Propuesta IA (futuro, fase 3)
+```
+Usuario invoca "Analizar semana" / "Detectar fatiga"
+  → POST ai-coach { context: { ctl, atl, tsb, recent, plan } }
+  → ai-coach (Cloudflare Worker) llama LLM
+  → Inserta pending_ai_actions con propuesta
+  → Dashboard muestra "1 propuesta pendiente"
+  → Usuario revisa y confirma
+  → Se aplica change y se guarda en session_adjustments
 ```
 
 ---
 
-## 7. Integración Hermes ↔ Peak Endurace
+## 8. Pantallas clave
 
-### 7.1 Canales de Comunicación
-| Dirección | Medio | Frecuencia |
-|-----------|-------|------------|
-| Strava → Hermes | MCP Strava (cada consulta) | Bajo demanda |
-| Hermes → Usuario | Chat (Telegram/Discord/CLI) | Semanal (cron) |
-| Hermes → Peak App | API REST o Supabase directo | Cuando genere propuestas |
-| Peak App → Usuario | Web UI | Diario |
+### 8.1 Landing (`/`)
+- Hero con tagline "Strava + TrainingPeaks fusion", CTAs a App Store / Google Play, secondary "Probar versión web".
+- Mockup CSS del dashboard (no imagen, escala perfecto).
+- Sección "para quién es" con chips de deportes.
+- Features 6 con iconos lucide y reveal scroll.
+- "Cómo funciona" en 3 pasos.
+- Pricing con tier Free + Pro.
+- CTA final con stores + footer.
 
-### 7.2 Comandos Hermes para el Usuario
-```
-"¿Cómo fue mi semana de entrenamiento?"     → Resumen ejecutivo
-"¿Estoy en riesgo de sobreentrenamiento?"    → Alerta de fatiga
-"¿Qué tal mi plan para el 15K?"              → Progreso vs plan
-"Ajusta la sesión del jueves a 8 km suaves"  → Propuesta IA
-"Conecta mi Strava"                           → OAuth2
-"Am I connected to Strava?"                   → Verificar conexión
-```
+### 8.2 Dashboard (`/app`)
+- Hero AI Coach con saludo personalizado y 3 acciones.
+- Banner de "Conecta Strava" si no está conectado (oculto si lo está).
+- 4 metric cards animadas (Forma %, Carga TSS, Aptitud CTL, Fatiga ATL) con count-up.
+- Today's session (de `training_sessions`).
+- Quick read: TSB, horas/sem, km/sem.
+- Weekly TSS bars proporcionales a TSS diario (current week).
+- Recent activities (últimas 5 de Strava).
 
----
-
-## 8. Carrera 15K — Plan de 9 Semanas (16 Jun → 16 Ago 2026)
-
-| Semana | Fechas | Fase | Volumen | Sesiones Clave |
-|--------|--------|------|---------|----------------|
-| S1 | 16-22 Jun | Base | 15-20 km | 3-4 rodajes suaves |
-| S2 | 23-29 Jun | Base | 18-22 km | Rodajes + 1 fartlek |
-| S3 | 30 Jun-6 Jul | Construcción | 22-28 km | Rodajes + 1 tempo run |
-| S4 | 7-13 Jul | Construcción | 25-30 km | Rodajes + 1 series 1km |
-| S5 | 14-20 Jul | Construcción | 28-33 km | Rodaje largo 12-14km |
-| S6 | 21-27 Jul | Pico | 30-35 km | Rodaje largo 14-15km |
-| S7 | 28 Jul-3 Ago | Pico | 28-32 km | Último largo 15km |
-| S8 | 4-10 Ago | Tapering | 20-25 km | Reducción de volumen |
-| S9 | 11-16 Ago | Tapering | 10-15 km | Afinamiento + carrera |
+### 8.3 Connections (`/app/conexiones`)
+- Card primaria de Strava con estado real.
+- Botones según estado: Conectar / Sincronizar + Desconectar.
+- Toast de éxito al volver del callback.
+- Lista de "próximamente" (Garmin, COROS, Wahoo, iGPSPORT).
 
 ---
 
 ## 9. Seguridad
 
 | Aspecto | Implementación |
-|---------|---------------|
-| Tokens Strava | Almacenados en `~/.config/strava-mcp/config.json` (local) |
-| API Keys | En Cloudflare Workers (secretos), no en frontend |
-| Auth de usuarios | Supabase Auth (magic link, email) |
-| Datos sensibles | No se incluyen en exportaciones JSON |
-| CORS | Proxy vía Cloudflare Worker |
-| Secretos en frontend | Prohibido — solo URL del Worker |
+|---|---|
+| Tokens de Strava | En `strava_tokens` con RLS; sólo accesible por el dueño y por `service_role` |
+| Secrets de OAuth | `STRAVA_CLIENT_*`, `APP_URL` — solo en Edge Functions Secrets, **nunca** en el frontend |
+| RLS | Habilitado en todas las tablas de `public.*` que tocan datos de usuario |
+| CSRF en OAuth | `strava_oauth_states` con state UUID por intento, validado en callback y borrado tras uso |
+| Auth | Supabase Auth (Google OAuth + email/password con leaked password protection) |
+| Datos en frontend | El frontend solo recibe lo que su `auth.uid()` puede leer (RLS) |
 
 ---
 
-## 10. Pendientes Técnicos Inmediatos
+## 10. Internacionalización
 
-- [x] Conectar MCP Strava ✅
-- [ ] Limpiar README.md (conflictos de merge del proyecto "Nuevo Shopping")
-- [ ] Verificar que `apps/web` compila (tiene node_modules y dist)
-- [ ] Decidir entre Tailwind o CSS Modules para estilos v2
-- [ ] Configurar variable de entorno de Supabase en `apps/web/.env`
-- [ ] Migrar de localStorage a Supabase para datos persistentes
-- [ ] Conectar Cloudflare Worker con OpenRouter/Ollama para IA Coach
-- [ ] Crear plan de 15K en la base de datos (training_blocks + training_sessions)
+- Diccionario en `apps/web/src/lib/i18n.ts` con dos lenguajes (`es` default, `en`).
+- Hook `useI18n()` provee `t(key)` reactivo al idioma activo.
+- Idioma persistido en `localStorage` y sincronizado a `<html lang>`.
+
+---
+
+## 11. Observabilidad y operación
+
+- **Logs de edge functions:** Supabase Dashboard → Functions → Logs.
+- **Errores frontend:** capturados en `console.warn` con prefijos `[auth]`, `[strava]`. (Próximo: integrar Sentry.)
+- **Migraciones:** archivos numerados en `supabase/migrations/`. Idempotentes.
+- **Despliegue:**
+  - Frontend: push a `main` → auto-deploy Vercel.
+  - Edge functions: `supabase functions deploy <nombre>` desde la CLI.
+  - Migraciones SQL: ejecutadas manualmente en Supabase SQL Editor (próximo: GitHub Action).
