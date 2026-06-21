@@ -1,87 +1,158 @@
-# Peak Endurance Coach
+# Peak Endurance
 
-Aplicación web para planificar, comparar y ajustar entrenamientos de endurance con ayuda de IA y supervisión autónoma de Hermes Agent.
+> **Tagline:** la fusión de Strava y TrainingPeaks, con un coach de IA que vive contigo.
+
+Plataforma multi-deporte para atletas de resistencia (running, ciclismo, natación, gimnasio, triatlón) que combina:
+
+- **Datos reales** de Strava (vía OAuth oficial, no MCP).
+- **Planificación estructurada** por bloques (base, construcción, pico, tapering) tipo TrainingPeaks.
+- **Coach de IA adaptativo** que ajusta tu plan según tu fatiga real (CTL, ATL, TSB).
 
 ---
 
-## 🎯 Contexto
+## 🎯 Estado actual
 
-- Proyecto en evolución desde prototipo estático (`index.html`) hacia producto escalable v2 (`apps/web/`).
-- Integración activa con Strava vía MCP y arquitectura para sumar más fuentes (Garmin, Coros, iGPSPORT, Coospo).
-- IA Coach adaptativa como capa central: modifica el plan sobre la marcha según fatiga (ATL/CTL/TSB).
-- Rediseño inspirado en **Linear** (oscuro, preciso, violeta).
+| Capa | Estado |
+|---|---|
+| Auth (Google OAuth + email/password) | ✅ |
+| Strava OAuth real (edge function `strava-auth`) | ✅ |
+| Sincronización Strava → BD (edge function `strava-sync`) | ✅ |
+| Cálculo PMC (TSS / CTL / ATL / TSB / Forma) en cliente | ✅ |
+| Dashboard con datos reales y animaciones | ✅ |
+| Landing v2 orientada a conversión de descarga | ✅ |
+| RLS habilitado en todas las tablas de usuario | ✅ |
+| Plan multi-deporte editable | 🟡 En progreso |
+| IA Coach adaptativa (workers + LLM) | 🟡 Pendiente |
+| Apps móviles nativas (iOS / Android) | 🟡 Pendiente |
+| Garmin / COROS / Wahoo / iGPSPORT | 🟡 Próximamente |
 
-## 🏁 Objetivo inmediato
-
-Preparación para **carrera de 15 km — 16 de agosto de 2026** (La Macarena, Colombia).
+---
 
 ## 🏗️ Estructura del proyecto
 
 ```
 peak-endurance/
-├── apps/web/              → Frontend React + Vite (v2)
-├── packages/ui/           → Tokens visuales y configuración compartida
-├── supabase/              → Esquema base de datos (schema.sql)
-├── workers/               → Workers edge para IA e integraciones
-├── docs/                  → Documentación de arquitectura
-├── index.html             → Referencia legacy del prototipo anterior
-├── cloudflare-worker.js   → Proxy legacy original
-├── frd.md                 → Documento de Requisitos Funcionales
-├── fdd.md                 → Documento de Diseño Funcional
-├── sdd peak endurance.md  → Especificación base del producto
-├── redesign.html          → Prototipo del rediseño Linear
-└── README.md              → Este archivo
+├── apps/web/                 → Frontend React + Vite (production)
+│   ├── src/components/       → Layout, auth, UI
+│   ├── src/pages/            → Landing, Dashboard, Connections, etc.
+│   ├── src/hooks/            → useStrava, useDashboardMetrics, useAuth, useI18n
+│   ├── src/lib/              → supabase, strava, auth, i18n
+│   └── src/providers/        → AuthProvider, ThemeProvider
+├── supabase/
+│   ├── schema.sql            → Esquema base
+│   ├── seed.sql              → Tablas Strava (oauth_states, tokens) + RLS
+│   ├── migrations/           → 0001_rls_and_imported_activities.sql
+│   └── functions/
+│       ├── strava-auth/      → OAuth flow (auth/callback/status/refresh/disconnect)
+│       └── strava-sync/      → Importar actividades + cómputo TSS heurístico
+├── docs/                     → Arquitectura, OpenAthlete reference
+├── docs/legacy/              → Docs históricos del prototipo legacy
+├── frd.md                    → Functional Requirements
+├── fdd.md                    → Functional Design
+└── sdd peak endurance.md     → Software Design Doc base
 ```
+
+---
 
 ## 🧠 Stack tecnológico
 
 | Capa | Tecnología |
 |------|-----------|
-| Frontend | React + TypeScript + Vite |
-| UI | Lucide React + CSS Modules (Linear tokens) |
-| Diseño | Linear-inspired (fondo `#08090a`, acento `#7170ff`) |
-| Backend | Supabase (PostgreSQL + Auth) |
-| IA/Proxy | Cloudflare Workers + Ollama/OpenRouter |
-| Automatización | Hermes Agent (MCP Strava + Cron) |
-
-## 🏃 Plan 15K — 9 Semanas
-
-| Semana | Fechas | Fase | Volumen |
-|--------|--------|------|---------|
-| S1 | 16-22 Jun | Base | 15-20 km |
-| S2 | 23-29 Jun | Base | 18-22 km |
-| S3 | 30 Jun-6 Jul | Construcción | 22-28 km |
-| S4 | 7-13 Jul | Construcción | 25-30 km |
-| S5 | 14-20 Jul | Construcción | 28-33 km |
-| S6 | 21-27 Jul | Pico | 30-35 km |
-| S7 | 28 Jul-3 Ago | Pico | 28-32 km |
-| S8 | 4-10 Ago | Tapering | 20-25 km |
-| S9 | 11-16 Ago | Tapering + 🏁 15K | 10-15 km |
-
-## 🔌 Conexiones deportivas
-
-- **Strava** ✅ Conectado vía MCP
-- **Garmin** 🟡 Próximamente
-- **Coros** 🟡 Próximamente
-- **iGPSPORT** 🟡 Próximamente
-- **Coospo** 🟡 Próximamente
-
-## 📋 Documentos base
-
-| Documento | Descripción |
-|-----------|-------------|
-| `frd.md` | Requisitos funcionales del producto |
-| `fdd.md` | Diseño funcional y arquitectura |
-| `sdd peak endurance.md` | Especificación de diseño de software |
-
-## 🤖 Supervisión autónoma
-
-Hermes Agent ejecuta un cronjob semanal (lunes 8 AM) que:
-1. Lee actividades de Strava vía MCP
-2. Analiza ATL/CTL/TSB y carga semanal
-3. Compara plan vs ejecución real
-4. Genera reporte con recomendaciones de ajuste
+| Frontend | React 19 + TypeScript + Vite 8 |
+| UI | Lucide React + CSS variables (multi-theme) + framer-motion |
+| Backend | Supabase (PostgreSQL + Auth + Edge Functions Deno) |
+| Integraciones | Strava OAuth 2.0 (oficial, server-side) |
+| IA (futuro) | Cloudflare Workers + Ollama / OpenRouter |
+| Auth providers | Google OAuth + Email/Password |
 
 ---
 
-*Versión: 1.1 — Actualizado: 18 de junio de 2026*
+## 🔌 Conexiones deportivas
+
+| Fuente | Estado | Notas |
+|---|---|---|
+| **Strava** | ✅ OAuth oficial vía edge function `strava-auth` | Importa actividades, refresca tokens, calcula TSS heurístico |
+| Garmin Connect | 🟡 Próximamente | Vía Garmin OAuth |
+| COROS | 🟡 Próximamente | API privada en evaluación |
+| Wahoo | 🟡 Próximamente | Vía Wahoo Cloud API |
+| iGPSPORT | 🟡 Próximamente | Sin API pública oficial todavía |
+
+> Nota: este proyecto usó internamente un **MCP de Strava** durante prototipado, pero la conexión real para usuarios finales **siempre va por OAuth server-side** (única forma escalable y multi-tenant).
+
+---
+
+## 🚀 Puesta en marcha (local)
+
+1. **Variables de entorno (frontend)** — `apps/web/.env.local`:
+   ```bash
+   VITE_SUPABASE_URL=https://<project-ref>.supabase.co
+   VITE_SUPABASE_ANON_KEY=<anon-key>
+   VITE_SITE_URL=http://localhost:5173
+   ```
+
+2. **Secrets en Supabase Edge Functions** (Dashboard → Edge Functions → Secrets):
+   ```
+   STRAVA_CLIENT_ID=<tu-client-id>
+   STRAVA_CLIENT_SECRET=<tu-client-secret>
+   STRAVA_REDIRECT_URI=https://<project-ref>.supabase.co/functions/v1/strava-auth/callback
+   APP_URL=https://<tu-dominio-en-producción>
+   ```
+
+3. **Aplicar migraciones**: en Supabase SQL Editor, ejecutar en orden:
+   ```sql
+   -- 1) supabase/schema.sql
+   -- 2) supabase/seed.sql
+   -- 3) supabase/migrations/0001_rls_and_imported_activities.sql
+   ```
+
+4. **Desplegar edge functions** (con Supabase CLI):
+   ```bash
+   supabase functions deploy strava-auth --no-verify-jwt
+   supabase functions deploy strava-sync
+   ```
+
+5. **Configurar app de Strava** ([www.strava.com/settings/api](https://www.strava.com/settings/api)):
+   - Authorization Callback Domain: `<project-ref>.supabase.co`
+   - Website: tu dominio de producción
+
+6. **Configurar Google OAuth** ([Google Cloud Console](https://console.cloud.google.com)):
+   - OAuth Client (Web), redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback`
+   - Pegar Client ID/Secret en Supabase → Authentication → Providers → Google.
+
+7. **Frontend**:
+   ```bash
+   cd apps/web
+   npm install
+   npm run dev
+   ```
+
+---
+
+## 📊 Cómputo de métricas
+
+El dashboard calcula PMC (Performance Management Chart) **client-side** sobre `imported_activities`:
+
+- **TSS** (heurístico, vía edge function al importar):
+  - Si hay `avg_hr`: `TSS ≈ horas × (avg_hr / threshold_hr)² × 100`, con `threshold_hr ≈ 0.85 × max_hr`.
+  - Fallback 1: `suffer_score` de Strava (solo subscribers).
+  - Fallback 2: estimación conservadora a IF≈0.65 (Z2).
+- **CTL** (aptitud, fitness): EMA 42 días sobre TSS diario.
+- **ATL** (fatiga aguda): EMA 7 días.
+- **TSB** (forma): CTL − ATL.
+- **Forma %**: TSB normalizado a [-100, +100].
+
+---
+
+## 📋 Documentos
+
+| Documento | Descripción |
+|---|---|
+| `frd.md` | Requisitos funcionales |
+| `fdd.md` | Diseño funcional + arquitectura |
+| `sdd peak endurance.md` | Diseño de software |
+| `COMPARISON.md` | Análisis Peak vs OpenAthlete vs TrainingPeaks |
+| `docs/legacy/*` | Documentación del prototipo previo (XCO Training Analyzer) |
+
+---
+
+*Versión: 2.0 — Actualizado: 20 de junio de 2026*
