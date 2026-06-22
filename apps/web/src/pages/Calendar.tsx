@@ -14,6 +14,7 @@ type CalActivity = {
   duration_minutes: number | null
   distance_km: number | null
   tss: number | null
+  planned?: boolean
 }
 
 function pad(n: number) {
@@ -47,25 +48,47 @@ export function Calendar() {
     }
     const from = iso(cur.year, cur.month, 1)
     const to = iso(cur.year, cur.month, daysInMonth)
-    const { data } = await supabase
-      .from('imported_activities')
-      .select('id, activity_date, title, sport, duration_minutes, distance_km, tss')
-      .eq('profile_id', session.user.id)
-      .gte('activity_date', from)
-      .lte('activity_date', to)
-      .order('activity_date', { ascending: false })
 
-    setActs(
-      (data ?? []).map((r) => ({
-        id: r.id as string,
-        date: r.activity_date as string,
-        title: (r.title as string) ?? 'Activity',
+    const [imported, planned] = await Promise.all([
+      supabase
+        .from('imported_activities')
+        .select('id, activity_date, title, sport, duration_minutes, distance_km, tss')
+        .eq('profile_id', session.user.id)
+        .gte('activity_date', from)
+        .lte('activity_date', to),
+      supabase
+        .from('training_sessions')
+        .select('id, session_date, title, sport, duration_minutes, tss, status')
+        .eq('profile_id', session.user.id)
+        .gte('session_date', from)
+        .lte('session_date', to),
+    ])
+
+    const importedActs: CalActivity[] = (imported.data ?? []).map((r) => ({
+      id: r.id as string,
+      date: r.activity_date as string,
+      title: (r.title as string) ?? 'Activity',
+      sport: (r.sport as string) ?? 'other',
+      duration_minutes: r.duration_minutes as number | null,
+      distance_km: r.distance_km != null ? Number(r.distance_km) : null,
+      tss: r.tss as number | null,
+      planned: false,
+    }))
+
+    const plannedActs: CalActivity[] = (planned.data ?? [])
+      .filter((r) => (r.status as string) !== 'completed')
+      .map((r) => ({
+        id: `s_${r.id as string}`,
+        date: r.session_date as string,
+        title: (r.title as string) ?? 'Entrenamiento',
         sport: (r.sport as string) ?? 'other',
         duration_minutes: r.duration_minutes as number | null,
-        distance_km: r.distance_km != null ? Number(r.distance_km) : null,
+        distance_km: null,
         tss: r.tss as number | null,
-      })),
-    )
+        planned: true,
+      }))
+
+    setActs([...plannedActs, ...importedActs])
   }, [authStatus, session?.user?.id, cur.year, cur.month, daysInMonth])
 
   useEffect(() => { void fetchMonth() }, [fetchMonth])
@@ -148,8 +171,10 @@ export function Calendar() {
                         title={a.title}
                         style={{
                           width: 18, height: 18, borderRadius: 5,
-                          background: SPORT_COLORS[a.sport] || SPORT_COLORS.other,
-                          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: a.planned ? 'transparent' : (SPORT_COLORS[a.sport] || SPORT_COLORS.other),
+                          border: a.planned ? `1.5px dashed ${SPORT_COLORS[a.sport] || SPORT_COLORS.other}` : 'none',
+                          color: a.planned ? (SPORT_COLORS[a.sport] || SPORT_COLORS.other) : '#fff',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}
                       >
                         <SportIcon sport={a.sport} size={11} />
@@ -195,11 +220,14 @@ export function Calendar() {
                 <div className="activity-body">
                   <div className="activity-row">
                     <strong className="activity-title">{a.title}</strong>
-                    {a.tss !== null && <span className="activity-tss">{a.tss} TSS</span>}
+                    {a.planned
+                      ? <span className="status-badge warning" style={{ fontSize: '0.68rem' }}>{isEs ? 'Planificado' : 'Planned'}</span>
+                      : a.tss !== null && <span className="activity-tss">{a.tss} TSS</span>}
                   </div>
                   <div className="activity-meta">
                     {a.distance_km !== null && <span>{a.distance_km.toFixed(1)} km</span>}
-                    {a.duration_minutes !== null && <span>· {a.duration_minutes} min</span>}
+                    {a.duration_minutes !== null && <span>{a.distance_km !== null ? '· ' : ''}{a.duration_minutes} min</span>}
+                    {a.planned && a.tss !== null && <span>· {a.tss} TSS</span>}
                   </div>
                 </div>
               </motion.article>
