@@ -46,12 +46,16 @@ peak-endurance/
 │   └── src/providers/      → AuthProvider, ThemeProvider
 ├── supabase/
 │   ├── schema.sql          → Esquema base
-│   ├── migrations/         → 4 migraciones incrementales
-│   └── functions/          → 7 edge functions desplegadas
+│   ├── config.toml         → Config del CLI (verify_jwt por función)
+│   ├── migrations/         → 5 migraciones incrementales
+│   └── functions/          → 10 edge functions desplegadas
 │       ├── strava-auth/
 │       ├── strava-sync/
 │       ├── ai-coach/
 │       ├── ai-validate-key/
+│       ├── stripe-checkout/
+│       ├── stripe-portal/
+│       ├── stripe-webhook/
 │       ├── lemonsqueezy-checkout/
 │       ├── lemonsqueezy-webhook/
 │       └── lemonsqueezy-portal/
@@ -91,23 +95,55 @@ VITE_SITE_URL=http://localhost:5173
 
 ## Deploy
 
-**Frontend:** Vercel (auto-deploy desde `main`)
+**Frontend:** Vercel (auto-deploy desde `main`).
 
-**Edge Functions:**
-```bash
-npx supabase functions deploy strava-auth --no-verify-jwt --project-ref <ref>
-npx supabase functions deploy strava-sync --project-ref <ref>
-npx supabase functions deploy ai-coach --no-verify-jwt --project-ref <ref>
-npx supabase functions deploy ai-validate-key --no-verify-jwt --project-ref <ref>
-npx supabase functions deploy lemonsqueezy-checkout --no-verify-jwt --project-ref <ref>
-npx supabase functions deploy lemonsqueezy-webhook --no-verify-jwt --project-ref <ref>
-npx supabase functions deploy lemonsqueezy-portal --no-verify-jwt --project-ref <ref>
-```
+**Edge Functions y migraciones:** automatizados vía GitHub Actions (ver sección
+[CI/CD](#cicd) más abajo). Ya no hace falta desplegar a mano en cada push.
 
-**Migraciones:**
+Los flags `verify_jwt` de cada función se controlan de forma declarativa en
+`supabase/config.toml`, por lo que el deploy masivo respeta los mismos ajustes
+que los antiguos comandos manuales con `--no-verify-jwt`.
+
+### Deploy manual (fallback)
+
+Solo necesario si los workflows fallan o quieres probar en local:
+
 ```bash
+# Despliega TODAS las funciones respetando config.toml (verify_jwt por función)
+npx supabase functions deploy --project-ref uoxumppvhismnttfllzj
+
+# Aplica migraciones pendientes
 npx supabase db push --linked
 ```
+
+---
+
+## CI/CD
+
+El deploy del backend de Supabase está automatizado con GitHub Actions. Vercel
+solo despliega el frontend, así que estos workflows cierran el hueco que dejaba
+el código de las Edge Functions y las migraciones desactualizado en producción
+tras cada push.
+
+| Workflow | Archivo | Se dispara cuando | Acción |
+|----------|---------|-------------------|--------|
+| Edge Functions | `.github/workflows/deploy-supabase-functions.yml` | push a `main` que toca `supabase/functions/**` o `supabase/config.toml` | `supabase functions deploy --project-ref uoxumppvhismnttfllzj` |
+| Migraciones | `.github/workflows/deploy-supabase-migrations.yml` | push a `main` que toca `supabase/migrations/**` | `supabase link` + `supabase db push` |
+
+Ambos también se pueden ejecutar manualmente desde la pestaña **Actions**
+(`workflow_dispatch`).
+
+### Secrets de GitHub requeridos
+
+Configúralos en **Settings > Secrets and variables > Actions** del repositorio:
+
+| Secret | Obligatorio | Cómo obtenerlo |
+|--------|-------------|----------------|
+| `SUPABASE_ACCESS_TOKEN` | Sí | Token personal del CLI de Supabase. Ejecuta `supabase login` en local (lo genera y guarda) o créalo en el dashboard de Supabase: **Account > Access Tokens**. |
+| `SUPABASE_DB_PASSWORD` | Solo para migraciones | Password de la base de datos del proyecto enlazado, necesario porque `supabase db push` se conecta a Postgres directamente. Está en **Project Settings > Database** del dashboard de Supabase. |
+
+> Sin `SUPABASE_ACCESS_TOKEN` los dos workflows fallan en el paso de instalación
+> del CLI. Sin `SUPABASE_DB_PASSWORD` solo falla el de migraciones.
 
 ---
 

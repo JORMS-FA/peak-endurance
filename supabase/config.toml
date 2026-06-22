@@ -1,0 +1,52 @@
+# Supabase project configuration.
+#
+# This file is read by the Supabase CLI (`supabase functions deploy`,
+# `supabase db push`) both locally and in CI. The most important job it does
+# here is pin each Edge Function's `verify_jwt` flag.
+#
+# Why this matters: when you deploy ALL functions at once (as the GitHub Action
+# does with `supabase functions deploy`), the CLI defaults `verify_jwt` to
+# `true`. With that default, Supabase's platform rejects any request that does
+# not carry a valid Supabase JWT *before* it ever reaches the function body.
+#
+# That would break:
+#   - strava-auth/callback   → Strava redirects here via a plain GET (no JWT)
+#   - stripe-webhook         → Stripe posts events (no JWT; validates signature)
+#   - lemonsqueezy-webhook   → Lemon Squeezy posts events (no JWT; HMAC signed)
+#
+# Every other function authenticates the caller itself via
+# `supabase.auth.getUser(token)`, so JWT verification at the platform layer is
+# redundant and is disabled to keep behaviour identical to the documented
+# manual deploy commands (`--no-verify-jwt`).
+
+project_id = "uoxumppvhismnttfllzj"
+
+[functions.strava-auth]
+verify_jwt = false
+
+[functions.strava-sync]
+verify_jwt = false
+
+[functions.ai-coach]
+verify_jwt = false
+
+[functions.ai-validate-key]
+verify_jwt = false
+
+[functions.stripe-checkout]
+verify_jwt = false
+
+[functions.stripe-portal]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.lemonsqueezy-checkout]
+verify_jwt = false
+
+[functions.lemonsqueezy-portal]
+verify_jwt = false
+
+[functions.lemonsqueezy-webhook]
+verify_jwt = false
