@@ -1,5 +1,4 @@
-import { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Activity,
@@ -19,22 +18,12 @@ import {
   Zap,
 } from 'lucide-react'
 import { useI18n } from '../hooks/useI18n'
-import { useAuth } from '../hooks/useAuth'
 import { APP_NAME } from '../lib/constants'
 
 export function Landing() {
   const { t } = useI18n()
-  const { status } = useAuth()
-  const navigate = useNavigate()
 
-  // Redirect already-authenticated users to /app via effect (avoid render-time nav).
-  useEffect(() => {
-    if (status === 'authenticated') {
-      navigate('/app', { replace: true })
-    }
-  }, [status, navigate])
-
-  if (status === 'authenticated') return null
+  // No auto-redirect — landing page is always accessible independently
 
   return (
     <div className="landing-page landing-v2">

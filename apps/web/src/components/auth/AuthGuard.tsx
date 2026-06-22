@@ -22,7 +22,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   }
 
   // Show onboarding if not completed
-  if (profile && !profile.onboarding_completed) {
+  if (profile && !profile.onboarding_completed && !localStorage.getItem('peak_onboarding_done')) {
     return <Onboarding />
   }
 

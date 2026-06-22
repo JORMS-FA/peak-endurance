@@ -94,21 +94,20 @@ export function Onboarding() {
     if (data.weekly_hours) payload.weekly_hours = parseFloat(data.weekly_hours)
 
     await supabase.from('profiles').update(payload).eq('id', profile.id)
-    // Force reload to avoid stale profile cache
+    localStorage.setItem('peak_onboarding_done', '1')
     window.location.href = '/app'
   }
 
   async function handleSkip() {
     if (!supabase || !profile) return
     setSaving(true)
-    const { error } = await supabase
+    // Update DB
+    await supabase
       .from('profiles')
       .update({ onboarding_completed: true })
       .eq('id', profile.id)
-    if (error) {
-      console.error('[onboarding] skip error:', error)
-    }
-    // Force reload to avoid stale profile
+    // Also store locally so the guard doesn't flash onboarding on reload
+    localStorage.setItem('peak_onboarding_done', '1')
     window.location.href = '/app'
   }
 
