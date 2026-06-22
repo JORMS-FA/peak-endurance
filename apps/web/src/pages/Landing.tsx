@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Activity,
@@ -19,9 +19,11 @@ import {
 } from 'lucide-react'
 import { useI18n } from '../hooks/useI18n'
 import { APP_NAME } from '../lib/constants'
+import { LavaBackground } from '../components/ui/LavaBackground'
 
 export function Landing() {
   const { t } = useI18n()
+  const navigate = useNavigate()
 
   // No auto-redirect — landing page is always accessible independently
 
@@ -343,8 +345,8 @@ export function Landing() {
         </div>
       </footer>
 
-      {/* RGB wave bar */}
-      <div className="landing-rgb-glow" />
+      {/* AMOLED ambient lava-lamp background (replaces previous RGB strip) */}
+      <LavaBackground />
     </div>
   )
 }

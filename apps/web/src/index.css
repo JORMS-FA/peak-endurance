@@ -5,31 +5,42 @@
    Production-ready, mobile-first, responsive
    ═══════════════════════════════════════════════════════════════ */
 
-/* ─── RGB Wave Animation (gaming keyboard effect) ──────────── */
-@keyframes rgb-wave {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+/* ─── AMOLED lava-lamp ambient background ────────────────────
+   Three slow-drifting blurred radial blobs that paint subtle
+   accent / indigo / amber light over a pure-black canvas.
+   Used by Onboarding, AuthScreen and Landing as their full-screen
+   backdrop. Pure CSS, respects prefers-reduced-motion.
+   ─────────────────────────────────────────────────────────── */
+@keyframes lava-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(20vmax, 12vmax) scale(1.12); }
+  66%      { transform: translate(-12vmax, 28vmax) scale(0.94); }
 }
 
-@keyframes rgb-glow-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+@keyframes lava-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%      { transform: translate(-24vmax, -10vmax) scale(1.18); }
+  80%      { transform: translate(14vmax, -28vmax) scale(0.88); }
+}
+
+@keyframes lava-drift-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%      { transform: translate(18vmax, -22vmax) scale(1.22); }
+  50%      { transform: translate(-22vmax, 14vmax) scale(1); }
+  75%      { transform: translate(26vmax, 10vmax) scale(0.84); }
 }
 
 :root {
-  --rgb-gradient: linear-gradient(
-    90deg,
-    #ff0080,
-    #ff8c00,
-    #ffef00,
-    #00ff87,
-    #00bfff,
-    #8b5cf6,
-    #ff0080
-  );
-  --rgb-gradient-size: 300% 100%;
-  --rgb-speed: 4s;
+  /* Lava ambient palette tokens — easy to retune per-theme later. */
+  --lava-blob-1: rgba(34, 197, 94, 0.55);   /* accent green */
+  --lava-blob-2: rgba(99, 102, 241, 0.50);  /* indigo */
+  --lava-blob-3: rgba(245, 158, 11, 0.38);  /* amber */
+  --lava-opacity: 0.18;
+  --lava-blur: 90px;
+}
+
+[data-theme="light"] {
+  --lava-opacity: 0.10;
 }
 
 /* ─── Theme: Dark (default) ─────────────────────────────────── */
@@ -4094,83 +4105,116 @@ input, select, textarea { font: inherit; color: inherit; }
    RGB WAVE EFFECTS — Gaming keyboard style animated gradients
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-/* RGB border effect on cards */
-.card,
-.connection-card,
-.sidebar,
-.onboarding-card {
+/* ═══════════════════════════════════════════════════════════════
+   AMOLED accents — calm, monochrome, no RGB.
+   Replaces the previous "gaming keyboard" rainbow strips.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Make the host containers the positioning context for LavaBackground. */
+.auth-screen,
+.onboarding-shell,
+.landing-page {
   position: relative;
+  overflow: hidden;
+  background: var(--bg-0);
 }
 
-.card::before,
-.connection-card-primary::before,
-.onboarding-card::before {
+/* ─── Lava ambient layer ────────────────────────────────────── */
+.lava-ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.lava-ambient::before,
+.lava-ambient::after,
+.lava-ambient > .lava-blob {
   content: '';
   position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: var(--rgb-gradient);
-  background-size: var(--rgb-gradient-size);
-  animation: rgb-wave var(--rgb-speed) ease infinite;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0.3;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
+  border-radius: 50%;
+  filter: blur(var(--lava-blur));
+  opacity: var(--lava-opacity);
+  mix-blend-mode: screen;
+  will-change: transform;
 }
 
-.card:hover::before,
-.connection-card-primary:hover::before {
-  opacity: 0.6;
+.lava-ambient::before {
+  width: 65vmax;
+  height: 65vmax;
+  left: -22vmax;
+  top: -22vmax;
+  background: radial-gradient(circle, var(--lava-blob-1), transparent 70%);
+  animation: lava-drift-1 36s ease-in-out infinite;
 }
 
-/* RGB glow under the sidebar brand */
+.lava-ambient::after {
+  width: 55vmax;
+  height: 55vmax;
+  right: -22vmax;
+  bottom: -22vmax;
+  background: radial-gradient(circle, var(--lava-blob-2), transparent 70%);
+  animation: lava-drift-2 48s ease-in-out infinite;
+}
+
+.lava-ambient > .lava-blob {
+  width: 45vmax;
+  height: 45vmax;
+  left: 30%;
+  top: 35%;
+  background: radial-gradient(circle, var(--lava-blob-3), transparent 70%);
+  animation: lava-drift-3 60s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lava-ambient::before,
+  .lava-ambient::after,
+  .lava-ambient > .lava-blob {
+    animation: none;
+  }
+}
+
+/* Make sure the page content sits ABOVE the ambient layer. */
+.auth-hero,
+.auth-form-side,
+.onboarding-card,
+.landing-header,
+.landing-hero,
+.landing-features,
+.landing-how,
+.landing-pricing,
+.landing-final-cta,
+.landing-footer,
+.landing-audience {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Subtle sidebar brand underline (replaces RGB) ─────────── */
+.sidebar-brand {
+  position: relative;
+}
 .sidebar-brand::after {
   content: '';
   position: absolute;
   bottom: -1px;
-  left: 10%;
-  right: 10%;
-  height: 2px;
-  background: var(--rgb-gradient);
-  background-size: var(--rgb-gradient-size);
-  animation: rgb-wave var(--rgb-speed) ease infinite;
-  border-radius: 2px;
-  opacity: 0.5;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent) 50%,
+    transparent
+  );
+  opacity: 0.4;
 }
 
-.sidebar-brand {
+/* ─── Subtle topbar bottom border (replaces RGB) ────────────── */
+.topbar {
   position: relative;
 }
-
-/* RGB accent on primary buttons */
-.btn-primary {
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-primary::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--rgb-gradient);
-  background-size: var(--rgb-gradient-size);
-  animation: rgb-wave var(--rgb-speed) ease infinite;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  border-radius: inherit;
-  mix-blend-mode: overlay;
-}
-
-.btn-primary:hover::after {
-  opacity: 0.3;
-}
-
-/* RGB top bar accent line */
 .topbar::after {
   content: '';
   position: absolute;
@@ -4178,60 +4222,23 @@ input, select, textarea { font: inherit; color: inherit; }
   left: 0;
   right: 0;
   height: 1px;
-  background: var(--rgb-gradient);
-  background-size: var(--rgb-gradient-size);
-  animation: rgb-wave var(--rgb-speed) ease infinite;
-  opacity: 0.3;
+  background: var(--border);
 }
 
-.topbar {
-  position: relative;
-}
-
-/* RGB effect on the onboarding progress dots */
+/* ─── Onboarding progress dots — pure accent ────────────────── */
 .onboarding-dot.active {
-  background: var(--rgb-gradient);
-  background-size: var(--rgb-gradient-size);
-  animation: rgb-wave var(--rgb-speed) ease infinite;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
 }
 
-/* RGB bottom glow for the landing page */
-.landing-rgb-glow {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--rgb-gradient);
-  background-size: var(--rgb-gradient-size);
-  animation: rgb-wave var(--rgb-speed) ease infinite;
-  z-index: 9999;
-}
-
-/* RGB wave on auth screen hero */
-.auth-hero::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--rgb-gradient);
-  background-size: var(--rgb-gradient-size);
-  animation: rgb-wave var(--rgb-speed) ease infinite;
-}
-
-/* Active sidebar link RGB underline */
+/* ─── Active sidebar link — single accent rail ──────────────── */
 .sidebar-link.active {
-  border-left: 2px solid transparent;
-  border-image: var(--rgb-gradient) 1;
-  background-size: var(--rgb-gradient-size);
-  animation: rgb-wave var(--rgb-speed) ease infinite;
+  border-left: 2px solid var(--accent);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
    FOOTER CREDITS
-   ═══════════════════════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════════════ */
 
 .app-credits {
   text-align: center;

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import type { Variants } from 'framer-motion'
 import { Globe, Mountain, Activity } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useTheme } from '../../hooks/useTheme'
@@ -7,6 +8,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useI18n } from '../../hooks/useI18n'
 import { LANGUAGES, APP_NAME } from '../../lib/constants'
 import { supabase } from '../../lib/supabase'
+import { LavaBackground } from '../ui/LavaBackground'
 import type { AppLanguage } from '../../lib/types'
 
 function isValidLang(val: string): val is AppLanguage {
@@ -15,7 +17,7 @@ function isValidLang(val: string): val is AppLanguage {
 
 // ─── Animation variants ───────────────────────────────────────────────────────
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -23,12 +25,12 @@ const containerVariants = {
   },
 }
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
 }
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 40, scale: 0.96 },
   visible: {
     opacity: 1,
@@ -38,7 +40,7 @@ const cardVariants = {
   },
 }
 
-const heroVariants = {
+const heroVariants: Variants = {
   hidden: { opacity: 0, x: -30 },
   visible: {
     opacity: 1,
@@ -78,6 +80,8 @@ export function AuthScreen() {
   const { t, language } = useI18n()
   const { configured } = useAuth()
   const { setLanguage } = useTheme()
+  const [authError, setAuthError] = useState<string | null>(null)
+  const [authBusy, setAuthBusy] = useState(false)
 
   function handleLangChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const val = e.target.value
@@ -85,14 +89,49 @@ export function AuthScreen() {
   }
 
   async function handleGoogleLogin() {
-    if (!supabase) return
+    if (!supabase) {
+      setAuthError(
+        language === 'es'
+          ? 'Supabase no esta configurado. Revisa las variables de entorno.'
+          : 'Supabase is not configured. Check environment variables.',
+      )
+      return
+    }
+    setAuthError(null)
+    setAuthBusy(true)
     try {
-      await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: window.location.origin + '/app' },
+        options: {
+          redirectTo: window.location.origin + '/app',
+          // We handle the redirect manually so we can surface errors.
+          skipBrowserRedirect: true,
+        },
       })
-    } catch (error) {
-      alert(error instanceof Error ? error.message : String(error))
+      if (error) {
+        // Most common: Google provider not enabled in Supabase Auth or
+        // redirect URL not allowlisted.
+        setAuthError(
+          language === 'es'
+            ? `No se pudo iniciar Google: ${error.message}. Verifica que Google este habilitado en Supabase Authentication > Providers y que el dominio actual este en Redirect URLs.`
+            : `Could not start Google login: ${error.message}. Check Google is enabled in Supabase Authentication > Providers and that the current domain is in Redirect URLs.`,
+        )
+        setAuthBusy(false)
+        return
+      }
+      if (data?.url) {
+        window.location.assign(data.url)
+        return
+      }
+      setAuthError(
+        language === 'es'
+          ? 'Supabase no devolvio una URL de Google. Revisa la configuracion del provider.'
+          : 'Supabase did not return a Google URL. Check the provider config.',
+      )
+      setAuthBusy(false)
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : String(err))
+      setAuthBusy(false)
     }
   }
 
@@ -108,6 +147,7 @@ export function AuthScreen() {
 
   return (
     <div className="auth-screen">
+      <LavaBackground />
       {/* ─── Left: Branding / Hero ─────────────────────────────────────── */}
       <motion.div
         className="auth-hero"
@@ -224,13 +264,28 @@ export function AuthScreen() {
                   type="button"
                   className="auth-btn-google"
                   onClick={handleGoogleLogin}
+                  disabled={authBusy}
                   variants={itemVariants}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={authBusy ? undefined : { scale: 1.02 }}
+                  whileTap={authBusy ? undefined : { scale: 0.98 }}
                 >
                   <GoogleIcon />
-                  <span>Comenzar</span>
+                  <span>
+                    {authBusy
+                      ? language === 'es' ? 'Conectando...' : 'Connecting...'
+                      : 'Comenzar'}
+                  </span>
                 </motion.button>
+
+                {authError && (
+                  <motion.div
+                    variants={itemVariants}
+                    className="auth-form-error"
+                    role="alert"
+                  >
+                    {authError}
+                  </motion.div>
+                )}
 
                 {/* Strava note */}
                 <motion.div className="auth-strava-note" variants={itemVariants}>

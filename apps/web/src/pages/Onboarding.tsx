@@ -4,6 +4,7 @@ import { ChevronRight, ChevronLeft, Mountain, Heart, Ruler, Weight, Timer, SkipF
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
+import { LavaBackground } from '../components/ui/LavaBackground'
 
 type OnboardingData = {
   display_name: string
@@ -113,6 +114,7 @@ export function Onboarding() {
 
   return (
     <div className="onboarding-shell">
+      <LavaBackground />
       <motion.div
         className="onboarding-card"
         initial={{ opacity: 0, y: 30, scale: 0.96 }}

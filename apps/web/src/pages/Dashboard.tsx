@@ -390,7 +390,7 @@ export function Dashboard() {
                       fontSize: 12,
                       color: CHART_TEXT_COLOR,
                     }}
-                    formatter={(value: number, name: string) => [`${value} actividades`, name]}
+                    formatter={(value, name) => [`${value} actividades`, String(name)] as [string, string]}
                   />
                   <Legend
                     wrapperStyle={{ fontSize: 12, color: CHART_TEXT_COLOR }}
