@@ -4277,3 +4277,36 @@ input, select, textarea { font: inherit; color: inherit; }
   background: rgba(255, 255, 255, 0.04);
   border-radius: 10px;
 }
+
+/* ── Auth: Runna-style social buttons ────────────────────────────────────── */
+.auth-social-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 18px;
+  margin-bottom: 12px;
+  background: #ffffff;
+  color: #1a1a1a;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+.auth-social-btn:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+.auth-social-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+.auth-social-btn-disabled {
+  background: rgba(255, 255, 255, 0.55);
+  color: #555;
+  cursor: not-allowed;
+  box-shadow: none;
+}

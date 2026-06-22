@@ -14,7 +14,8 @@ type OnboardingData = {
   resting_hr: string
   max_hr: string
   pace_10k: string // min/km format like "5:30"
-  primary_sport: 'run' | 'bike' | 'swim' | 'triathlon' | 'gym'
+  sports: string[] // multi-select: which sports the athlete practises
+  running_bests: Record<string, string> // { '5k': '22:30', '10k': '47:10', ... }
   experience_level: 'beginner' | 'intermediate' | 'advanced' | 'elite'
   weekly_hours: string
   hr_zone_method: 'auto' | 'custom'
@@ -29,7 +30,8 @@ const defaultData: OnboardingData = {
   resting_hr: '',
   max_hr: '',
   pace_10k: '',
-  primary_sport: 'run',
+  sports: ['run'],
+  running_bests: {},
   experience_level: 'intermediate',
   weekly_hours: '5',
   hr_zone_method: 'auto',
@@ -75,6 +77,10 @@ export function Onboarding() {
     setData({ ...data, [field]: value })
   }
 
+  function patch(partial: Partial<OnboardingData>) {
+    setData((d) => ({ ...d, ...partial }))
+  }
+
   async function handleComplete() {
     if (!supabase || !profile) return
     setSaving(true)
@@ -89,8 +95,18 @@ export function Onboarding() {
     if (data.age) payload.age = parseInt(data.age)
     if (data.resting_hr) payload.resting_hr = parseInt(data.resting_hr)
     if (data.max_hr) payload.max_hr = parseInt(data.max_hr)
-    if (data.pace_10k) payload.pace_10k = data.pace_10k
-    if (data.primary_sport) payload.primary_sport = data.primary_sport
+    if (data.sports.length > 0) {
+      payload.sports = data.sports
+      payload.primary_sport = data.sports[0]
+    }
+    if (data.sports.includes('run')) {
+      // keep only filled bests
+      const bests = Object.fromEntries(
+        Object.entries(data.running_bests).filter(([, v]) => v && v.trim()),
+      )
+      payload.running_bests = bests
+      if (bests['10k']) payload.pace_10k = data.pace_10k || ''
+    }
     if (data.experience_level) payload.experience_level = data.experience_level
     if (data.weekly_hours) payload.weekly_hours = parseFloat(data.weekly_hours)
 
@@ -147,7 +163,7 @@ export function Onboarding() {
               <StepBody data={data} update={update} isEs={isEs} />
             )}
             {step === 2 && (
-              <StepTraining data={data} update={update} isEs={isEs} />
+              <StepTraining data={data} update={update} patch={patch} isEs={isEs} />
             )}
             {step === 3 && (
               <StepZones data={data} update={update} isEs={isEs} />
@@ -289,16 +305,17 @@ function StepBody({ data, update, isEs }: {
   )
 }
 
-function StepTraining({ data, update, isEs }: {
+function StepTraining({ data, update, patch, isEs }: {
   data: OnboardingData
   update: (k: keyof OnboardingData, v: string) => void
+  patch: (partial: Partial<OnboardingData>) => void
   isEs: boolean
 }) {
   const sports = [
-    { value: 'run', label: isEs ? 'Running' : 'Running', icon: '🏃' },
+    { value: 'run', label: 'Running', icon: '🏃' },
     { value: 'bike', label: isEs ? 'Ciclismo' : 'Cycling', icon: '🚴' },
-    { value: 'swim', label: isEs ? 'Natacion' : 'Swimming', icon: '🏊' },
-    { value: 'triathlon', label: isEs ? 'Triatlon' : 'Triathlon', icon: '🏅' },
+    { value: 'swim', label: isEs ? 'Natación' : 'Swimming', icon: '🏊' },
+    { value: 'triathlon', label: isEs ? 'Triatlón' : 'Triathlon', icon: '🏅' },
     { value: 'gym', label: isEs ? 'Gimnasio' : 'Gym', icon: '🏋️' },
   ]
 
@@ -309,6 +326,25 @@ function StepTraining({ data, update, isEs }: {
     { value: 'elite', label: isEs ? 'Elite' : 'Elite' },
   ]
 
+  const bestFields = [
+    { key: '5k', label: '5K', placeholder: '22:30' },
+    { key: '10k', label: '10K', placeholder: '47:10' },
+    { key: 'half', label: isEs ? 'Media maratón' : 'Half marathon', placeholder: '1:45:00' },
+    { key: 'marathon', label: isEs ? 'Maratón' : 'Marathon', placeholder: '3:50:00' },
+  ]
+
+  function toggleSport(value: string) {
+    const has = data.sports.includes(value)
+    const next = has ? data.sports.filter((s) => s !== value) : [...data.sports, value]
+    patch({ sports: next })
+  }
+
+  function setBest(key: string, value: string) {
+    patch({ running_bests: { ...data.running_bests, [key]: value } })
+  }
+
+  const runSelected = data.sports.includes('run') || data.sports.includes('triathlon')
+
   return (
     <div className="onboarding-content">
       <div className="onboarding-icon-wrap">
@@ -316,7 +352,7 @@ function StepTraining({ data, update, isEs }: {
       </div>
       <h2>{isEs ? 'Tu entrenamiento' : 'Your training'}</h2>
       <p className="text-muted">
-        {isEs ? 'Cual es tu deporte principal?' : "What's your primary sport?"}
+        {isEs ? '¿Qué deportes practicas? Elige uno o varios.' : 'Which sports do you practise? Pick one or more.'}
       </p>
 
       <div className="onboarding-sport-grid">
@@ -324,14 +360,52 @@ function StepTraining({ data, update, isEs }: {
           <button
             key={s.value}
             type="button"
-            className={`onboarding-sport-btn ${data.primary_sport === s.value ? 'active' : ''}`}
-            onClick={() => update('primary_sport', s.value)}
+            className={`onboarding-sport-btn ${data.sports.includes(s.value) ? 'active' : ''}`}
+            onClick={() => toggleSport(s.value)}
           >
             <span className="sport-emoji">{s.icon}</span>
             <span>{s.label}</span>
           </button>
         ))}
       </div>
+
+      {/* Running personal bests — only when running/triathlon is selected */}
+      <AnimatePresence initial={false}>
+        {runSelected && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div style={{ marginTop: 16 }}>
+              <label className="onboarding-sublabel" style={{ fontSize: '0.82rem', fontWeight: 600, display: 'block', marginBottom: 8 }}>
+                {isEs ? 'Tus mejores marcas (opcional)' : 'Your personal bests (optional)'}
+              </label>
+              <p className="text-muted" style={{ fontSize: '0.76rem', marginBottom: 10 }}>
+                {isEs
+                  ? 'El coach IA las usará como contexto para ajustar tus planes.'
+                  : 'The AI coach will use these as context to tune your plans.'}
+              </p>
+              <div className="onboarding-grid">
+                {bestFields.map((f) => (
+                  <label key={f.key} className="onboarding-field">
+                    <span>{f.label}</span>
+                    <input
+                      type="text"
+                      value={data.running_bests[f.key] ?? ''}
+                      onChange={(e) => setBest(f.key, e.target.value)}
+                      placeholder={f.placeholder}
+                      inputMode="numeric"
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <label className="onboarding-field" style={{ marginTop: 16 }}>
         <span>{isEs ? 'Nivel de experiencia' : 'Experience level'}</span>
@@ -345,28 +419,17 @@ function StepTraining({ data, update, isEs }: {
         </select>
       </label>
 
-      <div className="onboarding-grid" style={{ marginTop: 12 }}>
-        <label className="onboarding-field">
-          <span>{isEs ? 'Horas/semana' : 'Hours/week'}</span>
-          <input
-            type="number"
-            value={data.weekly_hours}
-            onChange={(e) => update('weekly_hours', e.target.value)}
-            placeholder="5"
-            min="1"
-            max="40"
-          />
-        </label>
-        <label className="onboarding-field">
-          <span>{isEs ? 'Ritmo 10K (min/km)' : '10K pace (min/km)'}</span>
-          <input
-            type="text"
-            value={data.pace_10k}
-            onChange={(e) => update('pace_10k', e.target.value)}
-            placeholder="5:30"
-          />
-        </label>
-      </div>
+      <label className="onboarding-field" style={{ marginTop: 12 }}>
+        <span>{isEs ? 'Horas/semana' : 'Hours/week'}</span>
+        <input
+          type="number"
+          value={data.weekly_hours}
+          onChange={(e) => update('weekly_hours', e.target.value)}
+          placeholder="5"
+          min="1"
+          max="40"
+        />
+      </label>
     </div>
   )
 }
