@@ -111,7 +111,7 @@ export function Onboarding() {
     if (data.weekly_hours) payload.weekly_hours = parseFloat(data.weekly_hours)
 
     await supabase.from('profiles').update(payload).eq('id', profile.id)
-    localStorage.setItem('peak_onboarding_done', '1')
+    localStorage.setItem(`peak_onboarding_done_${profile.id}`, '1')
     window.location.href = '/app'
   }
 
@@ -124,7 +124,7 @@ export function Onboarding() {
       .update({ onboarding_completed: true })
       .eq('id', profile.id)
     // Also store locally so the guard doesn't flash onboarding on reload
-    localStorage.setItem('peak_onboarding_done', '1')
+    localStorage.setItem(`peak_onboarding_done_${profile.id}`, '1')
     window.location.href = '/app'
   }
 

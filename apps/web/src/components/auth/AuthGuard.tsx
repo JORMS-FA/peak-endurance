@@ -21,8 +21,10 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     return <Navigate to="/login" replace />
   }
 
-  // Show onboarding if not completed
-  if (profile && !profile.onboarding_completed && !localStorage.getItem('peak_onboarding_done')) {
+  // Show onboarding if not completed (per-user flag so a new account on the
+  // same browser still gets onboarding).
+  const doneFlag = profile ? localStorage.getItem(`peak_onboarding_done_${profile.id}`) : null
+  if (profile && !profile.onboarding_completed && !doneFlag) {
     return <Onboarding />
   }
 

@@ -178,8 +178,10 @@ async function handleStatus(
 
   const isExpired = new Date(token.expires_at) < new Date()
 
+  // Having a token row means connected; the access token is auto-refreshed on
+  // demand (sync/refresh), so an expired access token is NOT "disconnected".
   return json({
-    connected: !isExpired,
+    connected: Boolean(token.athlete_id),
     athlete: token.athlete_id
       ? { id: token.athlete_id, name: token.athlete_name }
       : null,
