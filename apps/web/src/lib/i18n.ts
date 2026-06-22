@@ -41,9 +41,9 @@ const dictionary = {
     aiContext: 'Contexto IA',
     remainingQueries: 'consultas restantes',
     // Auth
-    signIn: 'Iniciar sesion',
+    signIn: 'Comenzar',
     signOut: 'Cerrar sesion',
-    signUp: 'Registrarse',
+    signUp: 'Comenzar',
     email: 'Correo electronico',
     password: 'Contrasena',
     sending: 'Enviando...',
@@ -237,9 +237,9 @@ const dictionary = {
     aiContext: 'AI Context',
     remainingQueries: 'queries remaining',
     // Auth
-    signIn: 'Sign in',
+    signIn: 'Comenzar',
     signOut: 'Sign out',
-    signUp: 'Sign up',
+    signUp: 'Comenzar',
     email: 'Email address',
     password: 'Password',
     sending: 'Sending...',

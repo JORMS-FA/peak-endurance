@@ -86,10 +86,14 @@ export function AuthScreen() {
 
   async function handleGoogleLogin() {
     if (!supabase) return
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin + '/app' },
-    })
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + '/app' },
+      })
+    } catch (error) {
+      alert(error instanceof Error ? error.message : String(error))
+    }
   }
 
   const tagline =
@@ -225,11 +229,7 @@ export function AuthScreen() {
                   whileTap={{ scale: 0.98 }}
                 >
                   <GoogleIcon />
-                  <span>
-                    {language === 'es'
-                      ? 'Continuar con Google'
-                      : 'Continue with Google'}
-                  </span>
+                  <span>Comenzar</span>
                 </motion.button>
 
                 {/* Strava note */}
