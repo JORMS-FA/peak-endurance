@@ -119,6 +119,106 @@ Respond as JSON:
   }
 }
 
+type ChatMessage = { role: 'user' | 'assistant'; content: string }
+
+interface ChatProfile {
+  display_name?: string | null
+  sports?: string[] | null
+  running_bests?: Record<string, string> | null
+  experience_level?: string | null
+  weekly_hours?: number | null
+  max_hr?: number | null
+  resting_hr?: number | null
+}
+
+function buildChatPrompt(
+  message: string,
+  history: ChatMessage[],
+  ctx: AiContext,
+  profile: ChatProfile,
+  todayIso: string,
+): string {
+  const convo = (history ?? [])
+    .slice(-10)
+    .map((m) => `${m.role === 'user' ? 'Atleta' : 'Coach'}: ${m.content}`)
+    .join('\n')
+
+  return `Eres el coach de IA de Peak Endurance, experto en deportes de resistencia.
+Hablas en español, cercano pero profesional y conciso.
+La fecha de hoy es ${todayIso} (UTC). Úsala para resolver expresiones como "mañana", "el lunes", "este fin de semana".
+
+Perfil del atleta:
+- Nombre: ${profile.display_name ?? 'Atleta'}
+- Deportes: ${(profile.sports ?? ['run']).join(', ')}
+- Nivel: ${profile.experience_level ?? 'intermediate'}
+- Horas/semana: ${profile.weekly_hours ?? 'n/d'}
+- FC máx: ${profile.max_hr ?? 'n/d'} · FC reposo: ${profile.resting_hr ?? 'n/d'}
+- Mejores marcas running: ${JSON.stringify(profile.running_bests ?? {})}
+
+Estado actual:
+- CTL (forma física): ${ctx.ctl}
+- ATL (fatiga): ${ctx.atl}
+- TSB (frescura): ${ctx.tsb}
+- Horas última semana: ${ctx.weeklyHours}
+- Distancia última semana: ${ctx.weeklyDistance} km
+- Actividades recientes: ${JSON.stringify((ctx.recentActivities ?? []).slice(0, 8))}
+
+Conversación previa:
+${convo || '(sin mensajes previos)'}
+
+Nuevo mensaje del atleta:
+"${message}"
+
+Responde SOLO con JSON válido (sin markdown, sin bloques de código) con esta forma:
+{
+  "reply": "tu respuesta conversacional para el atleta",
+  "create_session": null
+}
+
+Si el atleta pide crear o programar un entrenamiento, rellena "create_session" con:
+{
+  "session_date": "YYYY-MM-DD",
+  "sport": "run" | "bike" | "swim" | "gym",
+  "title": "título corto del entrenamiento",
+  "intensity": "easy" | "tempo" | "threshold" | "intervals" | "long" | "recovery",
+  "duration_minutes": número,
+  "tss": número estimado,
+  "notes": "estructura detallada: calentamiento, series, recuperación, enfriamiento"
+}
+Si NO pide crear un entrenamiento, deja "create_session": null.
+En "reply" confirma en lenguaje natural lo que programaste cuando crees una sesión.`
+}
+
+function sanitizeSession(raw: unknown): {
+  session_date: string
+  sport: string
+  title: string
+  intensity: string | null
+  duration_minutes: number | null
+  tss: number | null
+  notes: string | null
+} | null {
+  if (!raw || typeof raw !== 'object') return null
+  const s = raw as Record<string, unknown>
+  const date = typeof s.session_date === 'string' ? s.session_date.slice(0, 10) : ''
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null
+  const sportRaw = String(s.sport ?? 'run').toLowerCase()
+  const sport = ['run', 'bike', 'swim', 'gym'].includes(sportRaw) ? sportRaw : 'run'
+  const title = typeof s.title === 'string' && s.title.trim() ? s.title.trim().slice(0, 120) : 'Entrenamiento'
+  const intensity = typeof s.intensity === 'string' ? s.intensity.slice(0, 30) : null
+  const dur = Number(s.duration_minutes)
+  const tss = Number(s.tss)
+  return {
+    session_date: date,
+    sport,
+    title,
+    intensity,
+    duration_minutes: Number.isFinite(dur) && dur > 0 ? Math.round(dur) : null,
+    tss: Number.isFinite(tss) && tss > 0 ? Math.round(Math.min(tss, 600)) : null,
+    notes: typeof s.notes === 'string' ? s.notes.slice(0, 2000) : null,
+  }
+}
+
 async function callGemini(apiKey: string, model: string, prompt: string): Promise<unknown> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
 
@@ -275,16 +375,23 @@ serve(async (req) => {
   }
 
   try {
-    const { action, context } = await req.json() as { action: AiAction; context: AiContext }
+    const body = await req.json() as {
+      action: AiAction | 'chat'
+      context: AiContext
+      message?: string
+      history?: ChatMessage[]
+    }
+    const action = body.action
+    const context = body.context ?? ({} as AiContext)
 
-    if (!['analyze_week', 'adjust_plan', 'detect_fatigue'].includes(action)) {
+    if (!['analyze_week', 'adjust_plan', 'detect_fatigue', 'chat'].includes(action)) {
       return json({ error: 'Invalid action' }, 400)
     }
 
     // Determine API key source and model based on subscription tier
     const { data: sub } = await supabase
       .from('subscriptions')
-      .select('tier, ai_quota_limit')
+      .select('plan_key, ai_quota_limit')
       .eq('profile_id', user.id)
       .maybeSingle()
 
@@ -292,7 +399,9 @@ serve(async (req) => {
     let model: string
     let provider: Provider = 'google_ai'
 
-    if (sub?.tier === 'pro') {
+    const isPro = sub?.plan_key === 'pro'
+
+    if (isPro) {
       // Pro user: use project key, check quota
       const { data: usage } = await supabase
         .from('ai_usage_counters')
@@ -301,7 +410,7 @@ serve(async (req) => {
         .maybeSingle()
 
       const usedQueries = usage?.used_queries ?? 0
-      const limit = sub.ai_quota_limit ?? 500
+      const limit = sub?.ai_quota_limit ?? 500
 
       if (usedQueries >= limit) {
         return json({
@@ -361,11 +470,59 @@ serve(async (req) => {
       await supabase.rpc('increment_ai_usage', { p_profile_id: user.id })
     }
 
-    // Build prompt and call AI
+    // ── Chat action ──────────────────────────────────────────────────────────
+    if (action === 'chat') {
+      const message = (body.message ?? '').toString().slice(0, 2000)
+      if (!message.trim()) return json({ error: 'Empty message' }, 400)
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_name, sports, running_bests, experience_level, weekly_hours, max_hr, resting_hr')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      const todayIso = new Date().toISOString().slice(0, 10)
+      const prompt = buildChatPrompt(message, body.history ?? [], context, (profile ?? {}) as ChatProfile, todayIso)
+      const aiRaw = await callAI(provider, apiKey, model, prompt) as Record<string, unknown>
+
+      const reply = typeof aiRaw?.reply === 'string' ? aiRaw.reply : 'Listo.'
+      let createdSession: Record<string, unknown> | null = null
+
+      const candidate = sanitizeSession(aiRaw?.create_session)
+      if (candidate) {
+        const { data: inserted } = await supabase
+          .from('training_sessions')
+          .insert({
+            profile_id: user.id,
+            session_date: candidate.session_date,
+            sport: candidate.sport,
+            title: candidate.title,
+            intensity: candidate.intensity,
+            duration_minutes: candidate.duration_minutes,
+            tss: candidate.tss,
+            notes: candidate.notes,
+            status: 'planned',
+          })
+          .select('id, session_date, sport, title, intensity, duration_minutes, tss, notes')
+          .single()
+        createdSession = inserted ?? null
+      }
+
+      await supabase.from('ai_coach_history').insert({
+        profile_id: user.id,
+        action_type: 'chat',
+        request_context: { message, context },
+        response: { reply, created_session: createdSession },
+      })
+
+      return json({ result: { reply, created_session: createdSession }, action })
+    }
+
+    // ── Structured analysis actions ───────────────────────────────────────────
     const prompt = buildPrompt(action, context)
     const result = await callAI(provider, apiKey, model, prompt)
 
-    // Store the AI response as a pending action
+    // Store the AI response as history
     await supabase.from('ai_coach_history').insert({
       profile_id: user.id,
       action_type: action,

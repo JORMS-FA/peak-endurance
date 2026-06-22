@@ -1,15 +1,16 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bot, Lock, Shield, Sparkles, Zap, CheckCircle, AlertTriangle, X } from 'lucide-react'
+import { Bot, Lock, Shield, Sparkles, Zap, CheckCircle, AlertTriangle, X, Send, CalendarPlus } from 'lucide-react'
 import { useI18n } from '../hooks/useI18n'
 import { useStravaConnection } from '../hooks/useStrava'
 import { useDashboardMetrics } from '../hooks/useDashboardMetrics'
 import { useSubscription } from '../hooks/useSubscription'
 import { useApiKey } from '../hooks/useApiKey'
-import { useAiCoach } from '../hooks/useAiCoach'
+import { useAiCoach, useAiChat } from '../hooks/useAiCoach'
 import type { AiAction } from '../hooks/useAiCoach'
+import { SportIcon } from '../components/ui/SportIcon'
 
 type ActionKey = 'analyzeWeek' | 'adjustPlan' | 'detectFatigue'
 
@@ -26,7 +27,10 @@ export function AiCoach() {
   const { usage, isPro } = useSubscription()
   const { hasKey } = useApiKey()
   const { execute, loading: aiLoading, result: aiResult, error: aiError, reset } = useAiCoach()
+  const { messages, send, loading: chatLoading, error: chatError } = useAiChat()
   const [pickedAction, setPickedAction] = useState<ActionKey | null>(null)
+  const [chatInput, setChatInput] = useState('')
+  const chatBoxRef = useRef<HTMLDivElement>(null)
 
   const stravaConnected = Boolean(strava?.connected)
   const canUseAi = hasKey || isPro
@@ -38,16 +42,8 @@ export function AiCoach() {
         ? 'aiBlockedNoKey'
         : null
 
-  const actions: { key: ActionKey; icon: ReactNode; descKey: string }[] = [
-    { key: 'analyzeWeek', icon: <Sparkles size={20} />, descKey: 'aiAnalyzeDesc' },
-    { key: 'adjustPlan', icon: <Zap size={20} />, descKey: 'aiAdjustDesc' },
-    { key: 'detectFatigue', icon: <Shield size={20} />, descKey: 'aiFatigueDesc' },
-  ]
-
-  async function handleExecute() {
-    if (!pickedAction || blockedReason) return
-
-    const context = {
+  function buildContext() {
+    return {
       ctl: metrics.ctl,
       atl: metrics.atl,
       tsb: metrics.tsb,
@@ -61,8 +57,28 @@ export function AiCoach() {
         title: a.title,
       })),
     }
+  }
 
-    await execute(ACTION_MAP[pickedAction], context)
+  async function handleSendChat(e?: React.FormEvent) {
+    e?.preventDefault()
+    if (!chatInput.trim() || chatLoading || blockedReason) return
+    const msg = chatInput
+    setChatInput('')
+    await send(msg, buildContext())
+    requestAnimationFrame(() => {
+      chatBoxRef.current?.scrollTo({ top: chatBoxRef.current.scrollHeight, behavior: 'smooth' })
+    })
+  }
+
+  const actions: { key: ActionKey; icon: ReactNode; descKey: string }[] = [
+    { key: 'analyzeWeek', icon: <Sparkles size={20} />, descKey: 'aiAnalyzeDesc' },
+    { key: 'adjustPlan', icon: <Zap size={20} />, descKey: 'aiAdjustDesc' },
+    { key: 'detectFatigue', icon: <Shield size={20} />, descKey: 'aiFatigueDesc' },
+  ]
+
+  async function handleExecute() {
+    if (!pickedAction || blockedReason) return
+    await execute(ACTION_MAP[pickedAction], buildContext())
   }
 
   return (
@@ -116,6 +132,86 @@ export function AiCoach() {
           )}
         </motion.div>
       )}
+
+      {/* ── Chat con el coach ──────────────────────────────────────────── */}
+      <motion.section
+        className="card ai-chat"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.05 }}
+      >
+        <div className="card-header">
+          <Bot size={16} />
+          <span>{language === 'es' ? 'Chatea con tu coach' : 'Chat with your coach'}</span>
+        </div>
+
+        <div className="ai-chat-box" ref={chatBoxRef}>
+          {messages.length === 0 ? (
+            <div className="ai-chat-empty">
+              <Sparkles size={20} />
+              <p>
+                {language === 'es'
+                  ? 'Pregúntame lo que quieras o pídeme crear un entrenamiento. Ej: "Prográmame un rodaje suave de 40 min mañana" o "Crea series 5x1000 el sábado".'
+                  : 'Ask me anything or tell me to create a workout. E.g. "Schedule an easy 40-min run tomorrow".'}
+              </p>
+            </div>
+          ) : (
+            messages.map((m, i) => (
+              <div key={i} className={`ai-msg ai-msg-${m.role}`}>
+                <div className="ai-msg-bubble">{m.content}</div>
+                {m.createdSession && (
+                  <div className="ai-session-created">
+                    <div className="ai-session-icon" data-sport={m.createdSession.sport}>
+                      <SportIcon sport={m.createdSession.sport} size={16} />
+                    </div>
+                    <div className="ai-session-body">
+                      <div className="ai-session-top">
+                        <CalendarPlus size={13} />
+                        <strong>{m.createdSession.title}</strong>
+                      </div>
+                      <small>
+                        {m.createdSession.session_date}
+                        {m.createdSession.duration_minutes ? ` · ${m.createdSession.duration_minutes} min` : ''}
+                        {m.createdSession.intensity ? ` · ${m.createdSession.intensity}` : ''}
+                        {m.createdSession.tss ? ` · ${m.createdSession.tss} TSS` : ''}
+                      </small>
+                    </div>
+                    <span className="status-badge success">{language === 'es' ? 'Programado' : 'Scheduled'}</span>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+          {chatLoading && (
+            <div className="ai-msg ai-msg-assistant">
+              <div className="ai-msg-bubble ai-msg-typing">
+                <span /><span /><span />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {chatError && (
+          <div className="form-error" style={{ marginTop: 8 }}>{chatError}</div>
+        )}
+
+        <form className="ai-chat-input" onSubmit={handleSendChat}>
+          <input
+            type="text"
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            placeholder={
+              blockedReason
+                ? (language === 'es' ? 'Conecta Strava y configura la IA para chatear' : 'Connect Strava and set up AI to chat')
+                : (language === 'es' ? 'Escribe un mensaje o un comando...' : 'Type a message or command...')
+            }
+            disabled={Boolean(blockedReason) || chatLoading}
+          />
+          <button type="submit" className="btn-primary" disabled={Boolean(blockedReason) || chatLoading || !chatInput.trim()}>
+            <Send size={16} />
+          </button>
+        </form>
+      </motion.section>
 
       {/* Action cards */}
       <div className="ai-actions-grid">
