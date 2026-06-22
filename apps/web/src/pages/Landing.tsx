@@ -44,7 +44,7 @@ export function Landing() {
             className="btn-secondary btn-sm"
             onClick={() => navigate('/login')}
           >
-            {t('signIn')}
+            {t('signInCta')}
           </button>
         </nav>
       </header>

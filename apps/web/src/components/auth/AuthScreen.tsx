@@ -387,12 +387,20 @@ function EmailSection() {
 // ─── Password Form ────────────────────────────────────────────────────────────
 
 function PasswordForm() {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [isSignUp, setIsSignUp] = useState(false)
+
+  const toggleMode = () => {
+    setIsSignUp((prev) => !prev)
+    setError(null)
+  }
+
+  const submitLabel = isSignUp ? t('signUp') : t('signIn')
+  const toggleLabel = isSignUp ? t('switchToSignIn') : t('switchToSignUp')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -411,7 +419,28 @@ function PasswordForm() {
   }
 
   return (
-    <form className="auth-form" onSubmit={handleSubmit}>
+    <motion.form
+      className="auth-form"
+      onSubmit={handleSubmit}
+      // Smooth fade/slide when toggling between login and sign-up
+      key={isSignUp ? 'signup' : 'signin'}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {/* Animated mode badge so users know exactly which form they see */}
+      <motion.div
+        className="auth-mode-badge"
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        aria-live="polite"
+      >
+        {isSignUp
+          ? (language === 'es' ? 'Crear cuenta nueva' : 'Create a new account')
+          : (language === 'es' ? 'Entra a tu cuenta' : 'Sign in to your account')}
+      </motion.div>
+
       <label className="auth-field">
         <span>{t('email')}</span>
         <input
@@ -443,15 +472,15 @@ function PasswordForm() {
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.98 }}
       >
-        {loading ? t('sending') : isSignUp ? t('signUp') : t('signIn')}
+        {loading ? t('sending') : submitLabel}
       </motion.button>
       <button
         type="button"
         className="auth-toggle"
-        onClick={() => setIsSignUp(!isSignUp)}
+        onClick={toggleMode}
       >
-        {isSignUp ? t('signIn') : t('signUp')}
+        {toggleLabel}
       </button>
-    </form>
+    </motion.form>
   )
 }

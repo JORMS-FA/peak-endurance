@@ -52,13 +52,30 @@ export async function signUpWithPassword(
     return { ok: false, message: 'Supabase is not configured.' }
   }
   const redirectTo = `${getSiteUrl()}/auth/callback`
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: email.trim().toLowerCase(),
     password,
-    options: { emailRedirectTo: redirectTo },
+    options: {
+      emailRedirectTo: redirectTo,
+      // Instant sign-up: skip the email confirmation round-trip
+      // (requires "Confirm Email" to be OFF in Supabase Auth settings).
+      data: { instant_signup: true },
+    },
   })
   if (error) {
     return { ok: false, message: error.message }
+  }
+  // Instant auth: when Supabase creates and signs in the user in one go
+  // (Confirm Email disabled), onAuthStateChange will pick up the session
+  // and AuthGuard will navigate to /app. As a safety net, force a redirect
+  // once the user object is present.
+  if (data?.user) {
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (sessionData.session) {
+      if (typeof window !== 'undefined') {
+        window.location.assign('/app')
+      }
+    }
   }
   return { ok: true }
 }
