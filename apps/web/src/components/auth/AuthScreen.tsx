@@ -290,7 +290,9 @@ export function AuthScreen() {
                     <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
                   </svg>
                   <span>
-                    {language === 'es' ? 'Strava — al iniciar sesión' : 'Strava — after sign-in'}
+                    {language === 'es'
+                      ? 'Continuar con Strava para iniciar sesión'
+                      : 'Continue with Strava to sign in'}
                   </span>
                 </motion.div>
 
@@ -405,17 +407,54 @@ function PasswordForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+
+    const trimmedEmail = email.trim()
+    if (!trimmedEmail) {
+      setError(
+        language === 'es'
+          ? 'Introduce tu correo electrónico.'
+          : 'Enter your email address.'
+      )
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setError(
+        language === 'es'
+          ? 'El formato del correo no es válido.'
+          : 'The email format is invalid.'
+      )
+      return
+    }
+    if (!password || password.length < 6) {
+      setError(
+        language === 'es'
+          ? 'La contraseña debe tener al menos 6 caracteres.'
+          : 'Password must be at least 6 characters.'
+      )
+      return
+    }
+
     setLoading(true)
+    try {
+      const { signInWithPassword, signUpWithPassword } = await import(
+        '../../lib/auth'
+      )
+      const result = isSignUp
+        ? await signUpWithPassword(trimmedEmail, password)
+        : await signInWithPassword(trimmedEmail, password)
 
-    const { signInWithPassword, signUpWithPassword } = await import(
-      '../../lib/auth'
-    )
-    const result = isSignUp
-      ? await signUpWithPassword(email, password)
-      : await signInWithPassword(email, password)
-
-    setLoading(false)
-    if (!result.ok) setError(result.message)
+      if (!result.ok) {
+        setError(result.message)
+        setLoading(false)
+        return
+      }
+      // On success, auth.ts forces a window.location.assign('/app').
+      // Keep the loading state on so the UI stays disabled until the
+      // navigation actually happens.
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+      setLoading(false)
+    }
   }
 
   return (

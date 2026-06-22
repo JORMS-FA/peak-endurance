@@ -27,33 +27,106 @@ export async function getCurrentSession(): Promise<Session | null> {
   return data.session
 }
 
+export type AuthResult =
+  | { ok: true; mode: 'session' | 'confirmation_required' }
+  | { ok: false; message: string }
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function validateCredentials(
+  email: string,
+  password: string
+): { ok: true; email: string } | { ok: false; message: string } {
+  const normalizedEmail = email.trim().toLowerCase()
+  if (!normalizedEmail) {
+    return { ok: false, message: 'El correo electrónico es obligatorio.' }
+  }
+  if (!EMAIL_REGEX.test(normalizedEmail)) {
+    return {
+      ok: false,
+      message: 'El formato del correo electrónico no es válido.',
+    }
+  }
+  if (!password || password.length < 6) {
+    return {
+      ok: false,
+      message: 'La contraseña debe tener al menos 6 caracteres.',
+    }
+  }
+  return { ok: true, email: normalizedEmail }
+}
+
+function describeAuthError(err: { message: string } | null | undefined): string {
+  if (!err) return 'Error desconocido de autenticación.'
+  const msg = err.message || ''
+  const lower = msg.toLowerCase()
+  if (lower.includes('invalid login credentials')) {
+    return 'Correo o contraseña incorrectos.'
+  }
+  if (lower.includes('email not confirmed')) {
+    return 'Tu correo aún no ha sido confirmado. Revisa tu bandeja de entrada.'
+  }
+  if (lower.includes('user already registered')) {
+    return 'Ya existe una cuenta con ese correo. Inicia sesión.'
+  }
+  if (lower.includes('rate limit')) {
+    return 'Demasiados intentos. Espera unos segundos y vuelve a probar.'
+  }
+  if (lower.includes('weak password')) {
+    return 'La contraseña es demasiado débil. Usa al menos 6 caracteres.'
+  }
+  if (lower.includes('network') || lower.includes('fetch')) {
+    return 'Error de red. Comprueba tu conexión a internet.'
+  }
+  return msg || 'Error de autenticación.'
+}
+
 export async function signInWithPassword(
   email: string,
   password: string
-): Promise<{ ok: true } | { ok: false; message: string }> {
+): Promise<AuthResult> {
   if (!supabase) {
-    return { ok: false, message: 'Supabase is not configured.' }
+    return { ok: false, message: 'Supabase no está configurado.' }
   }
-  const { error } = await supabase.auth.signInWithPassword({
-    email: email.trim().toLowerCase(),
+  const validation = validateCredentials(email, password)
+  if (!validation.ok) return validation
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: validation.email,
     password,
   })
   if (error) {
-    return { ok: false, message: error.message }
+    return { ok: false, message: describeAuthError(error) }
   }
-  return { ok: true }
+
+  // Force a redirect to /app on success. Supabase also fires
+  // onAuthStateChange, but this guarantees the user lands on /app
+  // even if the listener is slow or the React effect hasn't fired yet.
+  if (typeof window !== 'undefined') {
+    if (data?.session) {
+      window.location.assign('/app')
+    } else {
+      // No session returned (shouldn't happen on sign-in) — still redirect
+      // so the AuthGuard can pick it up via getSession.
+      window.location.assign('/app')
+    }
+  }
+  return { ok: true, mode: 'session' }
 }
 
 export async function signUpWithPassword(
   email: string,
   password: string
-): Promise<{ ok: true } | { ok: false; message: string }> {
+): Promise<AuthResult> {
   if (!supabase) {
-    return { ok: false, message: 'Supabase is not configured.' }
+    return { ok: false, message: 'Supabase no está configurado.' }
   }
+  const validation = validateCredentials(email, password)
+  if (!validation.ok) return validation
+
   const redirectTo = `${getSiteUrl()}/auth/callback`
   const { data, error } = await supabase.auth.signUp({
-    email: email.trim().toLowerCase(),
+    email: validation.email,
     password,
     options: {
       emailRedirectTo: redirectTo,
@@ -63,21 +136,40 @@ export async function signUpWithPassword(
     },
   })
   if (error) {
-    return { ok: false, message: error.message }
+    return { ok: false, message: describeAuthError(error) }
   }
-  // Instant auth: when Supabase creates and signs in the user in one go
-  // (Confirm Email disabled), onAuthStateChange will pick up the session
-  // and AuthGuard will navigate to /app. As a safety net, force a redirect
-  // once the user object is present.
-  if (data?.user) {
-    const { data: sessionData } = await supabase.auth.getSession()
-    if (sessionData.session) {
-      if (typeof window !== 'undefined') {
-        window.location.assign('/app')
-      }
+
+  // Instant auth path: a session is returned and we can go straight to /app.
+  if (data?.session) {
+    if (typeof window !== 'undefined') {
+      window.location.assign('/app')
+    }
+    return { ok: true, mode: 'session' }
+  }
+
+  // Confirmation-required path: Supabase created the user but did NOT
+  // sign them in. Fall back to a sign-in attempt; if that also fails
+  // (e.g. email not confirmed), surface a clear message.
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: validation.email,
+    password,
+  })
+  if (!signInError) {
+    if (typeof window !== 'undefined') {
+      window.location.assign('/app')
+    }
+    return { ok: true, mode: 'session' }
+  }
+
+  const lower = (signInError.message || '').toLowerCase()
+  if (lower.includes('email not confirmed')) {
+    return {
+      ok: false,
+      message:
+        'Cuenta creada. Revisa tu correo para confirmarla antes de iniciar sesión.',
     }
   }
-  return { ok: true }
+  return { ok: false, message: describeAuthError(signInError) }
 }
 
 export async function signOut(): Promise<void> {
