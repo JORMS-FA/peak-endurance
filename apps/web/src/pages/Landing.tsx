@@ -262,7 +262,7 @@ export function Landing() {
             </ul>
             <button
               type="button"
-              className="btn-secondary"
+              className="btn-primary"
               onClick={() => navigate('/login')}
             >
               {t('startFree')}

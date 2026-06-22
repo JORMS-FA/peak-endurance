@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
 import { Globe, Mountain, Activity } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -140,11 +140,6 @@ export function AuthScreen() {
       ? 'La fusión de Strava y TrainingPeaks, con un coach de IA'
       : 'The Strava + TrainingPeaks fusion, with an AI coach'
 
-  const stravaNote =
-    language === 'es'
-      ? 'Conecta tu cuenta de Strava después de iniciar sesión para importar tus datos de entrenamiento'
-      : 'Connect your Strava account after signing in to import your training data'
-
   return (
     <div className="auth-screen">
       <LavaBackground />
@@ -277,6 +272,22 @@ export function AuthScreen() {
                   </span>
                 </motion.button>
 
+                <AnimatePresence initial={false}>
+                  {authError && (
+                    <motion.div
+                      key="google-auth-error"
+                      className="auth-form-error"
+                      role="alert"
+                      initial={{ opacity: 0, y: -6, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: 'auto' }}
+                      exit={{ opacity: 0, y: -6, height: 0 }}
+                      transition={{ duration: 0.25, ease: 'easeOut' }}
+                    >
+                      {authError}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 {/* Strava — connect after sign-in (Supabase has no Strava login provider) */}
                 <motion.div
                   className="auth-social-btn auth-social-btn-disabled"
@@ -294,33 +305,6 @@ export function AuthScreen() {
                       ? 'Continuar con Strava para iniciar sesión'
                       : 'Continue with Strava to sign in'}
                   </span>
-                </motion.div>
-
-                {authError && (
-                  <motion.div
-                    variants={itemVariants}
-                    className="auth-form-error"
-                    role="alert"
-                  >
-                    {authError}
-                  </motion.div>
-                )}
-
-                {/* Strava note */}
-                <motion.div className="auth-strava-note" variants={itemVariants}>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M10.5 2L7 9h2.5L7 16l7-9h-3l2.5-5h-3z"
-                      fill="#FC4C02"
-                    />
-                  </svg>
-                  <span>{stravaNote}</span>
                 </motion.div>
 
                 {/* Divider */}
@@ -403,6 +387,14 @@ function PasswordForm() {
 
   const submitLabel = isSignUp ? t('signUp') : t('signIn')
   const toggleLabel = isSignUp ? t('switchToSignIn') : t('switchToSignUp')
+
+  // Surface a friendly status while the network round-trip is in flight,
+  // so the form never feels "trabado".
+  const statusHint = loading
+    ? isSignUp
+      ? (language === 'es' ? 'Creando tu cuenta…' : 'Creating your account…')
+      : (language === 'es' ? 'Iniciando sesión…' : 'Signing you in…')
+    : null
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -489,6 +481,7 @@ function PasswordForm() {
           placeholder="tu@correo.com"
           autoComplete="email"
           required
+          disabled={loading}
         />
       </label>
       <label className="auth-field">
@@ -501,22 +494,66 @@ function PasswordForm() {
           autoComplete={isSignUp ? 'new-password' : 'current-password'}
           required
           minLength={6}
+          disabled={loading}
         />
       </label>
-      {error && <div className="auth-form-error">{error}</div>}
+
+      <AnimatePresence initial={false} mode="wait">
+        {error && (
+          <motion.div
+            key="auth-error"
+            className="auth-form-error"
+            role="alert"
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -6, height: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+          >
+            {error}
+          </motion.div>
+        )}
+        {statusHint && !error && (
+          <motion.div
+            key="auth-status"
+            className="auth-form-status"
+            role="status"
+            aria-live="polite"
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+          >
+            <span className="auth-form-status-dot" aria-hidden />
+            <span>{statusHint}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.button
         type="submit"
         className="auth-btn-submit"
         disabled={loading}
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.98 }}
+        whileHover={loading ? undefined : { scale: 1.02 }}
+        whileTap={loading ? undefined : { scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 380, damping: 26 }}
       >
-        {loading ? t('sending') : submitLabel}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={loading ? 'sending' : 'idle'}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+          >
+            {loading ? t('sending') : submitLabel}
+          </motion.span>
+        </AnimatePresence>
       </motion.button>
       <button
         type="button"
         className="auth-toggle"
         onClick={toggleMode}
+        disabled={loading}
       >
         {toggleLabel}
       </button>
