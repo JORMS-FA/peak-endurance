@@ -22,6 +22,8 @@ const SECONDARY_SOURCES: StaticSource[] = [
   { id: 'coros', name: 'COROS', comingSoon: true },
   { id: 'wahoo', name: 'Wahoo', comingSoon: true },
   { id: 'igpsport', name: 'iGPSPORT', comingSoon: true },
+  { id: 'samsung', name: 'Samsung Health', comingSoon: true },
+  { id: 'health', name: 'Health Connect', comingSoon: true },
 ]
 
 export function Connections() {

@@ -8,6 +8,7 @@ import { useI18n } from '../../hooks/useI18n'
 import { useAuth } from '../../hooks/useAuth'
 import { signOut } from '../../lib/auth'
 import { APP_NAME } from '../../lib/constants'
+import { Logo } from '../ui/Logo'
 
 const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
   Home, CalendarDays, Dumbbell, Flag, Sparkles,
@@ -27,7 +28,7 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
-        <div className="brand-icon">P</div>
+        <Logo size={34} />
         <span className="brand-name">{APP_NAME}</span>
       </div>
 

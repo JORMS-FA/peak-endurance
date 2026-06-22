@@ -4,26 +4,16 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Activity,
-  Bike,
   Dumbbell,
-  Footprints,
   Loader2,
   Mountain,
   RefreshCw,
-  Waves,
   Zap,
 } from 'lucide-react'
 import { useI18n } from '../hooks/useI18n'
 import { useActivities, type SportFilter } from '../hooks/useActivities'
 import { useStravaConnection, useStravaSync } from '../hooks/useStrava'
-
-const sportIcon: Record<string, ReactNode> = {
-  run: <Footprints size={16} />,
-  bike: <Bike size={16} />,
-  swim: <Waves size={16} />,
-  gym: <Dumbbell size={16} />,
-  other: <Activity size={16} />,
-}
+import { SportIcon } from '../components/ui/SportIcon'
 
 export function Training() {
   const { t } = useI18n()
@@ -36,10 +26,10 @@ export function Training() {
 
   const filters: { value: SportFilter; label: string; icon: ReactNode }[] = [
     { value: 'all', label: t('all'), icon: <Activity size={14} /> },
-    { value: 'run', label: t('sportRun'), icon: <Footprints size={14} /> },
-    { value: 'bike', label: t('sportBike'), icon: <Bike size={14} /> },
-    { value: 'swim', label: t('sportSwim'), icon: <Waves size={14} /> },
-    { value: 'gym', label: t('sportGym'), icon: <Dumbbell size={14} /> },
+    { value: 'run', label: t('sportRun'), icon: <SportIcon sport="run" size={14} /> },
+    { value: 'bike', label: t('sportBike'), icon: <SportIcon sport="bike" size={14} /> },
+    { value: 'swim', label: t('sportSwim'), icon: <SportIcon sport="swim" size={14} /> },
+    { value: 'gym', label: t('sportGym'), icon: <SportIcon sport="gym" size={14} /> },
   ]
 
   const handleSync = async () => {
@@ -130,7 +120,7 @@ export function Training() {
               transition={{ duration: 0.3, delay: Math.min(i * 0.04, 0.4) }}
             >
               <div className="activity-icon" data-sport={a.sport}>
-                {sportIcon[a.sport] ?? sportIcon.other}
+                <SportIcon sport={a.sport} size={16} />
               </div>
               <div className="activity-body">
                 <div className="activity-row">

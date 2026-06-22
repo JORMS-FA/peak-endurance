@@ -3,14 +3,10 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Activity,
-  Bike,
-  Dumbbell,
   Flame,
-  Footprints,
   Heart,
   Moon,
   TrendingUp,
-  Waves,
   Zap,
 } from 'lucide-react'
 import {
@@ -36,7 +32,7 @@ import { useDashboardMetrics } from '../hooks/useDashboardMetrics'
 import { useTodaySession } from '../hooks/useTodaySession'
 import { useStravaConnection } from '../hooks/useStrava'
 import { AnimatedNumber } from '../components/ui/AnimatedNumber'
-import type { ReactNode } from 'react'
+import { SportIcon, SPORT_COLORS } from '../components/ui/SportIcon'
 
 // ─── Animation Variants ─────────────────────────────────────────────────────
 const cardVariants = {
@@ -46,24 +42,6 @@ const cardVariants = {
     y: 0,
     transition: { duration: 0.45, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
   }),
-}
-
-// ─── Sport Icons & Colors ───────────────────────────────────────────────────
-const sportIcon: Record<string, ReactNode> = {
-  run: <Footprints size={14} />,
-  bike: <Bike size={14} />,
-  swim: <Waves size={14} />,
-  gym: <Dumbbell size={14} />,
-  rest: <Moon size={14} />,
-  other: <Activity size={14} />,
-}
-
-const SPORT_COLORS: Record<string, string> = {
-  run: '#22c55e',
-  bike: '#3b82f6',
-  swim: '#06b6d4',
-  gym: '#f97316',
-  other: '#8b5cf6',
 }
 
 // ─── PMC Computation ────────────────────────────────────────────────────────
@@ -418,7 +396,7 @@ export function Dashboard() {
             <div className="empty-state"><div className="spinner" /></div>
           ) : today ? (
             <div className="today-session">
-              <div className="today-session-icon">{sportIcon[today.sport] ?? sportIcon.other}</div>
+              <div className="today-session-icon"><SportIcon sport={today.sport} size={16} /></div>
               <div className="today-session-body">
                 <strong>{today.title}</strong>
                 <span className="text-muted">
@@ -488,7 +466,7 @@ export function Dashboard() {
             <ul className="recent-list">
               {metrics.recent.map((a) => (
                 <li key={a.id} className="recent-item">
-                  <span className="recent-icon">{sportIcon[a.sport] ?? sportIcon.other}</span>
+                  <span className="recent-icon"><SportIcon sport={a.sport} size={14} /></span>
                   <div className="recent-body">
                     <strong>{a.title}</strong>
                     <small className="text-muted">
