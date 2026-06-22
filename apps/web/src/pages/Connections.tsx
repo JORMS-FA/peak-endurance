@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { CheckCircle2, Loader2, RefreshCw, XCircle, Zap } from 'lucide-react'
 import { useI18n } from '../hooks/useI18n'
+import { BrandIcon, type BrandId } from '../components/ui/BrandIcon'
 import {
   useStravaConnect,
   useStravaConnection,
@@ -11,17 +12,16 @@ import {
 } from '../hooks/useStrava'
 
 type StaticSource = {
-  id: string
+  id: BrandId
   name: string
-  color: string
   comingSoon?: boolean
 }
 
 const SECONDARY_SOURCES: StaticSource[] = [
-  { id: 'garmin', name: 'Garmin Connect', color: '#007dbb', comingSoon: true },
-  { id: 'coros', name: 'COROS', color: '#23d18b', comingSoon: true },
-  { id: 'wahoo', name: 'Wahoo', color: '#0068b5', comingSoon: true },
-  { id: 'igpsport', name: 'iGPSPORT', color: '#e02e26', comingSoon: true },
+  { id: 'garmin', name: 'Garmin Connect', comingSoon: true },
+  { id: 'coros', name: 'COROS', comingSoon: true },
+  { id: 'wahoo', name: 'Wahoo', comingSoon: true },
+  { id: 'igpsport', name: 'iGPSPORT', comingSoon: true },
 ]
 
 export function Connections() {
@@ -85,7 +85,7 @@ export function Connections() {
         transition={{ duration: 0.4 }}
         className="connection-card connection-card-primary"
       >
-        <div className="connection-icon" style={{ background: '#fc4c02' }}>S</div>
+        <BrandIcon id="strava" name="Strava" />
         <div className="connection-info">
           <strong>Strava</strong>
           {statusLoading ? (
@@ -178,9 +178,7 @@ export function Connections() {
             transition={{ duration: 0.3, delay: 0.05 * idx }}
             className="connection-card"
           >
-            <div className="connection-icon" style={{ background: source.color }}>
-              {source.name.charAt(0)}
-            </div>
+            <BrandIcon id={source.id} name={source.name} />
             <div className="connection-info">
               <strong>{source.name}</strong>
               <span className="connection-status">{t('comingSoon')}</span>
