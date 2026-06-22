@@ -21,16 +21,24 @@ export function TopBar() {
         </h1>
         <p className="topbar-subtitle">{t('subtitle')}</p>
       </div>
+
       <div className="topbar-right">
-        <button type="button" className="icon-btn topbar-icon-desktop" aria-label={t('search')}>
-          <Search size={18} />
+        <button type="button" className="topbar-search" aria-label={t('search')}>
+          <Search size={15} />
+          <span className="topbar-search-text">{t('search')}</span>
+          <kbd className="topbar-kbd">⌘K</kbd>
         </button>
-        <button type="button" className="icon-btn topbar-icon-desktop" aria-label={t('notifications')}>
-          <Bell size={18} />
+
+        <button type="button" className="topbar-action" aria-label={t('notifications')}>
+          <Bell size={17} />
+          <span className="topbar-dot" />
         </button>
-        <div className="avatar-sm topbar-avatar">
-          {firstName.charAt(0).toUpperCase()}
-        </div>
+
+        {profile?.avatar_url ? (
+          <img src={profile.avatar_url} alt="" className="topbar-avatar topbar-avatar-img" />
+        ) : (
+          <div className="topbar-avatar">{firstName.charAt(0).toUpperCase()}</div>
+        )}
       </div>
     </header>
   )

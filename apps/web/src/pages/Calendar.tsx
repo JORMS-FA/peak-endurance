@@ -24,7 +24,7 @@ function iso(y: number, m: number, d: number) {
   return `${y}-${pad(m + 1)}-${pad(d)}`
 }
 
-export function Calendar() {
+export function Calendar({ embedded = false }: { embedded?: boolean } = {}) {
   const { t, language } = useI18n()
   const isEs = language === 'es'
   const { status: authStatus, session } = useAuth()
@@ -120,9 +120,11 @@ export function Calendar() {
 
   return (
     <div className="page-calendar">
-      <div className="page-header">
-        <h2>{t('calendar')}</h2>
-      </div>
+      {!embedded && (
+        <div className="page-header">
+          <h2>{t('calendar')}</h2>
+        </div>
+      )}
 
       <div className="calendar-card">
         <div className="calendar-nav">

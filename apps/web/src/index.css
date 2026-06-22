@@ -4406,3 +4406,107 @@ input, select, textarea { font: inherit; color: inherit; }
 }
 .ai-chat-input input:focus { outline: none; border-color: var(--accent); }
 .ai-chat-input button { padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; }
+
+/* ── Phase 1: Topbar redesign (search / notifications) ───────────────────── */
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
+.topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 10px 0 12px;
+  min-width: 200px;
+  background: var(--surface-raised, #111);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 10px;
+  color: var(--text-muted, #7a8194);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.topbar-search:hover { border-color: var(--border-strong, rgba(255,255,255,0.16)); }
+.topbar-search-text { flex: 1; text-align: left; }
+.topbar-kbd {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  background: var(--bg-2, #111);
+  color: var(--text-muted, #7a8194);
+}
+
+.topbar-action {
+  position: relative;
+  width: 38px; height: 38px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface-raised, #111);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 10px;
+  color: var(--text-2, #b8bcc8);
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+.topbar-action:hover { border-color: var(--border-strong, rgba(255,255,255,0.16)); color: var(--text, #fff); }
+.topbar-dot {
+  position: absolute; top: 8px; right: 9px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent, #22c55e);
+  box-shadow: 0 0 0 2px var(--surface-raised, #111);
+}
+.topbar-avatar {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--accent, #22c55e); color: #04140b; font-weight: 700;
+  overflow: hidden;
+}
+.topbar-avatar-img { object-fit: cover; }
+
+@media (max-width: 640px) {
+  .topbar-search { min-width: 0; }
+  .topbar-search-text, .topbar-kbd { display: none; }
+  .topbar-search { width: 38px; justify-content: center; padding: 0; }
+}
+
+/* ── Phase 1: Sidebar custom scrollbar (integrated, subtle) ──────────────── */
+.sidebar { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.14) transparent; }
+.sidebar::-webkit-scrollbar { width: 8px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.10);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.20); background-clip: padding-box; }
+.sidebar-nav { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.14) transparent; }
+.sidebar-nav::-webkit-scrollbar { width: 8px; }
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.10); border-radius: 8px;
+  border: 2px solid transparent; background-clip: padding-box;
+}
+
+/* ── Phase 1: segmented tabs (Plan / Calendar, etc.) ─────────────────────── */
+.seg-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 16px;
+  background: var(--surface-raised, #111);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 12px;
+}
+.seg-tab {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 16px;
+  border: none; background: transparent;
+  color: var(--text-muted, #7a8194);
+  font-size: 0.86rem; font-weight: 600;
+  border-radius: 9px; cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.seg-tab:hover { color: var(--text, #fff); }
+.seg-tab.active {
+  background: var(--accent-soft, rgba(34,197,94,0.12));
+  color: var(--accent, #22c55e);
+}
