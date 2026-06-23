@@ -159,6 +159,12 @@ export function AuthScreen() {
   return (
     <div className="auth-screen">
       <LavaBackground />
+
+      {/* Back to landing — fixed top-left */}
+      <button type="button" className="auth-back-fixed" onClick={() => navigate('/')}>
+        <ArrowLeft size={18} />
+      </button>
+
       {/* ─── Left: Branding / Hero ─────────────────────────────────────── */}
       <motion.div
         className="auth-hero"
@@ -168,7 +174,7 @@ export function AuthScreen() {
       >
         <div className="auth-hero-content">
           <div className="auth-hero-logo">
-            <Logo size={40} />
+            <Logo size={48} />
             <span className="auth-hero-app-name">{APP_NAME}</span>
           </div>
 
@@ -177,40 +183,31 @@ export function AuthScreen() {
           <div className="auth-hero-features">
             <div className="auth-hero-feature">
               <Activity size={18} />
-              <span>
-                {language === 'es'
-                  ? 'Planificación multi-deporte inteligente'
-                  : 'Smart multi-sport planning'}
-              </span>
+              <span>{language === 'es' ? 'Planificación multi-deporte inteligente' : 'Smart multi-sport planning'}</span>
             </div>
             <div className="auth-hero-feature">
               <Mountain size={18} />
-              <span>
-                {language === 'es'
-                  ? 'Análisis de carga CTL/ATL/TSB'
-                  : 'CTL/ATL/TSB load analysis'}
-              </span>
+              <span>{language === 'es' ? 'Análisis de carga CTL/ATL/TSB' : 'CTL/ATL/TSB load analysis'}</span>
             </div>
             <div className="auth-hero-feature">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z" />
                 <path d="M8 14s1.5 2 4 2 4-2 4-2" />
                 <path d="M12 18v4" />
               </svg>
-              <span>
-                {language === 'es'
-                  ? 'Coach IA que ajusta tu plan cada día'
-                  : 'AI Coach that tunes your plan daily'}
-              </span>
+              <span>{language === 'es' ? 'Coach IA que ajusta tu plan cada día' : 'AI Coach that tunes your plan daily'}</span>
+            </div>
+            <div className="auth-hero-feature">
+              <Activity size={18} />
+              <span>{language === 'es' ? 'Sincronización automática con Strava' : 'Auto-sync with Strava'}</span>
+            </div>
+            <div className="auth-hero-feature">
+              <Activity size={18} />
+              <span>{language === 'es' ? 'Calendario y entrenamientos con detalle' : 'Calendar + detailed workouts'}</span>
+            </div>
+            <div className="auth-hero-feature">
+              <Activity size={18} />
+              <span>{language === 'es' ? 'Logros, XP y gamificación' : 'Achievements, XP & gamification'}</span>
             </div>
           </div>
 
@@ -229,9 +226,6 @@ export function AuthScreen() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <button type="button" className="auth-back-btn" onClick={() => navigate('/')}>
-            <ArrowLeft size={18} />
-          </button>
           <label className="auth-lang-switch">
             <Globe size={14} />
             <select value={language} onChange={handleLangChange}>

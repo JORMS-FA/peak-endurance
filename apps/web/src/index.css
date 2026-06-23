@@ -5020,3 +5020,14 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   transition: background 0.18s ease;
 }
 .activity-strava-link:hover { background: rgba(252, 76, 2, 0.14); }
+
+/* ── Auth: back button fixed top-left ────────────────────────────────────── */
+.auth-back-fixed {
+  position: fixed; top: 18px; left: 18px; z-index: 50;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px); color: #fff; cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.auth-back-fixed:hover { border-color: rgba(255,255,255,0.3); background: rgba(0,0,0,0.6); }

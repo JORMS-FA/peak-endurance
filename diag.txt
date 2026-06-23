@@ -1,0 +1,1 @@
+[{"column_name":"profile_id"},{"column_name":"provider"},{"column_name":"encrypted_key"},{"column_name":"key_hint"},{"column_name":"status"},{"column_name":"last_validated_at"},{"column_name":"created_at"},{"column_name":"updated_at"},{"column_name":"model_preference"},{"column_name":"id"}]
