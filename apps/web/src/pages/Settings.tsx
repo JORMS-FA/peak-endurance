@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import {
   User, CreditCard, Bot, Palette, Globe, Activity as ActivityIcon,
-  ShieldCheck, FileText, LogOut, Check, ExternalLink,
+  ShieldCheck, FileText, LogOut, Check, ExternalLink, Pencil, Trash2,
 } from 'lucide-react'
 import { useI18n } from '../hooks/useI18n'
 import { useTheme } from '../hooks/useTheme'
@@ -13,6 +13,7 @@ import { useApiKey } from '../hooks/useApiKey'
 import { useStripe } from '../hooks/useStripe'
 import { useStravaConnection } from '../hooks/useStrava'
 import { signOut } from '../lib/auth'
+import { supabase } from '../lib/supabase'
 import { THEMES, LANGUAGES, ACCENT_COLORS } from '../lib/constants'
 import type { AccentColor, AppLanguage, ThemeMode } from '../lib/types'
 import type { I18nKey } from '../lib/i18n'
@@ -70,6 +71,31 @@ export function Settings() {
   const [showKeyInput, setShowKeyInput] = useState(false)
   const [keySaveSuccess, setKeySaveSuccess] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<'google_ai' | 'openai' | 'anthropic'>('google_ai')
+  const [editingName, setEditingName] = useState(false)
+  const [nameInput, setNameInput] = useState('')
+  const [savingName, setSavingName] = useState(false)
+
+  async function startEditName() {
+    setNameInput(profile?.display_name ?? '')
+    setEditingName(true)
+  }
+  async function saveName() {
+    if (!supabase || !profile || !nameInput.trim()) return
+    setSavingName(true)
+    await supabase.from('profiles').update({ display_name: nameInput.trim() }).eq('id', profile.id)
+    await refresh()
+    setSavingName(false)
+    setEditingName(false)
+  }
+  async function handleDeleteAccount() {
+    const msg = isEs
+      ? 'Esto cerrará tu sesión. Para eliminar definitivamente tu cuenta y datos, escríbenos a hola@peakendurance.app. ¿Cerrar sesión ahora?'
+      : 'This will sign you out. To permanently delete your account, email hola@peakendurance.app. Sign out now?'
+    if (window.confirm(msg)) {
+      await signOut()
+      await refresh()
+    }
+  }
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -115,20 +141,53 @@ export function Settings() {
 
       {/* Profile */}
       {profile && (
-        <Section icon={<User size={16} />} title={t('profile')}>
+        <Section icon={<User size={16} />} title={isEs ? 'Cuenta' : 'Account'}>
           <div className="settings-profile">
             {profile.avatar_url ? (
               <img src={profile.avatar_url} alt="" className="avatar-lg avatar-img" />
             ) : (
               <div className="avatar-lg">{(profile.display_name ?? 'A').charAt(0).toUpperCase()}</div>
             )}
-            <div>
-              <strong>{profile.display_name ?? 'Atleta'}</strong>
-              <small>{profile.email}</small>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {editingName ? (
+                <div className="account-name-edit">
+                  <input
+                    type="text"
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    className="input-field"
+                    autoFocus
+                    maxLength={60}
+                  />
+                  <button type="button" className="btn-primary btn-sm" onClick={saveName} disabled={savingName || !nameInput.trim()}>
+                    {savingName ? '...' : (isEs ? 'Guardar' : 'Save')}
+                  </button>
+                  <button type="button" className="btn-ghost btn-sm" onClick={() => setEditingName(false)}>
+                    {isEs ? 'Cancelar' : 'Cancel'}
+                  </button>
+                </div>
+              ) : (
+                <div className="account-name-row">
+                  <strong>{profile.display_name ?? 'Atleta'}</strong>
+                  <button type="button" className="account-edit-btn" onClick={startEditName} aria-label={isEs ? 'Editar nombre' : 'Edit name'}>
+                    <Pencil size={13} />
+                  </button>
+                </div>
+              )}
+              <small className="text-muted">{profile.email}</small>
             </div>
-            <span className={`plan-badge ${isPro ? 'pro' : 'free'}`} style={{ marginLeft: 'auto' }}>
+            <span className={`plan-badge ${isPro ? 'pro' : 'free'}`}>
               {isPro ? t('proPlan') : t('freePlan')}
             </span>
+          </div>
+
+          <div className="account-actions">
+            <button type="button" className="btn-secondary btn-sm" onClick={handleSignOut}>
+              <LogOut size={14} /> {t('signOut')}
+            </button>
+            <button type="button" className="btn-ghost btn-sm account-danger" onClick={handleDeleteAccount}>
+              <Trash2 size={14} /> {isEs ? 'Eliminar cuenta' : 'Delete account'}
+            </button>
           </div>
         </Section>
       )}
@@ -358,10 +417,6 @@ export function Settings() {
           </a>
         </div>
       </Section>
-
-      <button type="button" className="btn-danger" onClick={handleSignOut} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-        <LogOut size={16} /> {t('signOut')}
-      </button>
     </div>
   )
 }
