@@ -38,6 +38,10 @@ export async function startStravaAuth(): Promise<{ url: string }> {
   return invokeAuth<{ url: string }>('auth')
 }
 
+export async function startStravaLogin(): Promise<{ url: string }> {
+  return invokeAuth<{ url: string }>('login')
+}
+
 export async function refreshStravaToken(): Promise<{ success: boolean; expiresAt: string }> {
   return invokeAuth<{ success: boolean; expiresAt: string }>('refresh')
 }

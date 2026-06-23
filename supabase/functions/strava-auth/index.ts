@@ -45,6 +45,8 @@ serve(async (req) => {
     switch (body.action) {
       case 'auth':
         return handleAuth(req, supabase, clientId, redirectUri)
+      case 'login':
+        return handleLoginStart(supabase, clientId, redirectUri)
       case 'status':
         return handleStatus(req, supabase)
       case 'refresh':
@@ -107,7 +109,7 @@ async function handleCallback(
 
   const { data: stateData, error: stateError } = await supabase
     .from('strava_oauth_states')
-    .select('profile_id')
+    .select('profile_id, purpose')
     .eq('state', state)
     .single()
 
@@ -140,6 +142,19 @@ async function handleCallback(
   const athleteName = athlete ? `${athlete.firstname ?? ''} ${athlete.lastname ?? ''}`.trim() || null : null
   const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString()
 
+  // ── Login flow: no existing profile; create/sign-in a user from Strava ──
+  if (stateData.purpose === 'login') {
+    return handleLoginCallback(supabase, appUrl, {
+      athleteId: String(athlete?.id ?? ''),
+      athleteName,
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiresAt,
+      avatar: athlete?.profile ?? null,
+    })
+  }
+
+  // ── Connect flow: attach tokens to the already-logged-in profile ──
   await supabase.from('strava_tokens').upsert(
     {
       profile_id: stateData.profile_id,
@@ -157,6 +172,92 @@ async function handleCallback(
     status: 302,
     headers: { Location: `${appUrl}/app/conexiones?strava=success` },
   })
+}
+
+async function handleLoginStart(
+  supabase: ReturnType<typeof createClient>,
+  clientId: string,
+  redirectUri: string,
+) {
+  const state = crypto.randomUUID()
+  const { error } = await supabase.from('strava_oauth_states').insert({
+    state,
+    profile_id: null,
+    purpose: 'login',
+    created_at: new Date().toISOString(),
+  })
+  if (error) {
+    console.error('Failed to store login state:', error)
+    return json({ error: 'Failed to initiate Strava login' }, 500)
+  }
+
+  const stravaUrl = new URL('https://www.strava.com/oauth/authorize')
+  stravaUrl.searchParams.set('client_id', clientId)
+  stravaUrl.searchParams.set('redirect_uri', redirectUri)
+  stravaUrl.searchParams.set('response_type', 'code')
+  stravaUrl.searchParams.set('approval_prompt', 'auto')
+  stravaUrl.searchParams.set('scope', 'read,activity:read')
+  stravaUrl.searchParams.set('state', state)
+  return json({ url: stravaUrl.toString() })
+}
+
+async function handleLoginCallback(
+  supabase: ReturnType<typeof createClient>,
+  appUrl: string,
+  s: {
+    athleteId: string
+    athleteName: string | null
+    accessToken: string
+    refreshToken: string
+    expiresAt: string
+    avatar: string | null
+  },
+): Promise<Response> {
+  if (!s.athleteId) {
+    return Response.redirect(`${appUrl}/login?error=strava`, 302)
+  }
+  // Strava does not expose email — use a stable synthetic address.
+  const email = `strava-${s.athleteId}@users.peakendurance.app`
+
+  // Create the user (ignore "already exists"); then mint a magic link to
+  // establish a session and redirect the browser to it.
+  await supabase.auth.admin.createUser({
+    email,
+    email_confirm: true,
+    user_metadata: {
+      full_name: s.athleteName ?? `Strava ${s.athleteId}`,
+      avatar_url: s.avatar,
+      provider: 'strava',
+      strava_athlete_id: s.athleteId,
+    },
+  })
+
+  const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
+    type: 'magiclink',
+    email,
+    options: { redirectTo: `${appUrl}/app/conexiones?strava=success` },
+  })
+
+  if (linkErr || !linkData?.properties?.action_link || !linkData.user) {
+    console.error('generateLink failed:', linkErr)
+    return Response.redirect(`${appUrl}/login?error=strava_session`, 302)
+  }
+
+  // Persist the Strava tokens for this (new) user so they're connected.
+  await supabase.from('strava_tokens').upsert(
+    {
+      profile_id: linkData.user.id,
+      athlete_id: s.athleteId,
+      athlete_name: s.athleteName,
+      access_token: s.accessToken,
+      refresh_token: s.refreshToken,
+      expires_at: s.expiresAt,
+      scopes: 'read,activity:read',
+    },
+    { onConflict: 'profile_id' },
+  )
+
+  return Response.redirect(linkData.properties.action_link, 302)
 }
 
 async function handleStatus(
