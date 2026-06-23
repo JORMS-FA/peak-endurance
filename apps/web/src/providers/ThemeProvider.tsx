@@ -105,17 +105,38 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const root = document.documentElement
     if (accentColor !== 'rgb') {
+      root.style.removeProperty('--accent')
+      root.style.removeProperty('--accent-hover')
+      root.style.removeProperty('--accent-soft')
+      root.style.removeProperty('--accent-glow')
       root.style.removeProperty('--accent-h')
       return
     }
     let h = 150
-    root.style.setProperty('--accent-h', `${h}deg`)
+    function hslToHex(hue: number, s: number, l: number): string {
+      const a = s * Math.min(l, 1 - l)
+      const f = (n: number) => {
+        const k = (n + hue / 30) % 12
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1)
+        return Math.round(color * 255).toString(16).padStart(2, '0')
+      }
+      return `#${f(0)}${f(8)}${f(4)}`
+    }
+    function apply() {
+      const hex = hslToHex(h, 0.85, 0.56)
+      const hexHover = hslToHex(h, 0.9, 0.64)
+      root.style.setProperty('--accent', hex)
+      root.style.setProperty('--accent-hover', hexHover)
+      root.style.setProperty('--accent-soft', hex + '24')
+      root.style.setProperty('--accent-glow', hex + '52')
+    }
+    apply()
     const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     if (prefersReduced) return
     const id = window.setInterval(() => {
-      h = (h + 2) % 360
-      root.style.setProperty('--accent-h', `${h}deg`)
-    }, 70)
+      h = (h + 3) % 360
+      apply()
+    }, 80)
     return () => window.clearInterval(id)
   }, [accentColor])
 
