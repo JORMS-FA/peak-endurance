@@ -1101,6 +1101,28 @@ input, select, textarea { font: inherit; color: inherit; }
   background: var(--accent-soft);
 }
 
+.mobile-nav-profile { gap: 3px; }
+.mobile-nav-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+.mobile-nav-avatar-img {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    COMMON COMPONENTS
    ═══════════════════════════════════════════════════════════════ */
@@ -4088,6 +4110,29 @@ a:hover svg,
   .social-proof-metric:last-child { border-bottom: none; }
   .social-proof-metric strong { font-size: 1.7rem; }
   .social-proof-rating { font-size: 1.5rem; }
+}
+
+/* ── Social proof: brand logos row ────────────────────────────── */
+.social-proof-brands {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+.social-proof-brands-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.social-proof-brands-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 22px;
 }
 
 /* ── Hero CTA button row ───────────────────────────────────── */

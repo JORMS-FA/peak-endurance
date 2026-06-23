@@ -15,5 +15,4 @@ export const mobileNav: NavItem[] = [
   { id: 'ai-coach', path: '/app/ia-coach', icon: 'Sparkles', label_es: 'Coach', label_en: 'Coach' },
   { id: 'training', path: '/app/entrenamientos', icon: 'Dumbbell', label_es: 'Entrena', label_en: 'Train' },
   { id: 'plan', path: '/app/plan', icon: 'CalendarDays', label_es: 'Plan', label_en: 'Plan' },
-  { id: 'settings', path: '/app/ajustes', icon: 'Settings', label_es: 'Más', label_en: 'More' },
 ]

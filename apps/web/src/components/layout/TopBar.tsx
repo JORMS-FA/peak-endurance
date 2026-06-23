@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Bell, Search, X, Settings, LogOut } from 'lucide-react'
+import { Bell, Search, X, Settings, LogOut, Menu } from 'lucide-react'
 import { useI18n } from '../../hooks/useI18n'
 import { useAuth } from '../../hooks/useAuth'
 import { signOut } from '../../lib/auth'
@@ -80,6 +80,16 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
     <>
       <header className="topbar">
         <div className="topbar-left">
+          {onToggleSidebar && (
+            <button
+              type="button"
+              className="topbar-collapse-btn"
+              onClick={onToggleSidebar}
+              aria-label={language === 'es' ? 'Menú' : 'Menu'}
+            >
+              <Menu size={20} strokeWidth={1.5} />
+            </button>
+          )}
           <Logo size={24} />
         </div>
 

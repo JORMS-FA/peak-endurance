@@ -69,6 +69,18 @@ const INTEGRATION_ICONS: Record<string, React.ReactNode> = {
       />
     </svg>
   ),
+  zwift: (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M6 5h12L8 19h10"
+        stroke="#A855F7"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
+  ),
   apple_health: (
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
@@ -400,6 +412,35 @@ export function Landing() {
             <span>{t('socialProofClubsLabel')}</span>
           </motion.div>
         </div>
+
+        <motion.div
+          className="social-proof-brands"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <span className="social-proof-brands-label">
+            {language === 'es' ? 'Utilizado por atletas de:' : 'Used by athletes from:'}
+          </span>
+          <div className="social-proof-brands-row">
+            {[
+              { key: 'strava', name: 'Strava' },
+              { key: 'trainingpeaks', name: 'TrainingPeaks' },
+              { key: 'garmin', name: 'Garmin' },
+              { key: 'zwift', name: 'Zwift' },
+            ].map(({ key, name }) => (
+              <motion.span
+                key={key}
+                className="hero-integration-logo"
+                whileHover={{ scale: 1.05, y: -2, transition: { type: "spring", stiffness: 400, damping: 15 } }}
+              >
+                {INTEGRATION_ICONS[key]}
+                {name}
+              </motion.span>
+            ))}
+          </div>
+        </motion.div>
       </section>
 
       {/* ── Sport icons / "para quién es" ─────────────────────────────── */}
