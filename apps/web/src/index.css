@@ -270,8 +270,8 @@ html[data-accent="cyan"] {
 .section-accent-cyan   { --accent: #06b6d4; --accent-hover: #22d3ee; --accent-soft: rgba(6, 182, 212, 0.12); --accent-glow: rgba(6, 182, 212, 0.08); --accent-rgb: 6, 182, 212; --s-accent: #06b6d4; --s-accent-hover: #22d3ee; }
 
 /* RGB multi-color theme — the default for the hero. Keeps the structural
-   accent green for nav/structural elements while the hero gallery uses
-   dedicated .hero-word-strava / .hero-word-tp gradients (orange & blue). */
+   accent green for nav/structural elements while the hero keywords use the
+   shared .hero-gradient-rgb rotating spectrum gradient. */
 .section-accent-rgb {
   --accent: #22c55e; --accent-hover: #4ade80;
   --accent-soft: rgba(34, 197, 94, 0.12); --accent-glow: rgba(34, 197, 94, 0.08);
@@ -3759,20 +3759,26 @@ a:hover svg,
   max-width: 760px;
 }
 
-/* Multi-color gradient on key words — Strava (orange), TrainingPeaks (blue). Not green. */
-.hero-word-strava {
-  background: linear-gradient(135deg, #fc4c02 0%, #ff7a3d 50%, #ffae66 100%);
+/* RGB multi-color animated gradient — the DEFAULT theme for hero keywords.
+   Cycles the full spectrum (green -> cyan -> blue -> purple -> pink -> orange -> yellow -> green)
+   by rotating the gradient angle via the existing --rgb-angle / rgb-rotate keyframe. */
+.hero-gradient-rgb {
+  background: linear-gradient(
+    var(--rgb-angle, 0deg),
+    #22c55e,
+    #06b6d4,
+    #3b82f6,
+    #8b5cf6,
+    #ec4899,
+    #f97316,
+    #eab308,
+    #22c55e
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   display: inline-block;
-}
-.hero-word-tp {
-  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #60a5fa 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  display: inline-block;
+  animation: rgb-rotate calc(var(--rgb-speed) * 1s) linear infinite;
 }
 
 .hero-tagline {

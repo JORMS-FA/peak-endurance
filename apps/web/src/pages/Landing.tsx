@@ -185,15 +185,15 @@ export function Landing() {
           >
             {language === 'es' ? (
               <>La fusión de{' '}
-                <span className="hero-word-strava">Strava</span>{' '}
+                <span className="hero-gradient-rgb">Strava</span>{' '}
                 y{' '}
-                <span className="hero-word-tp">TrainingPeaks</span>
+                <span className="hero-gradient-rgb">TrainingPeaks</span>
               </>
             ) : (
               <>The{' '}
-                <span className="hero-word-strava">Strava</span>{' '}
+                <span className="hero-gradient-rgb">Strava</span>{' '}
                 +{' '}
-                <span className="hero-word-tp">TrainingPeaks</span>{' '}
+                <span className="hero-gradient-rgb">TrainingPeaks</span>{' '}
                 fusion
               </>
             )}
