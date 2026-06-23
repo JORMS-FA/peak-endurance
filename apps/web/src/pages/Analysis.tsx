@@ -22,6 +22,7 @@ import {
 import { useI18n } from '../hooks/useI18n'
 import { useActivities } from '../hooks/useActivities'
 import { useDashboardMetrics } from '../hooks/useDashboardMetrics'
+import { useStravaConnection } from '../hooks/useStrava'
 import { SPORT_COLORS } from '../components/ui/SportIcon'
 import { RangeFilter, inRange, type DateRange } from '../components/ui/RangeFilter'
 
@@ -88,6 +89,8 @@ export function Analysis() {
   const isEs = language === 'es'
   const { data: rawData, loading } = useActivities({ days: 90 })
   const { metrics } = useDashboardMetrics()
+  const { status: strava, loading: stravaLoading } = useStravaConnection()
+  const stravaConnected = Boolean(strava?.connected)
 
   const [range, setRange] = useState<DateRange>({ preset: 'quarter', days: 90 })
   const data = useMemo(() => inRange(rawData, range), [rawData, range])
@@ -158,8 +161,12 @@ export function Analysis() {
           <div className="empty-state">
             <div className="empty-icon"><LineChartIcon size={24} /></div>
             <h3>{t('noData')}</h3>
-            <p>{isEs ? 'Conecta Strava y sincroniza para analizar tus entrenamientos.' : 'Connect Strava and sync to analyze your training.'}</p>
-            <Link to="/app/conexiones" className="btn-primary btn-sm" style={{ marginTop: 12 }}>{t('connectStrava')}</Link>
+            <p>{stravaConnected
+              ? (isEs ? 'Sincroniza tus actividades para ver el análisis.' : 'Sync your activities to see analysis.')
+              : (isEs ? 'Conecta Strava y sincroniza para analizar tus entrenamientos.' : 'Connect Strava and sync to analyze your training.')}</p>
+            {!stravaLoading && !stravaConnected && (
+              <Link to="/app/conexiones" className="btn-primary btn-sm" style={{ marginTop: 12 }}>{t('connectStrava')}</Link>
+            )}
           </div>
         </div>
       ) : (
