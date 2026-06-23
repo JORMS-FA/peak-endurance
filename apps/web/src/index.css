@@ -4881,3 +4881,33 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .account-actions { display: flex; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); flex-wrap: wrap; }
 .account-danger { color: var(--danger); }
 .account-danger:hover { background: var(--danger-soft); }
+
+/* ── Gamification: level + achievements ──────────────────────────────────── */
+.level-count { margin-left: auto; font-size: 0.78rem; color: var(--text-muted); font-weight: 600; }
+.level-top { display: flex; align-items: center; gap: 16px; margin: 6px 0 18px; }
+.level-badge {
+  width: 54px; height: 54px; border-radius: 16px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #22c55e, #06b6d4, #8b5cf6);
+  box-shadow: 0 8px 22px rgba(34,197,94,0.3);
+}
+.level-num { font-size: 1.5rem; font-weight: 800; color: #04140b; }
+.level-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.level-info strong { font-size: 1.02rem; }
+.level-bar { height: 8px; border-radius: 6px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.level-bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, #22c55e, #06b6d4); }
+
+.achievements-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.achievement {
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+  padding: 14px 8px; border-radius: 12px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  opacity: 0.55; filter: grayscale(0.6);
+}
+.achievement.unlocked { opacity: 1; filter: none; border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.06); }
+.achievement-emoji { font-size: 1.5rem; line-height: 1; color: var(--text-muted); display: inline-flex; }
+.achievement-title { font-size: 0.72rem; font-weight: 600; line-height: 1.2; }
+.achievement-progress { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.06); }
+.achievement-progress span { display: block; height: 100%; background: var(--accent); }
+@media (max-width: 560px) { .achievements-grid { grid-template-columns: repeat(2, 1fr); } }

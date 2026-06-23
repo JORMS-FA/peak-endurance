@@ -34,6 +34,7 @@ import { useStravaConnection } from '../hooks/useStrava'
 import { AnimatedNumber } from '../components/ui/AnimatedNumber'
 import { SportIcon, SPORT_COLORS } from '../components/ui/SportIcon'
 import { CoachBot } from '../components/ui/CoachBot'
+import { LevelCard } from '../components/ui/LevelCard'
 
 // ─── Animation Variants ─────────────────────────────────────────────────────
 const cardVariants = {
@@ -197,6 +198,9 @@ export function Dashboard() {
           </motion.div>
         ))}
       </section>
+
+      {/* ── Level & achievements (gamification) ────────────────────────── */}
+      <LevelCard />
 
       {/* ── Performance Management Chart (PMC) ─────────────────────────── */}
       <motion.section
