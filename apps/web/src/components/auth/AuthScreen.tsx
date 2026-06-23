@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
-import { Globe, Mountain, Activity } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Globe, Mountain, Activity, ArrowLeft } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTheme } from '../../hooks/useTheme'
 import { useAuth } from '../../hooks/useAuth'
 import { useI18n } from '../../hooks/useI18n'
@@ -82,6 +82,7 @@ export function AuthScreen() {
   const { t, language } = useI18n()
   const { configured } = useAuth()
   const { setLanguage } = useTheme()
+  const navigate = useNavigate()
   const [authError, setAuthError] = useState<string | null>(null)
   const [authBusy, setAuthBusy] = useState(false)
   const [stravaBusy, setStravaBusy] = useState(false)
@@ -228,6 +229,9 @@ export function AuthScreen() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
+          <button type="button" className="auth-back-btn" onClick={() => navigate('/')}>
+            <ArrowLeft size={18} />
+          </button>
           <label className="auth-lang-switch">
             <Globe size={14} />
             <select value={language} onChange={handleLangChange}>

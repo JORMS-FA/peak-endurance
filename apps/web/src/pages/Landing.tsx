@@ -42,7 +42,7 @@ export function Landing() {
           <a href="#pricing" className="landing-nav-link">{t('navPricing')}</a>
           <button
             type="button"
-            className="btn-secondary btn-sm"
+            className="btn-primary btn-sm"
             onClick={() => navigate('/login')}
           >
             {t('signInCta')}

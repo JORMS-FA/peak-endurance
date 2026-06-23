@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, Link } from 'react-router-dom'
 import {
   Home, CalendarDays, Dumbbell, Flag, Sparkles,
   LineChart, TrendingUp, Plug, Mountain, Settings, LogOut,
@@ -27,10 +27,10 @@ export function Sidebar({ collapsed = false }: { collapsed?: boolean }) {
 
   return (
     <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
-      <div className="sidebar-brand">
+      <Link to="/app" className="sidebar-brand">
         <Logo size={34} />
         {!collapsed && <span className="brand-name">{APP_NAME}</span>}
-      </div>
+      </Link>
 
       <nav className="sidebar-nav">
         {sidebarNav.map((item) => {

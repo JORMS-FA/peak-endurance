@@ -16,8 +16,9 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
           className="topbar-collapse"
           onClick={onToggleSidebar}
           aria-label={sidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú'}
+          title={sidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú'}
         >
-          <PanelLeft size={18} />
+          <PanelLeft size={16} />
         </button>
         <div>
           <h1 className="topbar-greeting">

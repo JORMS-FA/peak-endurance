@@ -54,6 +54,19 @@ function loadAccentColor(): AccentColor {
   }
 }
 
+// One-time migration: if the user had "green" (old default) and never
+// actively picked it, switch them to "rgb" so they see the new default.
+function migrateAccent() {
+  const migKey = 'peak_accent_migrated_rgb'
+  if (localStorage.getItem(migKey)) return
+  localStorage.setItem(migKey, '1')
+  const raw = localStorage.getItem(STORAGE_KEYS.accent)
+  if (!raw || JSON.parse(raw) === 'green') {
+    localStorage.setItem(STORAGE_KEYS.accent, JSON.stringify('rgb'))
+  }
+}
+migrateAccent()
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemeMode>(loadTheme)
   const [language, setLanguageState] = useState<AppLanguage>(loadLanguage)

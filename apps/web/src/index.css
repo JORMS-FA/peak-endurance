@@ -895,12 +895,12 @@ input, select, textarea { font: inherit; color: inherit; }
 .auth-hero-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   color: var(--accent);
 }
 
 .auth-hero-app-name {
-  font-size: 1.2rem;
+  font-size: 1.8rem;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.02em;
@@ -4784,12 +4784,8 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .pricing-grid-4 .landing-price { color: var(--text); }
 
 .pricing-card-featured {
-  border-color: transparent;
-  background:
-    linear-gradient(var(--surface-raised, #0b0b0b), var(--surface-raised, #0b0b0b)) padding-box,
-    linear-gradient(135deg, #22c55e, #06b6d4, #8b5cf6, #ec4899) border-box;
-  border: 1.5px solid transparent;
-  box-shadow: 0 14px 40px rgba(0,0,0,0.5);
+  border-color: rgba(255,255,255,0.16);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
 }
 
 .pricing-btn {
@@ -4818,10 +4814,10 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 
 .topbar-left { display: flex; align-items: center; gap: 12px; }
 .topbar-collapse {
-  width: 36px; height: 36px; flex-shrink: 0;
+  width: 32px; height: 32px; flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center;
-  background: var(--surface-raised); border: 1px solid var(--border);
-  border-radius: 9px; color: var(--text-2); cursor: pointer;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text-muted); cursor: pointer;
   transition: border-color 0.18s ease, color 0.18s ease;
 }
 .topbar-collapse:hover { border-color: var(--border-strong); color: var(--text); }
@@ -4938,7 +4934,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 .hero-gallery img {
   width: 100%; height: 100%; object-fit: cover; object-position: top;
-  filter: brightness(0.5) saturate(0.7);
+  filter: brightness(0.25) saturate(0.5);
   transition: transform 12s ease;
 }
 .hero-gallery img:nth-child(odd) { transform: scale(1.04); }
@@ -4958,3 +4954,17 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), inset 0 0 0 0.5px rgba(255,255,255,0.08);
 }
 @media (max-width: 640px) { .hero-glass { padding: 24px 18px; border-radius: 18px; } }
+
+/* ── Auth: back button + top-bar layout fix ──────────────────────────────── */
+.auth-top-bar { display: flex; align-items: center; gap: 12px; }
+.auth-back-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 10px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-2); cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+.auth-back-btn:hover { border-color: var(--border-strong); color: var(--text); }
+
+/* Sidebar brand as a link (remove link styling) */
+.sidebar-brand { text-decoration: none; color: inherit; }
