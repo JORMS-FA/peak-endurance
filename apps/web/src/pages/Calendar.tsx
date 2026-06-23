@@ -156,11 +156,11 @@ export function Calendar({ embedded = false }: { embedded?: boolean } = {}) {
                   cursor: 'pointer',
                   border: isSelected ? '1px solid var(--accent)' : undefined,
                   position: 'relative',
-                  minHeight: 56,
+                  minHeight: 44,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: 4,
+                  gap: 3,
                   background: 'transparent',
                 }}
               >

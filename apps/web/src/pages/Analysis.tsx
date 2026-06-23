@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { LineChart as LineChartIcon, Activity, Heart, Route, Clock, Flame } from 'lucide-react'
@@ -23,6 +23,7 @@ import { useI18n } from '../hooks/useI18n'
 import { useActivities } from '../hooks/useActivities'
 import { useDashboardMetrics } from '../hooks/useDashboardMetrics'
 import { SPORT_COLORS } from '../components/ui/SportIcon'
+import { RangeFilter, inRange, type DateRange } from '../components/ui/RangeFilter'
 
 const GRID = 'rgba(255,255,255,0.06)'
 const AXIS = '#b8bcc8'
@@ -85,11 +86,15 @@ function MultiTooltip({ active, payload, label }: {
 export function Analysis() {
   const { t, language } = useI18n()
   const isEs = language === 'es'
-  const { data, loading } = useActivities({ days: 90 })
+  const { data: rawData, loading } = useActivities({ days: 90 })
   const { metrics } = useDashboardMetrics()
 
-  const pmc = useMemo(() => computePmc(metrics.daily), [metrics.daily])
-  const weekly = useMemo(() => weeklyBuckets(metrics.daily), [metrics.daily])
+  const [range, setRange] = useState<DateRange>({ preset: 'quarter', days: 90 })
+  const data = useMemo(() => inRange(rawData, range), [rawData, range])
+  const dailyFiltered = useMemo(() => inRange(metrics.daily, range), [metrics.daily, range])
+
+  const pmc = useMemo(() => computePmc(dailyFiltered), [dailyFiltered])
+  const weekly = useMemo(() => weeklyBuckets(dailyFiltered), [dailyFiltered])
 
   const sportLabel = (s: string) => (isEs ? SPORT_LABEL_ES[s] ?? s : s)
 
@@ -140,8 +145,11 @@ export function Analysis() {
     <div className="page-analysis">
       <div className="page-header">
         <h2>{t('analysis')}</h2>
-        <span className="text-muted" style={{ fontSize: '0.82rem' }}>{isEs ? 'Últimos 90 días' : 'Last 90 days'}</span>
       </div>
+
+      {!loading && data.length > 0 && (
+        <RangeFilter value={range} onChange={setRange} />
+      )}
 
       {loading ? (
         <div className="card"><div className="empty-state"><div className="spinner" /></div></div>
