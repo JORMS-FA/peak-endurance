@@ -53,8 +53,17 @@ export function Landing() {
       {/* ── Hero ───────────────────────────────────────────────────────── */}
       <section className="landing-hero hero-v2">
         <div className="hero-grain" aria-hidden />
+
+        {/* Athlete gallery background (dark, blended) */}
+        <div className="hero-gallery" aria-hidden>
+          <img src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=900&q=80&auto=format" alt="" />
+          <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=900&q=80&auto=format" alt="" />
+          <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=900&q=80&auto=format" alt="" />
+          <img src="https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=900&q=80&auto=format" alt="" />
+        </div>
+
         <motion.div
-          className="landing-hero-content hero-content-v2"
+          className="landing-hero-content hero-content-v2 hero-glass"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
