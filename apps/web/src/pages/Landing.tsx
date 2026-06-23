@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -14,7 +15,6 @@ import {
   LineChart,
   Mountain,
   Play,
-  Sparkles,
   TrendingUp,
   Trophy,
   Waves,
@@ -98,20 +98,49 @@ const INTEGRATION_ICONS: Record<string, React.ReactNode> = {
   ),
 }
 
+/* ── AI-generated B&W sport imagery ──────────────────────────── */
+const HERO_IMAGES = [
+  'https://v3b.fal.media/files/b/0a9f7ab2/TaUhP2CzEsPsOm9VKb0VR_zx6KYZo7.png',
+  'https://v3b.fal.media/files/b/0a9f7ab3/jvs2XBV2AITg1nXOPyt-2_d4eQEjDV.png',
+  'https://v3b.fal.media/files/b/0a9f7ab4/TmO6K8v5p9wa46NVfK2tI_x3UiInvR.png',
+  'https://v3b.fal.media/files/b/0a9f7ab5/ASEOQraN21UHlHM46rdth_aXVML7LM.png',
+  'https://v3b.fal.media/files/b/0a9f7abd/VhCFVvTACYGT7exVPwjbC_A56G4JLN.png',
+  'https://v3b.fal.media/files/b/0a9f7ab6/22Y_192GFlP2r7OdQdI3U_Q7J76Xru.png',
+]
+
+/* Maps each audience sport card to a B&W image background */
+const SPORT_IMAGES: Record<string, string> = {
+  run: HERO_IMAGES[0],
+  bike: HERO_IMAGES[1],
+  swim: HERO_IMAGES[2],
+  triathlon: HERO_IMAGES[4],
+  trail: HERO_IMAGES[5],
+  multi: HERO_IMAGES[3],
+}
+
 /* ═══════════════════════════════════════════════════════════════ */
 
 export function Landing() {
   const { t, language } = useI18n()
   const navigate = useNavigate()
+  const [activeSlide, setActiveSlide] = useState(0)
 
-  // No auto-redirect — landing page is always accessible independently
+  // Auto-transition the hero gallery every 5 seconds with crossfade
+  useEffect(() => {
+    const id = setInterval(() => {
+      setActiveSlide((i) => (i + 1) % HERO_IMAGES.length)
+    }, 5000)
+    return () => clearInterval(id)
+  }, [])
 
   return (
     <div className="landing-page landing-v2">
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="landing-header">
         <Link to="/" className="landing-brand">
-          <Logo size={26} />
+          <span className="landing-logo-bw">
+            <Logo size={26} />
+          </span>
           <span>{APP_NAME}</span>
         </Link>
         <nav className="landing-nav">
@@ -131,253 +160,101 @@ export function Landing() {
         </nav>
       </header>
 
-      {/* ── Hero ───────────────────────────────────────────────────────── */}
-      <section className="landing-hero hero-v2 section-accent-rgb">
-        <div className="hero-grain" aria-hidden />
-
-        {/* Cinematic background photo — subtle atmospheric layer */}
-        <div className="hero-cine" aria-hidden>
-          <img src="https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=2400&q=80&auto=format" alt="" />
+      {/* ── Hero — Full-screen B&W cinematic gallery ─────────────────── */}
+      <section className="landing-hero hero-gallery-section section-accent-rgb">
+        {/* Auto-transitioning B&W image gallery */}
+        <div className="hero-gallery" aria-hidden>
+          {HERO_IMAGES.map((src, i) => (
+            <div
+              key={src}
+              className={`hero-gallery-slide${i === activeSlide ? ' active' : ''}`}
+              style={{ backgroundImage: `url(${src})` }}
+            />
+          ))}
         </div>
 
-        <div className="hero-split">
-          {/* ── Left: Text content ── */}
-          <div className="hero-text-side">
-            <motion.span
-              className="hero-eyebrow"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1, duration: 0.5 }}
+        {/* Dark gradient overlay */}
+        <div className="hero-overlay" aria-hidden />
+
+        {/* Centered content */}
+        <div className="hero-gallery-content">
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {language === 'es' ? (
+              <>La fusión de{' '}
+                <span className="hero-word-strava">Strava</span>{' '}
+                y{' '}
+                <span className="hero-word-tp">TrainingPeaks</span>
+              </>
+            ) : (
+              <>The{' '}
+                <span className="hero-word-strava">Strava</span>{' '}
+                +{' '}
+                <span className="hero-word-tp">TrainingPeaks</span>{' '}
+                fusion
+              </>
+            )}
+          </motion.h1>
+
+          <motion.p
+            className="hero-tagline"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {language === 'es' ? 'Un coach IA que vive contigo.' : 'An AI coach that lives with you.'}
+          </motion.p>
+
+          <motion.div
+            className="hero-cta-row"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+          >
+            <motion.button
+              type="button"
+              className="hero-primary-cta"
+              onClick={() => navigate('/login')}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
             >
-              <Sparkles size={12} /> {t('heroEyebrow')}
-            </motion.span>
-            <motion.h1
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              {t('ctaTryFree14')}
+              <ArrowRight size={14} />
+            </motion.button>
+            <motion.button
+              type="button"
+              className="hero-secondary-cta-v2"
+              onClick={() => navigate('/login')}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
             >
-              {t('heroTitleA')}{' '}
-              <span className="hero-gradient-text">{t('heroTitleHighlight')}</span>
-              {t('heroTitleB')}
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            >
-              {t('heroSubtitleV2')}
-            </motion.p>
+              <Play size={14} />
+              {t('signInCta')}
+            </motion.button>
+          </motion.div>
 
-            <motion.div
-              className="hero-actions-v2"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, duration: 0.6 }}
-            >
-              <StoreBadges />
-              <div className="hero-cta-row">
-                <motion.button
-                  type="button"
-                  className="hero-primary-cta"
-                  onClick={() => navigate('/login')}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                >
-                  {t('ctaTryFree14')}
-                  <ArrowRight size={14} />
-                </motion.button>
-                <motion.button
-                  type="button"
-                  className="hero-secondary-cta-v2"
-                  onClick={() => navigate('/login')}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                >
-                  <Play size={14} />
-                  {t('signInCta')}
-                </motion.button>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="hero-trust"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.6 }}
-            >
-              <div className="trust-item">
-                <Zap size={14} className="trust-icon" style={{ color: '#22c55e' }} />
-                <span>{t('trustStrava')}</span>
-              </div>
-              <div className="trust-item">
-                <Activity size={14} className="trust-icon" style={{ color: '#3b82f6' }} />
-                <span>{t('trustMultisport')}</span>
-              </div>
-              <div className="trust-item">
-                <Brain size={14} className="trust-icon" style={{ color: '#8b5cf6' }} />
-                <span>{t('trustAI')}</span>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="hero-integrations"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7, duration: 0.6 }}
-            >
-              <span className="hero-integrations-label">{t('socialProofIntegrationsLabel')}</span>
-              <div className="hero-integrations-row">
-                {[
-                  { key: 'strava', name: 'Strava' },
-                  { key: 'trainingpeaks', name: 'TrainingPeaks' },
-                  { key: 'garmin', name: 'Garmin' },
-                  { key: 'apple_health', name: 'Apple Health' },
-                ].map(({ key, name }) => (
-                  <motion.span
-                    key={key}
-                    className="hero-integration-logo"
-                    whileHover={{ scale: 1.05, y: -2, transition: { type: "spring", stiffness: 400, damping: 15 } }}
-                  >
-                    {INTEGRATION_ICONS[key]}
-                    {name}
-                  </motion.span>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* ── Right: Dashboard mockup ── */}
-          <div className="hero-visual-side">
-            <div className="hero-orb" aria-hidden />
-
-            <motion.div
-              className="hero-mockup"
-              initial={{ opacity: 0, y: 30, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ scale: 1.02, transition: { type: "spring", stiffness: 200, damping: 20 } }}
-            >
-              <div className="mockup-frame">
-                <div className="mockup-shimmer" aria-hidden />
-                <div className="mockup-header">
-                  <div className="mockup-dots">
-                    <span /><span /><span />
-                  </div>
-                  <span className="mockup-title">{APP_NAME}</span>
-                  <div className="mockup-header-right">
-                    <span className="mockup-header-stat">CTL 52</span>
-                    <span className="mockup-header-dot" />
-                  </div>
-                </div>
-                <div className="mockup-body">
-                  {/* Coach hero card */}
-                  <div className="mockup-hero">
-                    <div className="mockup-badge">PEAK IA COACH</div>
-                    <div className="mockup-h2">{t('mockupHero')}</div>
-                  </div>
-
-                  {/* Metrics row with gradient cards */}
-                  <div className="mockup-metrics">
-                    {[
-                      { l: 'Forma', v: '+18', c: 'var(--success)', g: 'linear-gradient(135deg, rgba(52,211,153,0.18), transparent)' },
-                      { l: 'Carga', v: '342', c: 'var(--info)', g: 'linear-gradient(135deg, rgba(96,165,250,0.18), transparent)' },
-                      { l: 'CTL', v: '52', c: 'var(--accent)', g: 'linear-gradient(135deg, rgba(34,197,94,0.18), transparent)' },
-                      { l: 'ATL', v: '34', c: 'var(--warning)', g: 'linear-gradient(135deg, rgba(251,191,36,0.18), transparent)' },
-                    ].map((m, i) => (
-                      <motion.div
-                        key={m.l}
-                        className="mockup-metric-v2"
-                        style={{ background: m.g }}
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.7 + i * 0.07, duration: 0.4 }}
-                      >
-                        <small>{m.l}</small>
-                        <strong style={{ color: m.c }}>{m.v}</strong>
-                        <span className="mockup-metric-bar" style={{ background: m.c }} />
-                        <span className="mockup-metric-pulse" style={{ background: m.c }} />
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  {/* Weekly Training mini-calendar */}
-                  <div className="mockup-calendar">
-                    <div className="mockup-calendar-header">
-                      <span>Weekly Training</span>
-                      <span className="mockup-calendar-week">W22 · 42km</span>
-                    </div>
-                    <div className="mockup-calendar-grid">
-                      {[
-                        { d: 'Mon', t: 'Run', s: 'run', v: '10.2k' },
-                        { d: 'Tue', t: 'Bike', s: 'bike', v: '24.5k' },
-                        { d: 'Wed', t: 'Run', s: 'run', v: '8.0k' },
-                        { d: 'Thu', t: 'Rest', s: 'rest', v: '—' },
-                        { d: 'Fri', t: 'Swim', s: 'swim', v: '1.8k' },
-                        { d: 'Sat', t: 'Run', s: 'run', v: '16.4k' },
-                        { d: 'Sun', t: 'Bike', s: 'bike', v: '32.0k' },
-                      ].map((day) => (
-                        <div key={day.d} className="mockup-calendar-day">
-                          <span className="mockup-calendar-label">{day.d}</span>
-                          <span className={`mockup-calendar-dot ${day.s}`} />
-                          <span className="mockup-calendar-val">{day.v}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Performance Trend — SVG line chart */}
-                  <div className="mockup-chart-section">
-                    <div className="mockup-chart-header">
-                      <span>Performance Trend</span>
-                      <span className="mockup-chart-badge">Fitness +8%</span>
-                    </div>
-                    <div className="mockup-chart-viz">
-                      <svg viewBox="0 0 240 64" className="mockup-line-chart" preserveAspectRatio="none">
-                        <defs>
-                          <linearGradient id="lineFillGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.25" />
-                            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-                          </linearGradient>
-                        </defs>
-                        <path
-                          d="M0,52 Q24,48 48,38 T96,32 T144,22 T192,16 T240,12"
-                          fill="none"
-                          stroke="var(--accent)"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          className="mockup-line-path"
-                        />
-                        <path
-                          d="M0,52 Q24,48 48,38 T96,32 T144,22 T192,16 T240,12 L240,64 L0,64 Z"
-                          fill="url(#lineFillGrad)"
-                        />
-                      </svg>
-                      <div className="mockup-chart-labels">
-                        <span>12 May</span>
-                        <span>19 May</span>
-                        <span>26 May</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Today's Plan row */}
-                  <div className="mockup-today">
-                    <div className="mockup-today-icon">
-                      <Activity size={14} />
-                    </div>
-                    <div className="mockup-today-body">
-                      <strong>Today's Plan</strong>
-                      <small>Endurance Run · 45 min Z2</small>
-                    </div>
-                    <span className="mockup-today-status">✓ Ready</span>
-                  </div>
-                </div>
-              </div>
-              <div className="mockup-glow" aria-hidden />
-            </motion.div>
-          </div>
+          {/* Large Strava + TrainingPeaks logos */}
+          <motion.div
+            className="hero-logos-large"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+          >
+            <span className="hero-logo-large hero-logo-strava">
+              {INTEGRATION_ICONS.strava}
+              <span className="hero-logo-name">Strava</span>
+            </span>
+            <span className="hero-logo-divider" aria-hidden />
+            <span className="hero-logo-large hero-logo-tp">
+              {INTEGRATION_ICONS.trainingpeaks}
+              <span className="hero-logo-name">TrainingPeaks</span>
+            </span>
+          </motion.div>
         </div>
 
         {/* Scroll indicator */}
@@ -446,20 +323,22 @@ export function Landing() {
       {/* ── Sport icons / "para quién es" ─────────────────────────────── */}
       <section className="landing-audience section-accent-cyan">
         <p className="audience-eyebrow reveal">{t('forWhomEyebrow')}</p>
-        <div className="audience-icons stagger-children">
+        <div className="audience-cards stagger-children">
           {[
-            { I: Footprints, label: t('sportRun') },
-            { I: Bike, label: t('sportBike') },
-            { I: Waves, label: t('sportSwim') },
-            { I: Trophy, label: t('sportTriathlon') },
-            { I: Mountain, label: t('sportTrail') },
-            { I: Activity, label: t('sportMulti') },
-          ].map(({ I, label }) => (
-            <motion.div key={label} className="audience-icon reveal"
-              whileHover={{ scale: 1.08, transition: { type: "spring", stiffness: 400, damping: 15 } }}
+            { I: Footprints, label: t('sportRun'), img: SPORT_IMAGES.run },
+            { I: Bike, label: t('sportBike'), img: SPORT_IMAGES.bike },
+            { I: Waves, label: t('sportSwim'), img: SPORT_IMAGES.swim },
+            { I: Trophy, label: t('sportTriathlon'), img: SPORT_IMAGES.triathlon },
+            { I: Mountain, label: t('sportTrail'), img: SPORT_IMAGES.trail },
+            { I: Activity, label: t('sportMulti'), img: SPORT_IMAGES.multi },
+          ].map(({ I, label, img }) => (
+            <motion.div key={label} className="audience-card reveal"
+              style={{ backgroundImage: `url(${img})` }}
+              whileHover={{ scale: 1.04, transition: { type: "spring", stiffness: 400, damping: 15 } }}
             >
-              <I size={20} />
-              <span>{label}</span>
+              <div className="audience-card-overlay" aria-hidden />
+              <span className="audience-card-icon"><I size={22} /></span>
+              <span className="audience-card-label">{label}</span>
             </motion.div>
           ))}
         </div>
@@ -469,7 +348,6 @@ export function Landing() {
       <section id="features" className="landing-features features-v2 section-accent-blue">
         <div className="features-gradient-bg" aria-hidden />
         <h2 className="reveal">{t('featuresTitle')}</h2>
-        <p className="section-subtitle reveal">{t('featuresSubtitle')}</p>
         <div className="landing-features-grid">
           {[
             { I: Brain, key: 'AiCoach', comingSoon: false, accentClass: 'section-accent-green' },
@@ -490,14 +368,13 @@ export function Landing() {
             >
               <div className="landing-feature-icon-wrap">
                 <div className="landing-feature-icon">
-                  <I size={22} />
+                  <I size={24} />
                 </div>
                 {comingSoon && (
                   <span className="feature-coming-soon">{language === 'es' ? 'Próximamente' : 'Coming soon'}</span>
                 )}
               </div>
               <h3>{t(`feature${key}` as 'featureAiCoach')}</h3>
-              <p>{t(`feature${key}Desc` as 'featureAiCoachDesc')}</p>
             </motion.div>
           ))}
         </div>
@@ -508,9 +385,9 @@ export function Landing() {
         <h2 className="reveal">{t('howTitle')}</h2>
         <div className="how-steps-v2">
           {([
-            { n: '01', icon: Download, titleKey: 'howStep1Title', descKey: 'howStep1Desc', accentClass: 'section-accent-blue' },
-            { n: '02', icon: Brain, titleKey: 'howStep2Title', descKey: 'howStep2Desc', accentClass: 'section-accent-green' },
-            { n: '03', icon: TrendingUp, titleKey: 'howStep3Title', descKey: 'howStep3Desc', accentClass: 'section-accent-orange' },
+            { n: '01', icon: Download, titleKey: 'howStep1Title', accentClass: 'section-accent-blue' },
+            { n: '02', icon: Brain, titleKey: 'howStep2Title', accentClass: 'section-accent-green' },
+            { n: '03', icon: TrendingUp, titleKey: 'howStep3Title', accentClass: 'section-accent-orange' },
           ] as const).map((s, i) => (
             <motion.div
               key={s.n}
@@ -526,7 +403,6 @@ export function Landing() {
               </div>
               <span className="how-step-num-v2">{s.n}</span>
               <h3>{t(s.titleKey)}</h3>
-              <p>{t(s.descKey)}</p>
             </motion.div>
           ))}
         </div>
@@ -644,7 +520,9 @@ export function Landing() {
       <footer className="landing-footer reveal-fade">
         <div className="footer-content">
           <div className="footer-brand">
-            <Logo size={22} />
+            <span className="landing-logo-bw">
+              <Logo size={22} />
+            </span>
             <span>{APP_NAME}</span>
           </div>
           <p>&copy; 2026 {APP_NAME}. {t('allRightsReserved')}</p>
