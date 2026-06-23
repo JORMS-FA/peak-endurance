@@ -4919,11 +4919,8 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   initial-value: 150deg;
 }
 [data-accent="rgb"] {
-  --accent: hsl(var(--accent-h) 85% 56%);
-  --accent-hover: hsl(var(--accent-h) 90% 64%);
-  --accent-soft: hsl(var(--accent-h) 85% 56% / 0.14);
-  --accent-glow: hsl(var(--accent-h) 85% 56% / 0.32);
-  animation: accent-hue 12s linear infinite;
+  --accent: hsl(var(--accent-h, 150deg) 85% 56%);
+  --accent-hover: hsl(var(--accent-h, 150deg) 90% 64%);
+  --accent-soft: hsl(var(--accent-h, 150deg) 85% 56% / 0.14);
+  --accent-glow: hsl(var(--accent-h, 150deg) 85% 56% / 0.32);
 }
-@keyframes accent-hue { to { --accent-h: 510deg; } }
-@media (prefers-reduced-motion: reduce) { [data-accent="rgb"] { animation: none; } }

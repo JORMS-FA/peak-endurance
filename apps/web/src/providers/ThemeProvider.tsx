@@ -86,6 +86,26 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute('data-accent', accentColor)
   }, [accentColor])
 
+  // Drive the RGB-extreme accent by animating the hue from JS (reliable across
+  // browsers, unlike pure CSS @property animation). Updates --accent-h, which
+  // the [data-accent="rgb"] rule turns into the live --accent color.
+  useEffect(() => {
+    const root = document.documentElement
+    if (accentColor !== 'rgb') {
+      root.style.removeProperty('--accent-h')
+      return
+    }
+    let h = 150
+    root.style.setProperty('--accent-h', `${h}deg`)
+    const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (prefersReduced) return
+    const id = window.setInterval(() => {
+      h = (h + 2) % 360
+      root.style.setProperty('--accent-h', `${h}deg`)
+    }, 70)
+    return () => window.clearInterval(id)
+  }, [accentColor])
+
   const value = useMemo<ThemeContextValue>(
     () => ({ theme, setTheme, language, setLanguage, accentColor, setAccentColor }),
     [theme, setTheme, language, setLanguage, accentColor, setAccentColor]
