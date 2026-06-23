@@ -22,7 +22,7 @@ import { Logo } from '../components/ui/Logo'
 import { StoreBadges } from '../components/ui/StoreBadges'
 
 export function Landing() {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
   const navigate = useNavigate()
 
   // No auto-redirect — landing page is always accessible independently
@@ -263,9 +263,10 @@ export function Landing() {
             <span className="pricing-popular">{t('mostPopular')}</span>
             <div className="pricing-tier">{t('tierPro')}</div>
             <div className="landing-pricing-amount">
-              <span className="landing-price">$10</span>
-              <span className="landing-price-period">USD / {t('pricingMonth')}</span>
+              <span className="landing-price">COP$30.000</span>
+              <span className="landing-price-period">/ {t('pricingMonth')}</span>
             </div>
+            <p className="landing-price-annual">{language === 'es' ? 'o COP$300.000/año · ahorra 17%' : 'or COP$300,000/yr · save 17%'}</p>
             <ul className="landing-pricing-features">
               <li>{t('pricingFeature1')}</li>
               <li>{t('pricingFeature2')}</li>

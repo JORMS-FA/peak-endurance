@@ -30,7 +30,7 @@ const defaultData: OnboardingData = {
   resting_hr: '',
   max_hr: '',
   pace_10k: '',
-  sports: ['run'],
+  sports: [],
   running_bests: {},
   experience_level: 'intermediate',
   weekly_hours: '5',
@@ -355,7 +355,7 @@ function StepTraining({ data, update, patch, isEs }: {
         {isEs ? '¿Qué deportes practicas? Elige uno o varios.' : 'Which sports do you practise? Pick one or more.'}
       </p>
 
-      <div className="onboarding-sport-grid">
+      <div className="onboarding-sport-grid onboarding-sport-grid-centered">
         {sports.map((s) => (
           <button
             key={s.value}
@@ -381,12 +381,12 @@ function StepTraining({ data, update, patch, isEs }: {
           >
             <div style={{ marginTop: 16 }}>
               <label className="onboarding-sublabel" style={{ fontSize: '0.82rem', fontWeight: 600, display: 'block', marginBottom: 8 }}>
-                {isEs ? 'Tus mejores marcas (opcional)' : 'Your personal bests (optional)'}
+                {isEs ? 'Tu último mejor registro (opcional)' : 'Your latest best effort (optional)'}
               </label>
               <p className="text-muted" style={{ fontSize: '0.76rem', marginBottom: 10 }}>
                 {isEs
-                  ? 'El coach IA las usará como contexto para ajustar tus planes.'
-                  : 'The AI coach will use these as context to tune your plans.'}
+                  ? 'Tu mejor esfuerzo reciente por distancia. El coach IA lo usa como contexto.'
+                  : 'Your recent best effort per distance. The AI coach uses it as context.'}
               </p>
               <div className="onboarding-grid">
                 {bestFields.map((f) => (
@@ -417,18 +417,6 @@ function StepTraining({ data, update, patch, isEs }: {
             <option key={l.value} value={l.value}>{l.label}</option>
           ))}
         </select>
-      </label>
-
-      <label className="onboarding-field" style={{ marginTop: 12 }}>
-        <span>{isEs ? 'Horas/semana' : 'Hours/week'}</span>
-        <input
-          type="number"
-          value={data.weekly_hours}
-          onChange={(e) => update('weekly_hours', e.target.value)}
-          placeholder="5"
-          min="1"
-          max="40"
-        />
       </label>
     </div>
   )

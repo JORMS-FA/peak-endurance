@@ -33,6 +33,7 @@ import { useTodaySession } from '../hooks/useTodaySession'
 import { useStravaConnection } from '../hooks/useStrava'
 import { AnimatedNumber } from '../components/ui/AnimatedNumber'
 import { SportIcon, SPORT_COLORS } from '../components/ui/SportIcon'
+import { CoachBot } from '../components/ui/CoachBot'
 
 // ─── Animation Variants ─────────────────────────────────────────────────────
 const cardVariants = {
@@ -144,9 +145,7 @@ export function Dashboard() {
           </div>
         </div>
         <div className="hero-visual">
-          <div className="pulse-ring" />
-          <div className="pulse-ring delay-1" />
-          <div className="pulse-core" />
+          <CoachBot size={104} />
         </div>
       </motion.section>
 

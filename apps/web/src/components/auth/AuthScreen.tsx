@@ -10,6 +10,7 @@ import { LANGUAGES, APP_NAME } from '../../lib/constants'
 import { supabase } from '../../lib/supabase'
 import { startStravaLogin } from '../../lib/strava'
 import { LavaBackground } from '../ui/LavaBackground'
+import { Logo } from '../ui/Logo'
 import type { AppLanguage } from '../../lib/types'
 
 function isValidLang(val: string): val is AppLanguage {
@@ -166,7 +167,7 @@ export function AuthScreen() {
       >
         <div className="auth-hero-content">
           <div className="auth-hero-logo">
-            <Mountain size={36} strokeWidth={1.5} />
+            <Logo size={40} />
             <span className="auth-hero-app-name">{APP_NAME}</span>
           </div>
 
@@ -254,7 +255,7 @@ export function AuthScreen() {
             {/* Header */}
             <motion.div className="auth-card-header" variants={itemVariants}>
               <div className="auth-card-logo-mobile">
-                <Mountain size={28} strokeWidth={1.5} />
+                <Logo size={40} />
               </div>
               <h2>{t('authTitle')}</h2>
               <p>{t('authSubtitle')}</p>
