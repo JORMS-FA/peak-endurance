@@ -3608,6 +3608,13 @@ a:hover svg,
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-image:
+    linear-gradient(180deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.82) 45%, rgba(0,0,0,0.95) 100%),
+    url('https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=2400&q=80&auto=format');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 .hero-v2::before {

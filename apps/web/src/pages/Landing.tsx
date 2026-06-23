@@ -120,7 +120,7 @@ export function Landing() {
       </header>
 
       {/* ── Hero ───────────────────────────────────────────────────────── */}
-      <section className="landing-hero hero-v2 section-accent-green">
+      <section className="landing-hero hero-v2 section-accent-rgb">
         <div className="hero-grain" aria-hidden />
 
         {/* Cinematic background photo — subtle atmospheric layer */}
@@ -403,7 +403,7 @@ export function Landing() {
       </section>
 
       {/* ── Sport icons / "para quién es" ─────────────────────────────── */}
-      <section className="landing-audience">
+      <section className="landing-audience section-accent-cyan">
         <p className="audience-eyebrow reveal">{t('forWhomEyebrow')}</p>
         <div className="audience-icons stagger-children">
           {[
@@ -425,7 +425,7 @@ export function Landing() {
       </section>
 
       {/* ── Features ───────────────────────────────────────────────────── */}
-      <section id="features" className="landing-features features-v2">
+      <section id="features" className="landing-features features-v2 section-accent-blue">
         <div className="features-gradient-bg" aria-hidden />
         <h2 className="reveal">{t('featuresTitle')}</h2>
         <p className="section-subtitle reveal">{t('featuresSubtitle')}</p>
@@ -463,7 +463,7 @@ export function Landing() {
       </section>
 
       {/* ── How it works ───────────────────────────────────────────────── */}
-      <section id="how" className="landing-how-v2">
+      <section id="how" className="landing-how-v2 section-accent-orange">
         <h2 className="reveal">{t('howTitle')}</h2>
         <div className="how-steps-v2">
           {([
@@ -492,7 +492,7 @@ export function Landing() {
       </section>
 
       {/* ── Pricing ────────────────────────────────────────────────────── */}
-      <section id="pricing" className="landing-pricing">
+      <section id="pricing" className="landing-pricing section-accent-pink">
         <h2 className="reveal">{t('pricingTitle')}</h2>
         <p className="section-subtitle reveal">{t('pricingSubtitle')}</p>
         <div className="pricing-grid pricing-grid-4">
@@ -576,7 +576,7 @@ export function Landing() {
       </section>
 
       {/* ── Final CTA ──────────────────────────────────────────────────── */}
-      <section id="download" className="landing-final-cta">
+      <section id="download" className="landing-final-cta section-accent-green">
         <motion.div
           className="final-cta-card reveal-scale"
           whileHover={{ scale: 1.01, transition: { type: "spring", stiffness: 200, damping: 20 } }}
