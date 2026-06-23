@@ -16,7 +16,7 @@ export const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 const VALID_THEMES: ThemeMode[] = ['dark', 'light', 'midnight', 'forest']
 const VALID_LANGS: AppLanguage[] = ['es', 'en']
-const VALID_ACCENTS: AccentColor[] = ['green', 'orange', 'yellow', 'blue', 'purple', 'red', 'pink', 'cyan']
+const VALID_ACCENTS: AccentColor[] = ['rgb', 'green', 'orange', 'yellow', 'blue', 'purple', 'red', 'pink', 'cyan']
 
 function loadTheme(): ThemeMode {
   try {
@@ -45,12 +45,12 @@ function loadLanguage(): AppLanguage {
 function loadAccentColor(): AccentColor {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.accent)
-    if (!raw) return 'green'
+    if (!raw) return 'rgb'
     const parsed = JSON.parse(raw)
     if (VALID_ACCENTS.includes(parsed)) return parsed
-    return 'green'
+    return 'rgb'
   } catch {
-    return 'green'
+    return 'rgb'
   }
 }
 

@@ -4911,3 +4911,19 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .achievement-progress { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.06); }
 .achievement-progress span { display: block; height: 100%; background: var(--accent); }
 @media (max-width: 560px) { .achievements-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ── Accent: RGB extreme (animated, default) ─────────────────────────────── */
+@property --accent-h {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 150deg;
+}
+[data-accent="rgb"] {
+  --accent: hsl(var(--accent-h) 85% 56%);
+  --accent-hover: hsl(var(--accent-h) 90% 64%);
+  --accent-soft: hsl(var(--accent-h) 85% 56% / 0.14);
+  --accent-glow: hsl(var(--accent-h) 85% 56% / 0.32);
+  animation: accent-hue 12s linear infinite;
+}
+@keyframes accent-hue { to { --accent-h: 510deg; } }
+@media (prefers-reduced-motion: reduce) { [data-accent="rgb"] { animation: none; } }

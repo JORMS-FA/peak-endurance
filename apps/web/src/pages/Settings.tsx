@@ -19,6 +19,7 @@ import type { AccentColor, AppLanguage, ThemeMode } from '../lib/types'
 import type { I18nKey } from '../lib/i18n'
 
 const ACCENT_HEX: Record<string, string> = {
+  rgb: 'conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #8b5cf6, #ec4899, #ef4444)',
   green: '#22c55e', orange: '#f97316', yellow: '#eab308', blue: '#3b82f6',
   purple: '#8b5cf6', red: '#ef4444', pink: '#ec4899', cyan: '#06b6d4',
 }
@@ -369,7 +370,7 @@ export function Settings() {
               <div className="accent-swatch" style={{ background: ACCENT_HEX[color] }}>
                 {color === accentColor && <Check size={12} color="#fff" />}
               </div>
-              <span>{t(ACCENT_I18N_KEYS[color] ?? 'green')}</span>
+              <span>{color === 'rgb' ? 'RGB' : t(ACCENT_I18N_KEYS[color] ?? 'green')}</span>
             </button>
           ))}
         </div>
