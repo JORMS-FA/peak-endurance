@@ -119,6 +119,8 @@ export function Dashboard() {
 
   const stravaConnected = Boolean(stravaStatus?.connected)
   const showEmpty = !loading && !hasData
+  const showOnboarding = showEmpty && !stravaConnected
+  const showSyncing = showEmpty && stravaConnected
   const fullName = profile?.display_name ?? 'Atleta'
   const firstName = fullName.split(' ')[0] ?? fullName
 
@@ -275,7 +277,7 @@ export function Dashboard() {
       </motion.section>
 
       {/* ── Connect-Strava nudge ──────────────────────────────────────── */}
-      {!stravaLoading && !stravaConnected && (
+      {!stravaLoading && !stravaConnected && !showOnboarding && (
         <motion.div
           className="card connect-banner"
           initial={{ opacity: 0, y: 8 }}
@@ -293,6 +295,44 @@ export function Dashboard() {
         </motion.div>
       )}
 
+      {/* ── Onboarding state: no Strava connected ────────────────────── */}
+      {showOnboarding ? (
+        <motion.section
+          className="glass-card onboarding-card"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="onboarding-illustration">
+            <Zap size={48} strokeWidth={1.5} />
+          </div>
+          <h2 className="onboarding-title">{t('onboardingTitle')}</h2>
+          <p className="onboarding-subtitle">{t('onboardingSubtitle')}</p>
+          <Link to="/app/conexiones" className="btn-primary onboarding-cta">
+            <span className="strava-mark">S</span>
+            {t('connectStrava')}
+          </Link>
+          <div className="onboarding-meta">
+            <span className="onboarding-meta-item"><TrendingUp size={14} strokeWidth={1.5} /> CTL · ATL · TSB</span>
+            <span className="onboarding-meta-item"><Activity size={14} strokeWidth={1.5} /> {language === 'es' ? 'Carga semanal' : 'Weekly load'}</span>
+            <span className="onboarding-meta-item"><Flame size={14} strokeWidth={1.5} /> {language === 'es' ? 'Distribución por deporte' : 'Sport distribution'}</span>
+          </div>
+        </motion.section>
+      ) : showSyncing ? (
+        <motion.section
+          className="glass-card onboarding-card"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="onboarding-illustration is-syncing">
+            <div className="spinner" />
+          </div>
+          <h2 className="onboarding-title">{t('syncingTitle')}</h2>
+          <p className="onboarding-subtitle">{t('syncingSubtitle')}</p>
+        </motion.section>
+      ) : (
+      <>
       {/* ── Metrics Grid ───────────────────────────────────────────────── */}
       <section className="metrics-grid">
         {[
@@ -609,6 +649,8 @@ export function Dashboard() {
           )}
         </motion.section>
       </div>
+      </>
+      )}
     </div>
   )
 }

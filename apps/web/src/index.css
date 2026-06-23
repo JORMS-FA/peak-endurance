@@ -3514,6 +3514,96 @@ a:hover svg,
 .connect-banner-body strong { font-size: 0.92rem; }
 .connect-banner-body small { font-size: 0.78rem; color: var(--text-muted); }
 
+/* ─── Dashboard: onboarding state (no Strava / first sync) ──── */
+.onboarding-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 18px;
+  padding: 56px 28px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.onboarding-card::before {
+  content: '';
+  position: absolute;
+  inset: -40% -10% auto -10%;
+  height: 60%;
+  background: radial-gradient(60% 60% at 50% 30%, var(--accent-glow), transparent 70%);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.onboarding-illustration {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-glow);
+  box-shadow: 0 0 40px var(--accent-glow);
+}
+.onboarding-illustration.is-syncing {
+  color: var(--text-muted);
+  background: var(--bg-3);
+  border-color: var(--border);
+  box-shadow: none;
+}
+.onboarding-title {
+  position: relative;
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  max-width: 440px;
+  line-height: 1.4;
+}
+.onboarding-subtitle {
+  position: relative;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  max-width: 420px;
+  line-height: 1.5;
+}
+.onboarding-cta {
+  position: relative;
+  height: 48px;
+  padding: 0 26px;
+  font-size: 0.95rem;
+}
+.onboarding-cta .strava-mark {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: #fc4c02;
+  color: #fff;
+  font-weight: 800;
+  font-size: 12px;
+  display: grid;
+  place-items: center;
+}
+.onboarding-meta {
+  position: relative;
+  display: flex;
+  gap: 18px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.onboarding-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.onboarding-meta-item svg { color: var(--accent); }
+
 /* ─── Dashboard: today session ──────────────────────────────── */
 .today-session {
   display: flex;
