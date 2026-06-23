@@ -232,54 +232,79 @@ export function Landing() {
       <section id="pricing" className="landing-pricing">
         <h2 className="reveal">{t('pricingTitle')}</h2>
         <p className="section-subtitle reveal">{t('pricingSubtitle')}</p>
-        <div className="pricing-grid">
-          <motion.div
-            className="landing-pricing-card pricing-card-free reveal"
-            whileHover={{ y: -4 }}
-          >
-            <div className="pricing-tier">{t('tierFree')}</div>
+        <div className="pricing-grid pricing-grid-4">
+          {/* Free */}
+          <motion.div className="landing-pricing-card reveal" whileHover={{ y: -4 }}>
+            <div className="pricing-tier">Free</div>
             <div className="landing-pricing-amount">
               <span className="landing-price">$0</span>
-              <span className="landing-price-period">USD / {t('pricingMonth')}</span>
+              <span className="landing-price-period">USD</span>
             </div>
+            <p className="landing-price-annual">{language === 'es' ? 'Para siempre' : 'Forever'}</p>
             <ul className="landing-pricing-features">
-              <li>{t('freeFeature1')}</li>
-              <li>{t('freeFeature2')}</li>
-              <li>{t('freeFeature3')}</li>
+              <li>{language === 'es' ? 'Conexión con Strava' : 'Strava connection'}</li>
+              <li>{language === 'es' ? 'Dashboard CTL/ATL/TSB' : 'CTL/ATL/TSB dashboard'}</li>
+              <li>{language === 'es' ? '20 consultas IA/mes (BYOK)' : '20 AI queries/mo (BYOK)'}</li>
             </ul>
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={() => navigate('/login')}
-            >
-              {t('startFree')}
+            <button type="button" className="pricing-btn" onClick={() => navigate('/login')}>
+              {language === 'es' ? 'Empezar gratis' : 'Start free'}
             </button>
           </motion.div>
 
-          <motion.div
-            className="landing-pricing-card pricing-card-pro reveal-scale"
-            whileHover={{ y: -6 }}
-          >
-            <span className="pricing-popular">{t('mostPopular')}</span>
-            <div className="pricing-tier">{t('tierPro')}</div>
+          {/* Pro mensual */}
+          <motion.div className="landing-pricing-card reveal" whileHover={{ y: -4 }}>
+            <div className="pricing-tier">Pro · {language === 'es' ? 'Mensual' : 'Monthly'}</div>
             <div className="landing-pricing-amount">
               <span className="landing-price">COP$30.000</span>
-              <span className="landing-price-period">/ {t('pricingMonth')}</span>
+              <span className="landing-price-period">/ {language === 'es' ? 'mes' : 'mo'}</span>
             </div>
-            <p className="landing-price-annual">{language === 'es' ? 'o COP$300.000/año · ahorra 17%' : 'or COP$300,000/yr · save 17%'}</p>
+            <p className="landing-price-annual">{language === 'es' ? 'Flexible, cancela cuando quieras' : 'Flexible, cancel anytime'}</p>
             <ul className="landing-pricing-features">
-              <li>{t('pricingFeature1')}</li>
-              <li>{t('pricingFeature2')}</li>
-              <li>{t('pricingFeature3')}</li>
-              <li>{t('pricingFeature4')}</li>
+              <li>{language === 'es' ? 'Coach IA ilimitado' : 'Unlimited AI coach'}</li>
+              <li>{language === 'es' ? 'Planes multi-deporte' : 'Multi-sport plans'}</li>
+              <li>{language === 'es' ? 'Análisis avanzado' : 'Advanced analysis'}</li>
+              <li>{language === 'es' ? 'Sin anuncios' : 'No ads'}</li>
             </ul>
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={() => navigate('/login')}
-            >
-              {t('getStarted')}
+            <button type="button" className="pricing-btn" onClick={() => navigate('/login')}>
+              {language === 'es' ? 'Elegir mensual' : 'Choose monthly'}
             </button>
+          </motion.div>
+
+          {/* Pro anual — destacado */}
+          <motion.div className="landing-pricing-card pricing-card-featured reveal-scale" whileHover={{ y: -6 }}>
+            <span className="pricing-popular">{language === 'es' ? 'Mejor valor' : 'Best value'}</span>
+            <div className="pricing-tier">Pro · {language === 'es' ? 'Anual' : 'Annual'}</div>
+            <div className="landing-pricing-amount">
+              <span className="landing-price">COP$300.000</span>
+              <span className="landing-price-period">/ {language === 'es' ? 'año' : 'yr'}</span>
+            </div>
+            <p className="landing-price-annual">{language === 'es' ? 'Ahorra 17% · 2 meses gratis' : 'Save 17% · 2 months free'}</p>
+            <ul className="landing-pricing-features">
+              <li>{language === 'es' ? 'Todo lo de Pro' : 'Everything in Pro'}</li>
+              <li>{language === 'es' ? 'Planes generados por IA' : 'AI-generated plans'}</li>
+              <li>{language === 'es' ? 'Múltiples modelos IA' : 'Multiple AI models'}</li>
+              <li>{language === 'es' ? 'Soporte prioritario' : 'Priority support'}</li>
+            </ul>
+            <button type="button" className="pricing-btn pricing-btn-featured" onClick={() => navigate('/login')}>
+              {language === 'es' ? 'Elegir anual' : 'Choose annual'}
+            </button>
+          </motion.div>
+
+          {/* Equipos */}
+          <motion.div className="landing-pricing-card reveal" whileHover={{ y: -4 }}>
+            <div className="pricing-tier">{language === 'es' ? 'Equipos' : 'Teams'}</div>
+            <div className="landing-pricing-amount">
+              <span className="landing-price">{language === 'es' ? 'A medida' : 'Custom'}</span>
+            </div>
+            <p className="landing-price-annual">{language === 'es' ? 'Clubes y entrenadores' : 'Clubs & coaches'}</p>
+            <ul className="landing-pricing-features">
+              <li>{language === 'es' ? 'Multi-atleta' : 'Multi-athlete'}</li>
+              <li>{language === 'es' ? 'Panel de entrenador' : 'Coach dashboard'}</li>
+              <li>{language === 'es' ? 'Facturación unificada' : 'Unified billing'}</li>
+            </ul>
+            <a className="pricing-btn" href="mailto:hola@peakendurance.app">
+              {language === 'es' ? 'Contáctanos' : 'Contact us'}
+            </a>
           </motion.div>
         </div>
       </section>
