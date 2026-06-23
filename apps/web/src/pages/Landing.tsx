@@ -2,7 +2,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Activity,
-  Apple,
   Bike,
   Brain,
   CheckCircle2,
@@ -11,7 +10,6 @@ import {
   LineChart,
   Mountain,
   Play,
-  Smartphone,
   Sparkles,
   Trophy,
   Waves,
@@ -20,6 +18,8 @@ import {
 import { useI18n } from '../hooks/useI18n'
 import { APP_NAME } from '../lib/constants'
 import { LavaBackground } from '../components/ui/LavaBackground'
+import { Logo } from '../components/ui/Logo'
+import { StoreBadges } from '../components/ui/StoreBadges'
 
 export function Landing() {
   const { t } = useI18n()
@@ -32,7 +32,7 @@ export function Landing() {
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="landing-header">
         <Link to="/" className="landing-brand">
-          <Mountain size={22} />
+          <Logo size={26} />
           <span>{APP_NAME}</span>
         </Link>
         <nav className="landing-nav">
@@ -79,20 +79,7 @@ export function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35, duration: 0.6 }}
           >
-            <a href="#download" className="store-badge store-badge-primary">
-              <Smartphone size={20} />
-              <div>
-                <small>{t('downloadOn')}</small>
-                <strong>Google Play</strong>
-              </div>
-            </a>
-            <a href="#download" className="store-badge">
-              <Apple size={20} />
-              <div>
-                <small>{t('downloadOn')}</small>
-                <strong>App Store</strong>
-              </div>
-            </a>
+            <StoreBadges />
             <button
               type="button"
               className="hero-secondary-cta"
@@ -304,22 +291,7 @@ export function Landing() {
         >
           <h2>{t('finalCtaTitle')}</h2>
           <p>{t('finalCtaSubtitle')}</p>
-          <div className="hero-actions-v2" style={{ justifyContent: 'center' }}>
-            <a href="#" className="store-badge store-badge-primary">
-              <Smartphone size={20} />
-              <div>
-                <small>{t('downloadOn')}</small>
-                <strong>Google Play</strong>
-              </div>
-            </a>
-            <a href="#" className="store-badge">
-              <Apple size={20} />
-              <div>
-                <small>{t('downloadOn')}</small>
-                <strong>App Store</strong>
-              </div>
-            </a>
-          </div>
+          <StoreBadges centered />
           <button
             type="button"
             className="hero-secondary-cta"
@@ -333,7 +305,7 @@ export function Landing() {
       <footer className="landing-footer reveal-fade">
         <div className="footer-content">
           <div className="footer-brand">
-            <Mountain size={18} />
+            <Logo size={22} />
             <span>{APP_NAME}</span>
           </div>
           <p>&copy; 2026 {APP_NAME}. {t('allRightsReserved')}</p>

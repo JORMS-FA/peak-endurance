@@ -26,7 +26,7 @@ export function TopBar() {
         <button type="button" className="topbar-search" aria-label={t('search')}>
           <Search size={15} />
           <span className="topbar-search-text">{t('search')}</span>
-          <kbd className="topbar-kbd">⌘K</kbd>
+          <kbd className="topbar-kbd">Ctrl K</kbd>
         </button>
 
         <button type="button" className="topbar-action" aria-label={t('notifications')}>
