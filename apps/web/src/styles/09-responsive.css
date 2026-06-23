@@ -1,0 +1,98 @@
+@media (min-width: 768px) {
+  .landing-nav-link { display: inline-block; }
+  .how-steps-v2 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+  .how-steps-v2::before {
+    content: '';
+    position: absolute;
+    top: 60px;
+    left: 15%;
+    right: 15%;
+    height: 2px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--accent) 0px,
+      var(--accent) 6px,
+      transparent 6px,
+      transparent 12px
+    );
+    opacity: 0.2;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .pricing-grid { grid-template-columns: repeat(2, 1fr); align-items: stretch; }
+  .final-cta-card { padding: 56px 40px; }
+  .final-cta-card h2 { font-size: 1.8rem; }
+  .landing-audience { padding: 56px 32px 16px; }
+  .landing-how-v2 { padding: 64px 32px; }
+  .landing-how-v2 h2 { font-size: 1.6rem; }
+  .landing-final-cta { padding: 64px 32px; }
+  .connection-actions { flex-wrap: nowrap; }
+  .audience-cards { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 1200px) {
+  .hero-gallery-section { padding: 120px 48px 80px; }
+  .audience-cards { grid-template-columns: repeat(3, 1fr); gap: 24px; }
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE FIXES — TopBar, Training, AI Coach
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── TopBar: greeting truncates, language selector removed ──── */
+.topbar {
+  gap: 12px;
+  align-items: center;
+}
+
+.topbar-left {
+  flex: 1;
+  min-width: 0; /* enables ellipsis on flex children */
+  overflow: hidden;
+}
+
+.topbar-greeting {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1rem;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.topbar-greeting-full { display: none; }
+.topbar-greeting-short { display: inline; }
+
+.topbar-subtitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.78rem;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* hide search/notifications on small screens to free up space */
+.topbar-icon-desktop {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .topbar-greeting { font-size: 1.2rem; }
+  .topbar-greeting-full { display: inline; }
+  .topbar-greeting-short { display: none; }
+  .topbar-icon-desktop { display: inline-flex; }
+  .topbar-right { gap: 10px; }
+}
+
+/* ─── Hero card buttons on mobile: stack neatly ──────────────── */

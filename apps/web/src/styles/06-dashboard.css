@@ -1,0 +1,321 @@
+.hero-gallery-content h1 {
+  animation: heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.hero-tagline {
+  animation: heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+}
+
+.landing-hero-actions {
+  animation: heroFadeScale 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+}
+
+.landing-hero::before {
+  animation: heroGlow 4s ease-in-out infinite;
+}
+
+/* Pricing card glow animation on reveal */
+.landing-pricing-card.visible {
+  animation: pricingGlow 0.6s ease-out 0.3s both;
+}
+
+@keyframes pricingGlow {
+  from { box-shadow: var(--shadow-lg); }
+  to { box-shadow: var(--shadow-glow); }
+}
+
+/* Parallax-like floating animation for feature icons */
+.landing-feature-card.visible .landing-feature-icon {
+  animation: iconFloat 3s ease-in-out infinite;
+  animation-delay: var(--float-delay, 0s);
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.landing-feature-card:nth-child(1) { --float-delay: 0s; }
+.landing-feature-card:nth-child(2) { --float-delay: 0.5s; }
+.landing-feature-card:nth-child(3) { --float-delay: 1s; }
+.landing-feature-card:nth-child(4) { --float-delay: 1.5s; }
+.landing-feature-card:nth-child(5) { --float-delay: 2s; }
+.landing-feature-card:nth-child(6) { --float-delay: 2.5s; }
+
+/* Reduced motion: respect user preferences */
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale,
+  .reveal-fade,
+  .reveal-up,
+  .reveal-rotate {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .hero-gallery-content h1,
+  .hero-tagline,
+  .landing-hero-actions {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .landing-hero::before {
+    animation: none;
+  }
+
+  .landing-feature-card.visible .landing-feature-icon {
+    animation: none;
+  }
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════
+   PR FEATURES — Strava connection, real dashboard, landing v2
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Spin icon for loading states ──────────────────────────── */
+.spin-icon {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ─── Connections page ──────────────────────────────────────── */
+.connection-card-primary {
+  border: 1px solid rgba(252, 76, 2, 0.3);
+  background: linear-gradient(135deg, rgba(252, 76, 2, 0.06), transparent 70%), var(--surface-raised);
+}
+
+.connection-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.connection-actions .btn-primary,
+.connection-actions .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.connections-subhead {
+  margin: 24px 0 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ─── Dashboard: connect-strava banner ──────────────────────── */
+.connect-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(252, 76, 2, 0.25);
+  background: linear-gradient(135deg, rgba(252, 76, 2, 0.08), transparent 70%), var(--surface-raised);
+}
+
+.connect-banner-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.connect-banner-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.connect-banner-body strong { font-size: 0.92rem; }
+.connect-banner-body small { font-size: 0.78rem; color: var(--text-muted); }
+
+/* ─── Dashboard: onboarding state (no Strava / first sync) ──── */
+.onboarding-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 18px;
+  padding: 56px 28px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.onboarding-card::before {
+  content: '';
+  position: absolute;
+  inset: -40% -10% auto -10%;
+  height: 60%;
+  background: radial-gradient(60% 60% at 50% 30%, var(--accent-glow), transparent 70%);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.onboarding-illustration {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-glow);
+  box-shadow: 0 0 40px var(--accent-glow);
+}
+.onboarding-illustration.is-syncing {
+  color: var(--text-muted);
+  background: var(--bg-3);
+  border-color: var(--border);
+  box-shadow: none;
+}
+.onboarding-title {
+  position: relative;
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  max-width: 440px;
+  line-height: 1.4;
+}
+.onboarding-subtitle {
+  position: relative;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  max-width: 420px;
+  line-height: 1.5;
+}
+.onboarding-cta {
+  position: relative;
+  height: 48px;
+  padding: 0 26px;
+  font-size: 0.95rem;
+}
+.onboarding-cta .strava-mark {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: #fc4c02;
+  color: #fff;
+  font-weight: 800;
+  font-size: 12px;
+  display: grid;
+  place-items: center;
+}
+.onboarding-meta {
+  position: relative;
+  display: flex;
+  gap: 18px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.onboarding-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.onboarding-meta-item svg { color: var(--accent); }
+
+/* ─── Dashboard: today session ──────────────────────────────── */
+.today-session {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+.today-session-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.today-session-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.today-session-body strong { font-size: 0.92rem; }
+.today-session-body small { font-size: 0.78rem; color: var(--text-muted); }
+
+/* ─── Dashboard: recent activity list ───────────────────────── */
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.recent-item:last-child { border-bottom: 0; }
+.recent-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--bg-2);
+  color: var(--text-2);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.recent-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.recent-body strong {
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.recent-body small {
+  font-size: 0.74rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LANDING V2 (funnel)
+   ═══════════════════════════════════════════════════════════════ */
+
+.landing-v2 .landing-nav {
+  gap: 14px;
+}
+.landing-nav-link {
+  display: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-2);
+  padding: 6px 4px;
+  transition: color var(--transition);
+}
+.landing-nav-link:hover { color: var(--text); }
+
+/* ── Hero — Full-screen B&W cinematic gallery ─────────────────── */

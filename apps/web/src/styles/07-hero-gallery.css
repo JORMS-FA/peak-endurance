@@ -1,0 +1,439 @@
+.hero-gallery-section {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 96px 16px 80px;
+  background: #000;
+}
+
+/* Gallery layer — fullscreen, sits behind content */
+.hero-gallery {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Each slide — fullscreen B&W background, crossfade via opacity */
+.hero-gallery-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: grayscale(1) contrast(1.05) brightness(0.92);
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+.hero-gallery-slide.active {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-gallery-slide { transition: none; }
+}
+
+/* Dark gradient overlay on top of the gallery */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.85) 100%),
+    radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0,0,0,0.25), transparent 70%);
+}
+
+/* Centered content over the gallery */
+.hero-gallery-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+}
+
+.hero-gallery-content h1 {
+  font-size: clamp(2.2rem, 7vw, 4.2rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #fff;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
+  max-width: 760px;
+}
+
+/* RGB multi-color animated gradient — the DEFAULT theme for hero keywords.
+   Cycles the full spectrum (green -> cyan -> blue -> purple -> pink -> orange -> yellow -> green)
+   by rotating the gradient angle via the existing --rgb-angle / rgb-rotate keyframe. */
+.hero-gradient-rgb {
+  background: linear-gradient(
+    var(--rgb-angle, 0deg),
+    #22c55e,
+    #06b6d4,
+    #3b82f6,
+    #8b5cf6,
+    #ec4899,
+    #f97316,
+    #eab308,
+    #22c55e
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+  animation: rgb-rotate calc(var(--rgb-speed) * 1s) linear infinite;
+}
+
+.hero-tagline {
+  font-size: clamp(1rem, 2.4vw, 1.3rem);
+  color: rgba(255, 255, 255, 0.86);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* Large Strava + TrainingPeaks logos in hero */
+.hero-logos-large {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.hero-logo-large {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: all var(--transition);
+}
+.hero-logo-large:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-2px);
+}
+.hero-logo-large svg {
+  width: 32px;
+  height: 32px;
+  filter: grayscale(0);
+}
+.hero-logo-strava svg path,
+.hero-logo-strava svg rect { /* keep brand hue */ }
+.hero-logo-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+.hero-logo-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* B&W branding — logo & icons rendered white/grayscale, no green */
+.landing-logo-bw {
+  display: inline-flex;
+  filter: grayscale(1) brightness(1.6);
+}
+
+/* App store badges */
+.store-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  text-align: left;
+  transition: all var(--transition);
+}
+
+.store-badge:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.store-badge small {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  line-height: 1;
+}
+.store-badge strong { display: block; font-size: 0.95rem; line-height: 1.2; margin-top: 2px; }
+
+.store-badge-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 18px var(--accent-glow);
+}
+.store-badge-primary small { color: rgba(255,255,255,0.85); }
+.store-badge-primary:hover { box-shadow: 0 10px 26px var(--accent-glow); }
+
+.hero-secondary-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.85rem;
+  border: 1px solid var(--border-strong);
+  transition: all var(--transition);
+}
+.hero-secondary-cta:hover { background: var(--bg-2); border-color: var(--accent); }
+
+/* ── Hero integration logos trust row ────────────────────────── */
+.hero-integration-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--text-muted);
+  opacity: 0.78;
+  filter: grayscale(1);
+  transition: opacity var(--transition), color var(--transition), filter var(--transition);
+  white-space: nowrap;
+}
+.hero-integration-logo svg {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s ease;
+}
+.hero-integration-logo:hover {
+  opacity: 1;
+  color: var(--text);
+  filter: grayscale(0);
+}
+.hero-integration-logo:hover svg {
+  transform: scale(1.15);
+}
+
+/* ── Social proof / trust metrics ─────────────────────────────── */
+.landing-social-proof {
+  padding: 32px 24px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.social-proof-eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.75;
+}
+.social-proof-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 0;
+  max-width: 760px;
+  width: 100%;
+}
+.social-proof-metric {
+  flex: 1 1 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 24px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.social-proof-metric:last-child { border-right: none; }
+.social-proof-metric strong {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+}
+.social-proof-rating { font-size: 1.8rem; }
+.social-proof-stars {
+  font-size: 0.95rem;
+  color: #f5b301;
+  letter-spacing: 1px;
+}
+.social-proof-metric span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+@media (max-width: 640px) {
+  .social-proof-metric {
+    flex: 1 1 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+  }
+  .social-proof-metric:last-child { border-bottom: none; }
+  .social-proof-metric strong { font-size: 1.7rem; }
+  .social-proof-rating { font-size: 1.5rem; }
+}
+
+/* ── Social proof: brand logos row ────────────────────────────── */
+.social-proof-brands {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+.social-proof-brands-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.social-proof-brands-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 22px;
+}
+
+/* ── Hero CTA button row ───────────────────────────────────── */
+.hero-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* Primary CTA with subtle glow pulse animation */
+.hero-primary-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.88rem;
+  border: none;
+  box-shadow: 0 4px 20px var(--accent-glow), 0 0 0 1px rgba(255,255,255,0.06);
+  transition: all 0.2s ease;
+  animation: heroCtaPulse 3s ease-in-out infinite;
+}
+.hero-primary-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px var(--accent-glow), 0 0 0 1px rgba(255,255,255,0.1);
+}
+.hero-primary-cta:active {
+  transform: scale(0.97);
+}
+@keyframes heroCtaPulse {
+  0%, 100% { box-shadow: 0 4px 20px var(--accent-glow), 0 0 0 1px rgba(255,255,255,0.06); }
+  50% { box-shadow: 0 4px 32px var(--accent-glow), 0 0 0 1px rgba(255,255,255,0.1), 0 0 40px var(--accent-glow); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-primary-cta { animation: none; }
+}
+
+/* Secondary CTA — outline with hover fill effect */
+.hero-secondary-cta-v2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.85rem;
+  border: 1px solid var(--border-strong);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.hero-secondary-cta-v2::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--bg-2);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.hero-secondary-cta-v2:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.hero-secondary-cta-v2:hover::before {
+  opacity: 1;
+}
+.hero-secondary-cta-v2 svg,
+.hero-secondary-cta-v2 span {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Scroll indicator ───────────────────────────────────────── */
+.hero-scroll-indicator {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 3;
+}
+.hero-scroll-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  opacity: 0.8;
+}
+.hero-scroll-chevron {
+  color: rgba(255, 255, 255, 0.7);
+  opacity: 0.7;
+  animation: scrollBounce 2s ease-in-out infinite;
+}
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(4px); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .hero-scroll-chevron { animation: none; } }
+
+/* ── Audience section ────────────────────────────────────────── */

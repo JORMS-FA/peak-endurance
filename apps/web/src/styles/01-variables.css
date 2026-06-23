@@ -1,0 +1,386 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ═══════════════════════════════════════════════════════════════
+   PEAK ENDURANCE — Multi-theme Design System
+   Production-ready, mobile-first, responsive
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── AMOLED lava-lamp ambient background ────────────────────
+   Three slow-drifting blurred radial blobs that paint subtle
+   accent / indigo / amber light over a pure-black canvas.
+   Used by Onboarding, AuthScreen and Landing as their full-screen
+   backdrop. Pure CSS, respects prefers-reduced-motion.
+   ─────────────────────────────────────────────────────────── */
+@keyframes lava-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(20vmax, 12vmax) scale(1.12); }
+  66%      { transform: translate(-12vmax, 28vmax) scale(0.94); }
+}
+
+@keyframes lava-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%      { transform: translate(-24vmax, -10vmax) scale(1.18); }
+  80%      { transform: translate(14vmax, -28vmax) scale(0.88); }
+}
+
+@keyframes lava-drift-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%      { transform: translate(18vmax, -22vmax) scale(1.22); }
+  50%      { transform: translate(-22vmax, 14vmax) scale(1); }
+  75%      { transform: translate(26vmax, 10vmax) scale(0.84); }
+}
+
+@property --rgb-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes rgb-rotate {
+  from { --rgb-angle: 0deg; }
+  to { --rgb-angle: 360deg; }
+}
+
+:root {
+  /* Lava ambient palette tokens — easy to retune per-theme later. */
+  --lava-blob-1: rgba(34, 197, 94, 0.55);   /* accent green */
+  --lava-blob-2: rgba(99, 102, 241, 0.50);  /* indigo */
+  --lava-blob-3: rgba(245, 158, 11, 0.38);  /* amber */
+  --lava-opacity: 0.08;
+  --lava-blur: 90px;
+}
+
+[data-theme="light"] {
+  --lava-opacity: 0.10;
+}
+
+/* ─── Theme: Dark (default) ─────────────────────────────────── */
+:root,
+[data-theme="dark"] {
+  --bg-0: #000000;
+  --bg-1: #000000;
+  --bg-2: #000000;
+  --bg-3: #000000;
+  --bg-4: #000000;
+
+  --surface: #000000;
+  --surface-raised: #000000;
+  --surface-overlay: rgba(0, 0, 0, 0.96);
+
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --border-focus: var(--accent);
+
+  --text: #f0f1f5;
+  --text-2: #b8bcc8;
+  --text-muted: #7a8194;
+  --text-disabled: #4a5063;
+
+  --accent: #22c55e;
+  --accent-hover: #4ade80;
+  --accent-soft: rgba(34, 197, 94, 0.12);
+  --accent-glow: rgba(34, 197, 94, 0.25);
+  --accent-rgb: 34, 197, 94;
+
+  --success: #34d399;
+  --success-soft: rgba(52, 211, 153, 0.12);
+  --warning: #fbbf24;
+  --warning-soft: rgba(251, 191, 36, 0.12);
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.12);
+  --info: #60a5fa;
+  --info-soft: rgba(96, 165, 250, 0.12);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 0 1px var(--accent-glow), 0 8px 24px rgba(34, 197, 94, 0.15);
+}
+
+/* ─── Theme: Light ──────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-0: #f8f9fb;
+  --bg-1: #ffffff;
+  --bg-2: #f3f4f6;
+  --bg-3: #e5e7eb;
+  --bg-4: #d1d5db;
+
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-overlay: rgba(255, 255, 255, 0.95);
+
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.14);
+  --border-focus: var(--accent);
+
+  --text: #111827;
+  --text-2: #374151;
+  --text-muted: #6b7280;
+  --text-disabled: #9ca3af;
+
+  --accent: #16a34a;
+  --accent-hover: #22c55e;
+  --accent-soft: rgba(22, 163, 74, 0.08);
+  --accent-glow: rgba(22, 163, 74, 0.2);
+
+  --success: #10b981;
+  --success-soft: rgba(16, 185, 129, 0.08);
+  --warning: #f59e0b;
+  --warning-soft: rgba(245, 158, 11, 0.08);
+  --danger: #ef4444;
+  --danger-soft: rgba(239, 68, 68, 0.08);
+  --info: #3b82f6;
+  --info-soft: rgba(59, 130, 246, 0.08);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 0 1px var(--accent-glow), 0 8px 24px rgba(22, 163, 74, 0.08);
+}
+
+/* ─── Theme: Midnight ───────────────────────────────────────── */
+[data-theme="midnight"] {
+  --bg-0: #000000;
+  --bg-1: #0a0a1a;
+  --bg-2: #111128;
+  --bg-3: #1a1a36;
+  --bg-4: #222244;
+
+  --surface: #0a0a1a;
+  --surface-raised: #111128;
+  --surface-overlay: rgba(10, 10, 26, 0.95);
+
+  --border: rgba(130, 130, 255, 0.08);
+  --border-strong: rgba(130, 130, 255, 0.16);
+
+  --text: #e8e8ff;
+  --text-2: #b4b4e0;
+  --text-muted: #7a7ab0;
+
+  --accent: #22c55e;
+  --accent-hover: #4ade80;
+  --accent-soft: rgba(34, 197, 94, 0.12);
+  --accent-glow: rgba(34, 197, 94, 0.25);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 0 1px var(--accent-glow), 0 8px 24px rgba(34, 197, 94, 0.15);
+}
+
+/* ─── Theme: Forest ─────────────────────────────────────────── */
+[data-theme="forest"] {
+  --bg-0: #000000;
+  --bg-1: #0a100a;
+  --bg-2: #111a11;
+  --bg-3: #1a261a;
+  --bg-4: #223222;
+
+  --surface: #0a100a;
+  --surface-raised: #111a11;
+  --surface-overlay: rgba(10, 16, 10, 0.95);
+
+  --border: rgba(52, 211, 153, 0.08);
+  --border-strong: rgba(52, 211, 153, 0.16);
+
+  --text: #e8f5e8;
+  --text-2: #b4d4b4;
+  --text-muted: #6b996b;
+
+  --accent: #22c55e;
+  --accent-hover: #4ade80;
+  --accent-soft: rgba(34, 197, 94, 0.12);
+  --accent-glow: rgba(34, 197, 94, 0.25);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 0 1px var(--accent-glow), 0 8px 24px rgba(34, 197, 94, 0.15);
+}
+
+/* ─── Accent Color Overrides ────────────────────────────────── */
+/* These selectors override the theme's default accent color.
+   They target html[data-accent] for higher specificity than [data-theme]. */
+
+html[data-accent="green"] {
+  --accent: #22c55e;
+  --accent-hover: #4ade80;
+  --accent-soft: rgba(34, 197, 94, 0.12);
+  --accent-glow: rgba(34, 197, 94, 0.25);
+}
+
+html[data-accent="orange"] {
+  --accent: #f97316;
+  --accent-hover: #fb923c;
+  --accent-soft: rgba(249, 115, 22, 0.12);
+  --accent-glow: rgba(249, 115, 22, 0.25);
+}
+
+html[data-accent="yellow"] {
+  --accent: #eab308;
+  --accent-hover: #facc15;
+  --accent-soft: rgba(234, 179, 8, 0.12);
+  --accent-glow: rgba(234, 179, 8, 0.25);
+}
+
+html[data-accent="blue"] {
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-soft: rgba(59, 130, 246, 0.12);
+  --accent-glow: rgba(59, 130, 246, 0.25);
+}
+
+html[data-accent="purple"] {
+  --accent: #8b5cf6;
+  --accent-hover: #a78bfa;
+  --accent-soft: rgba(139, 92, 246, 0.12);
+  --accent-glow: rgba(139, 92, 246, 0.25);
+}
+
+html[data-accent="red"] {
+  --accent: #ef4444;
+  --accent-hover: #f87171;
+  --accent-soft: rgba(239, 68, 68, 0.12);
+  --accent-glow: rgba(239, 68, 68, 0.25);
+}
+
+html[data-accent="pink"] {
+  --accent: #ec4899;
+  --accent-hover: #f472b6;
+  --accent-soft: rgba(236, 72, 153, 0.12);
+  --accent-glow: rgba(236, 72, 153, 0.25);
+}
+
+html[data-accent="cyan"] {
+  --accent: #06b6d4;
+  --accent-hover: #22d3ee;
+  --accent-soft: rgba(6, 182, 212, 0.12);
+  --accent-glow: rgba(6, 182, 212, 0.25);
+}
+
+/* ─── Per-section accent color tokens (RGB multi-color theme) ─── */
+/* Each section gets its own subtle accent. The base --accent (green) */
+/* remains for structural/nav elements. These cascade to children. */
+.section-accent-green  { --accent: #22c55e; --accent-hover: #4ade80; --accent-soft: rgba(34, 197, 94, 0.12); --accent-glow: rgba(34, 197, 94, 0.08); --accent-rgb: 34, 197, 94; --s-accent: #22c55e; --s-accent-hover: #4ade80; }
+.section-accent-orange { --accent: #f97316; --accent-hover: #fb923c; --accent-soft: rgba(249, 115, 22, 0.12); --accent-glow: rgba(249, 115, 22, 0.08); --accent-rgb: 249, 115, 22; --s-accent: #f97316; --s-accent-hover: #fb923c; }
+.section-accent-yellow { --accent: #eab308; --accent-hover: #facc15; --accent-soft: rgba(234, 179, 8, 0.12); --accent-glow: rgba(234, 179, 8, 0.08); --accent-rgb: 234, 179, 8; --s-accent: #eab308; --s-accent-hover: #facc15; }
+.section-accent-blue   { --accent: #3b82f6; --accent-hover: #60a5fa; --accent-soft: rgba(59, 130, 246, 0.12); --accent-glow: rgba(59, 130, 246, 0.08); --accent-rgb: 59, 130, 246; --s-accent: #3b82f6; --s-accent-hover: #60a5fa; }
+.section-accent-purple { --accent: #8b5cf6; --accent-hover: #a78bfa; --accent-soft: rgba(139, 92, 246, 0.12); --accent-glow: rgba(139, 92, 246, 0.08); --accent-rgb: 139, 92, 246; --s-accent: #8b5cf6; --s-accent-hover: #a78bfa; }
+.section-accent-pink   { --accent: #ec4899; --accent-hover: #f472b6; --accent-soft: rgba(236, 72, 153, 0.12); --accent-glow: rgba(236, 72, 153, 0.08); --accent-rgb: 236, 72, 153; --s-accent: #ec4899; --s-accent-hover: #f472b6; }
+.section-accent-cyan   { --accent: #06b6d4; --accent-hover: #22d3ee; --accent-soft: rgba(6, 182, 212, 0.12); --accent-glow: rgba(6, 182, 212, 0.08); --accent-rgb: 6, 182, 212; --s-accent: #06b6d4; --s-accent-hover: #22d3ee; }
+
+/* RGB multi-color theme — the default for the hero. Keeps the structural
+   accent green for nav/structural elements while the hero keywords use the
+   shared .hero-gradient-rgb rotating spectrum gradient. */
+.section-accent-rgb {
+  --accent: #22c55e; --accent-hover: #4ade80;
+  --accent-soft: rgba(34, 197, 94, 0.12); --accent-glow: rgba(34, 197, 94, 0.08);
+  --accent-rgb: 34, 197, 94;
+}
+
+/* ─── Design Tokens ─────────────────────────────────────────── */
+:root {
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+  --transition: 0.15s ease;
+  --sidebar-width: 260px;
+  --rgb-speed: 5;
+}
+
+/* ─── Liquid Glass (Glassmorphism) ─────────────────────── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border-radius: var(--radius-lg);
+}
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.glass-card-elevated {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg-0);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+p, ul, ol { margin: 0; }
+ul { list-style: none; padding: 0; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: 0; background: none; font: inherit; color: inherit; padding: 0; }
+input, select, textarea { font: inherit; color: inherit; }
+
+/* ═══════════════════════════════════════════════════════════════
+   APP SHELL
+   ═══════════════════════════════════════════════════════════════ */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-0);
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-bottom: 80px;
+}
+
+.app-content {
+  flex: 1;
+  padding: 20px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── SIDEBAR — REDESIGNED ─────────────────────────────────────── */
