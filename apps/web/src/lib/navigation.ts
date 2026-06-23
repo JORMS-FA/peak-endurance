@@ -1,7 +1,5 @@
 import type { NavItem } from './types'
 
-// New IA: AI Coach is the hero (#2), Plan hosts the Calendar as a view,
-// Analysis absorbs Progress, Segments is hidden until implemented.
 export const sidebarNav: NavItem[] = [
   { id: 'dashboard', path: '/app', icon: 'Home', label_es: 'Inicio', label_en: 'Dashboard' },
   { id: 'ai-coach', path: '/app/ia-coach', icon: 'Sparkles', label_es: 'IA Coach', label_en: 'AI Coach' },
@@ -9,7 +7,7 @@ export const sidebarNav: NavItem[] = [
   { id: 'plan', path: '/app/plan', icon: 'CalendarDays', label_es: 'Plan', label_en: 'Plan' },
   { id: 'analysis', path: '/app/analisis', icon: 'LineChart', label_es: 'Análisis', label_en: 'Analysis' },
   { id: 'connections', path: '/app/conexiones', icon: 'Plug', label_es: 'Conexiones', label_en: 'Connections' },
-  { id: 'settings', path: '/app/ajustes', icon: 'Settings', label_es: 'Ajustes', label_en: 'Settings' },
+  { id: 'segments', path: '/app/segmentos', icon: 'Mountain', label_es: 'Segmentos', label_en: 'Segments' },
 ]
 
 export const mobileNav: NavItem[] = [

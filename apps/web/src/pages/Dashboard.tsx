@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -8,6 +8,9 @@ import {
   Moon,
   TrendingUp,
   Zap,
+  Send,
+  Bot,
+  Sparkles,
 } from 'lucide-react'
 import {
   ResponsiveContainer,
@@ -33,7 +36,6 @@ import { useTodaySession } from '../hooks/useTodaySession'
 import { useStravaConnection } from '../hooks/useStrava'
 import { AnimatedNumber } from '../components/ui/AnimatedNumber'
 import { SportIcon, SPORT_COLORS } from '../components/ui/SportIcon'
-import { CoachBot } from '../components/ui/CoachBot'
 import { LevelCard } from '../components/ui/LevelCard'
 
 // ─── Animation Variants ─────────────────────────────────────────────────────
@@ -100,9 +102,16 @@ function WeeklyTooltip({ active, payload, label }: { active?: boolean; payload?:
   )
 }
 
+// ─── Suggestion Chips ───────────────────────────────────────────────────────
+const suggestionChips = [
+  { label: 'Analiza mi semana', path: '/app/ia-coach' },
+  { label: 'Ajusta mi plan', path: '/app/ia-coach' },
+  { label: '¿Estoy sobreentrenando?', path: '/app/ia-coach' },
+]
+
 // ─── Dashboard Component ────────────────────────────────────────────────────
 export function Dashboard() {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
   const { profile } = useAuth()
   const { metrics, hasData, loading } = useDashboardMetrics()
   const { data: today, loading: todayLoading } = useTodaySession()
@@ -110,6 +119,10 @@ export function Dashboard() {
 
   const stravaConnected = Boolean(stravaStatus?.connected)
   const showEmpty = !loading && !hasData
+  const fullName = profile?.display_name ?? 'Atleta'
+  const firstName = fullName.split(' ')[0] ?? fullName
+
+  const [coachInput, setCoachInput] = useState('')
 
   // Compute PMC series for chart
   const pmcSeries = useMemo(() => computePmcSeries(metrics.daily), [metrics.daily])
@@ -124,29 +137,165 @@ export function Dashboard() {
     return Object.entries(sportCounts).map(([name, value]) => ({ name, value }))
   }, [metrics.recent])
 
+  // Get the latest activity for dynamic AI welcome message
+  const latestActivity = metrics.recent[0]
+  const aiMessage = useMemo(() => {
+    if (latestActivity) {
+      const sportLabel = latestActivity.sport === 'bike' ? 'rodada' : latestActivity.sport === 'run' ? 'carrera' : 'sesión'
+      const distStr = latestActivity.distance_km ? ` de ${latestActivity.distance_km.toFixed(1)}km` : ''
+      const powerStr = latestActivity.avg_hr ? ` a ${latestActivity.avg_hr}bpm` : ''
+      return language === 'es'
+        ? `Hoy estuviste a tope en tu ${sportLabel}${distStr}${powerStr}. ¡Gran ritmo! 🚴`
+        : `You crushed it on your ${latestActivity.sport} session${distStr}${powerStr}. Great pace! 🚴`
+    }
+    return language === 'es'
+      ? 'Conecta Strava para recibir análisis personalizados de tu entrenamiento.'
+      : 'Connect Strava to get personalized training insights.'
+  }, [latestActivity, language])
+
   return (
     <div className="page-dashboard">
-      {/* ── Hero AI Coach Card ─────────────────────────────────────────── */}
+      {/* ── 1. Welcome Card ──────────────────────────────────────── */}
       <motion.section
-        className="hero-card"
+        className="glass-card welcome-card"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="hero-content">
-          <span className="badge">Peak IA Coach</span>
-          <h2>
-            {profile?.display_name ? `${t('aiHeroPrefix')}, ${profile.display_name.split(' ')[0]}.` : t('aiHeroFallback')}
+        <div className="welcome-card-glow" aria-hidden />
+        <div className="welcome-content">
+          <div className="welcome-badge-row">
+            <Sparkles size={16} strokeWidth={1.5} className="welcome-sparkle" />
+            <span className="badge">Peak IA Coach</span>
+          </div>
+          <h2 className="welcome-greeting">
+            👋 {language === 'es' ? 'BUENOS DÍAS' : 'GOOD MORNING'}, {firstName}
           </h2>
-          <p className="hero-subtitle">{t('aiHeroSubtitle')}</p>
-          <div className="hero-actions">
-            <Link to="/app/ia-coach" className="btn-primary">{t('analyzeWeek')}</Link>
-            <Link to="/app/plan" className="btn-secondary">{t('adjustPlan')}</Link>
-            <Link to="/app/analisis" className="btn-secondary">{t('detectFatigue')}</Link>
+          <p className="welcome-message">
+            "{aiMessage}"
+          </p>
+          <div className="welcome-actions">
+            <Link to="/app/ia-coach" className="btn-primary">
+              <Sparkles size={14} strokeWidth={1.5} />
+              {t('analyzeWeek')}
+            </Link>
+            <Link to="/app/plan" className="btn-secondary">
+              {t('adjustPlan')}
+            </Link>
           </div>
         </div>
-        <div className="hero-visual">
-          <CoachBot size={104} />
+      </motion.section>
+
+      {/* ── 2. Quick AI Coach Card ──────────────────────────────── */}
+      <motion.section
+        className="glass-card coach-quick-card"
+        custom={1}
+        initial="hidden"
+        animate="visible"
+        variants={cardVariants}
+      >
+        <div className="coach-quick-header">
+          <Bot size={18} strokeWidth={1.5} />
+          <span>Peak IA Coach</span>
+        </div>
+        <div className="coach-quick-input-row">
+          <input
+            type="text"
+            className="coach-quick-input"
+            placeholder={language === 'es' ? 'Pregunta a tu coach...' : 'Ask your coach...'}
+            value={coachInput}
+            onChange={(e) => setCoachInput(e.target.value)}
+          />
+          <button
+            type="button"
+            className="coach-quick-send"
+            disabled={!coachInput.trim()}
+            onClick={() => {
+              if (coachInput.trim()) {
+                window.location.href = '/app/ia-coach'
+              }
+            }}
+          >
+            <Send size={16} strokeWidth={1.5} />
+          </button>
+        </div>
+        <div className="coach-quick-chips">
+          {suggestionChips.map((chip) => (
+            <Link key={chip.label} to={chip.path} className="chip chip-sm">
+              💡 {chip.label}
+            </Link>
+          ))}
+        </div>
+      </motion.section>
+
+      {/* ── 3. Energy / Readiness Ring ──────────────────────────── */}
+      <motion.section
+        className="glass-card energy-card"
+        custom={2}
+        initial="hidden"
+        animate="visible"
+        variants={cardVariants}
+      >
+        <div className="energy-ring-container">
+          <div className="energy-ring-chart">
+            <ResponsiveContainer width={140} height={140}>
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Energy', value: 82 },
+                    { name: 'Remaining', value: 18 },
+                  ]}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={44}
+                  outerRadius={62}
+                  startAngle={90}
+                  endAngle={-270}
+                  dataKey="value"
+                  stroke="none"
+                  cornerRadius={10}
+                >
+                  <Cell fill="var(--accent)" />
+                  <Cell fill="rgba(255,255,255,0.06)" />
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="energy-ring-label">
+              <span className="energy-ring-pct">82%</span>
+              <span className="energy-ring-title">Energy</span>
+            </div>
+          </div>
+          <div className="energy-metrics">
+            <h3 className="energy-card-title">{language === 'es' ? 'Nivel de Recuperación' : 'Readiness Level'}</h3>
+            <div className="energy-metrics-grid">
+              <div className="energy-metric">
+                <Moon size={14} strokeWidth={1.5} />
+                <div className="energy-metric-body">
+                  <span className="energy-metric-label">{language === 'es' ? 'Sueño' : 'Sleep'}</span>
+                  <span className="energy-metric-value">7.2h</span>
+                </div>
+              </div>
+              <div className="energy-metric">
+                <Heart size={14} strokeWidth={1.5} />
+                <div className="energy-metric-body">
+                  <span className="energy-metric-label">HRV</span>
+                  <span className="energy-metric-value">58ms</span>
+                </div>
+              </div>
+              <div className="energy-metric">
+                <Activity size={14} strokeWidth={1.5} />
+                <div className="energy-metric-body">
+                  <span className="energy-metric-label">{language === 'es' ? 'Recuperación' : 'Recovery'}</span>
+                  <span className="energy-metric-value">92%</span>
+                </div>
+              </div>
+            </div>
+            <small className="text-muted energy-hint">
+              {language === 'es'
+                ? '📱 Datos en vivo cuando conectes tu smartwatch o anillo.'
+                : '📱 Live data when you connect your smartwatch or ring.'}
+            </small>
+          </div>
         </div>
       </motion.section>
 
@@ -172,15 +321,15 @@ export function Dashboard() {
       {/* ── Metrics Grid ───────────────────────────────────────────────── */}
       <section className="metrics-grid">
         {[
-          { icon: <Heart size={18} />, label: t('mForma'), value: metrics.formPct, unit: '%', color: 'green' },
-          { icon: <Zap size={18} />, label: t('mCarga'), value: metrics.weeklyTss, unit: 'TSS', color: 'blue' },
-          { icon: <TrendingUp size={18} />, label: t('mAptitud'), value: metrics.ctl, unit: 'CTL', color: 'purple' },
-          { icon: <Flame size={18} />, label: t('mFatiga'), value: metrics.atl, unit: 'ATL', color: 'orange' },
+          { icon: <Heart size={18} strokeWidth={1.5} />, label: t('mForma'), value: metrics.formPct, unit: '%', color: 'green' },
+          { icon: <Zap size={18} strokeWidth={1.5} />, label: t('mCarga'), value: metrics.weeklyTss, unit: 'TSS', color: 'blue' },
+          { icon: <TrendingUp size={18} strokeWidth={1.5} />, label: t('mAptitud'), value: metrics.ctl, unit: 'CTL', color: 'purple' },
+          { icon: <Flame size={18} strokeWidth={1.5} />, label: t('mFatiga'), value: metrics.atl, unit: 'ATL', color: 'orange' },
         ].map((m, i) => (
           <motion.div
             key={m.label}
             className={`metric-card metric-${m.color}`}
-            custom={i}
+            custom={i + 3}
             initial="hidden"
             animate="visible"
             variants={cardVariants}
@@ -205,13 +354,13 @@ export function Dashboard() {
       {/* ── Performance Management Chart (PMC) ─────────────────────────── */}
       <motion.section
         className="card chart-card"
-        custom={4}
+        custom={7}
         initial="hidden"
         animate="visible"
         variants={cardVariants}
       >
         <div className="card-header">
-          <TrendingUp size={16} />
+          <TrendingUp size={16} strokeWidth={1.5} />
           <span>{t('weeklyState')} — PMC (90 días)</span>
         </div>
         {showEmpty ? (
@@ -281,13 +430,13 @@ export function Dashboard() {
         {/* Weekly Load BarChart */}
         <motion.section
           className="card chart-card"
-          custom={5}
+          custom={8}
           initial="hidden"
           animate="visible"
           variants={cardVariants}
         >
           <div className="card-header">
-            <Zap size={16} />
+            <Zap size={16} strokeWidth={1.5} />
             <span>Carga Semanal (TSS)</span>
           </div>
           {showEmpty ? (
@@ -330,13 +479,13 @@ export function Dashboard() {
         {/* Sport Distribution PieChart */}
         <motion.section
           className="card chart-card"
-          custom={6}
+          custom={9}
           initial="hidden"
           animate="visible"
           variants={cardVariants}
         >
           <div className="card-header">
-            <Activity size={16} />
+            <Activity size={16} strokeWidth={1.5} />
             <span>Distribución por Deporte</span>
           </div>
           {pieData.length === 0 ? (
@@ -386,13 +535,13 @@ export function Dashboard() {
         {/* Today's session */}
         <motion.section
           className="card"
-          custom={7}
+          custom={10}
           initial="hidden"
           animate="visible"
           variants={cardVariants}
         >
           <div className="card-header">
-            <Activity size={16} />
+            <Activity size={16} strokeWidth={1.5} />
             <span>{t('trainingOfDay')}</span>
           </div>
           {todayLoading ? (
@@ -423,13 +572,13 @@ export function Dashboard() {
         {/* Recovery / Quick read */}
         <motion.section
           className="card"
-          custom={8}
+          custom={11}
           initial="hidden"
           animate="visible"
           variants={cardVariants}
         >
           <div className="card-header">
-            <Moon size={16} />
+            <Moon size={16} strokeWidth={1.5} />
             <span>{t('quickRead')}</span>
           </div>
           <div className="recovery-grid">
@@ -451,13 +600,13 @@ export function Dashboard() {
         {/* Recent activities */}
         <motion.section
           className="card"
-          custom={9}
+          custom={12}
           initial="hidden"
           animate="visible"
           variants={cardVariants}
         >
           <div className="card-header">
-            <Zap size={16} />
+            <Zap size={16} strokeWidth={1.5} />
             <span>{t('recentActivities')}</span>
           </div>
           {metrics.recent.length === 0 ? (

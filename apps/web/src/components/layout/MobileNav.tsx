@@ -1,10 +1,10 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Dumbbell, Sparkles, TrendingUp, Settings } from 'lucide-react'
+import { Home, Dumbbell, Sparkles, CalendarDays, Settings } from 'lucide-react'
 import { mobileNav } from '../../lib/navigation'
 import { useI18n } from '../../hooks/useI18n'
 
 const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
-  Home, Dumbbell, Sparkles, TrendingUp, Settings,
+  Home, Dumbbell, Sparkles, CalendarDays, Settings,
 }
 
 export function MobileNav() {
