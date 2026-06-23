@@ -155,50 +155,25 @@ export function Dashboard() {
 
   return (
     <div className="page-dashboard">
-      {/* ── 1. Welcome Card ──────────────────────────────────────── */}
+      {/* ── 1. Peak IA Coach — MERGED compact card ───────────────── */}
       <motion.section
-        className="glass-card welcome-card"
+        className="glass-card coach-compact-card"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="welcome-card-glow" aria-hidden />
-        <div className="welcome-content">
-          <div className="welcome-badge-row">
-            <Sparkles size={16} strokeWidth={1.5} className="welcome-sparkle" />
-            <span className="badge">Peak IA Coach</span>
-          </div>
-          <h2 className="welcome-greeting">
-            👋 {language === 'es' ? 'BUENOS DÍAS' : 'GOOD MORNING'}, {firstName}
-          </h2>
-          <p className="welcome-message">
-            "{aiMessage}"
-          </p>
-          <div className="welcome-actions">
-            <Link to="/app/ia-coach" className="btn-primary">
-              <Sparkles size={14} strokeWidth={1.5} />
-              {t('analyzeWeek')}
-            </Link>
-            <Link to="/app/plan" className="btn-secondary">
-              {t('adjustPlan')}
-            </Link>
-          </div>
+        <div className="coach-compact-glow" aria-hidden />
+        <div className="welcome-badge-row">
+          <Sparkles size={16} strokeWidth={1.5} className="welcome-sparkle" />
+          <span className="badge">Peak IA Coach</span>
         </div>
-      </motion.section>
-
-      {/* ── 2. Quick AI Coach Card ──────────────────────────────── */}
-      <motion.section
-        className="glass-card coach-quick-card"
-        custom={1}
-        initial="hidden"
-        animate="visible"
-        variants={cardVariants}
-      >
-        <div className="coach-quick-header">
-          <Bot size={18} strokeWidth={1.5} />
-          <span>Peak IA Coach</span>
-        </div>
-        <div className="coach-quick-input-row">
+        <h2 className="welcome-greeting">
+          👋 {language === 'es' ? 'BUENOS DÍAS' : 'GOOD MORNING'}, {firstName}
+        </h2>
+        <p className="welcome-message">
+          "{aiMessage}"
+        </p>
+        <div className="coach-compact-input-row">
           <input
             type="text"
             className="coach-quick-input"
@@ -228,7 +203,7 @@ export function Dashboard() {
         </div>
       </motion.section>
 
-      {/* ── 3. Energy / Readiness Ring ──────────────────────────── */}
+      {/* ── 2. Energy / Readiness Ring ──────────────────────────── */}
       <motion.section
         className="glass-card energy-card"
         custom={2}

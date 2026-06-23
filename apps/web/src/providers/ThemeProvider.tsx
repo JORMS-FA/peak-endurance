@@ -133,10 +133,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     apply()
     const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     if (prefersReduced) return
+    const speed = Number(localStorage.getItem('peak_rgb_speed')) || 5
+    const intervalMs = Math.max(20, 300 / speed)
     const id = window.setInterval(() => {
       h = (h + 3) % 360
       apply()
-    }, 80)
+    }, intervalMs)
     return () => window.clearInterval(id)
   }, [accentColor])
 

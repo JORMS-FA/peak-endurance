@@ -3,7 +3,7 @@ import { Home, Dumbbell, Sparkles, CalendarDays, Settings } from 'lucide-react'
 import { mobileNav } from '../../lib/navigation'
 import { useI18n } from '../../hooks/useI18n'
 
-const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
+const iconMap: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
   Home, Dumbbell, Sparkles, CalendarDays, Settings,
 }
 
@@ -22,7 +22,7 @@ export function MobileNav() {
             end={item.path === '/app'}
             className={({ isActive }) => `mobile-nav-item${isActive ? ' active' : ''}`}
           >
-            <Icon size={20} />
+            <Icon size={20} strokeWidth={1.5} />
             <span>{label}</span>
           </NavLink>
         )

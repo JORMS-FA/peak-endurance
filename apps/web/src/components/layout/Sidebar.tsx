@@ -1,14 +1,12 @@
-import { useState, useRef, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   Home, CalendarDays, Dumbbell, Sparkles,
-  LineChart, TrendingUp, Plug, Mountain, LogOut,
-  ChevronLeft, Settings, User, ChevronDown,
+  LineChart, TrendingUp, Plug, Mountain,
+  ChevronLeft,
 } from 'lucide-react'
 import { sidebarNav } from '../../lib/navigation'
 import { useI18n } from '../../hooks/useI18n'
 import { useAuth } from '../../hooks/useAuth'
-import { signOut } from '../../lib/auth'
 import { APP_NAME } from '../../lib/constants'
 import { Logo } from '../ui/Logo'
 
@@ -19,86 +17,38 @@ const iconMap: Record<string, React.ComponentType<{ size?: number; strokeWidth?:
 
 export function Sidebar({ collapsed = false, onToggle }: { collapsed?: boolean; onToggle?: () => void }) {
   const { language } = useI18n()
-  const { profile, refresh } = useAuth()
+  const { profile } = useAuth()
   const displayName = profile?.display_name ?? 'Atleta'
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false)
-      }
-    }
-    if (dropdownOpen) {
-      document.addEventListener('mousedown', handleClick)
-    }
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [dropdownOpen])
-
-  async function handleSignOut() {
-    setDropdownOpen(false)
-    await signOut()
-    await refresh()
-  }
 
   return (
     <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
-      {/* Logo + Brand */}
-      <div className="sidebar-brand">
-        <Logo size={34} />
-        {!collapsed && <span className="brand-name">{APP_NAME}</span>}
-      </div>
-
-      {/* Avatar + Dropdown at top */}
-      <div className="sidebar-profile-section" ref={dropdownRef}>
+      {/* Avatar flush to top — click toggles sidebar panel */}
+      <div className="sidebar-avatar-flush">
         <button
           type="button"
-          className="sidebar-avatar-btn"
-          onClick={() => setDropdownOpen((o) => !o)}
-          title={collapsed ? displayName : undefined}
+          className="sidebar-avatar-flush-btn"
+          onClick={onToggle}
+          title={displayName}
         >
           {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="sidebar-avatar-img" />
+            <img src={profile.avatar_url} alt="" className="sidebar-avatar-flush-img" />
           ) : (
-            <div className="sidebar-avatar-letter">
+            <div className="sidebar-avatar-flush-letter">
               {displayName.charAt(0).toUpperCase()}
             </div>
           )}
           {!collapsed && (
-            <>
-              <div className="sidebar-avatar-info">
-                <span className="sidebar-avatar-name">{displayName}</span>
-                <span className="sidebar-avatar-role">{language === 'es' ? 'Atleta' : 'Athlete'}</span>
-              </div>
-              <ChevronDown size={14} className={`sidebar-chevron${dropdownOpen ? ' open' : ''}`} />
-            </>
+            <div className="sidebar-avatar-flush-info">
+              <span className="sidebar-avatar-flush-name">{displayName}</span>
+            </div>
           )}
         </button>
+      </div>
 
-        {/* Dropdown menu */}
-        {dropdownOpen && (
-          <div className="sidebar-dropdown">
-            <NavLink
-              to="/app/ajustes"
-              className="sidebar-dropdown-item"
-              onClick={() => setDropdownOpen(false)}
-            >
-              <Settings size={15} strokeWidth={1.5} />
-              <span>{language === 'es' ? 'Configuración' : 'Settings'}</span>
-            </NavLink>
-            <div className="sidebar-dropdown-divider" />
-            <button
-              type="button"
-              className="sidebar-dropdown-item sidebar-dropdown-danger"
-              onClick={handleSignOut}
-            >
-              <LogOut size={15} strokeWidth={1.5} />
-              <span>{language === 'es' ? 'Cerrar sesión' : 'Sign out'}</span>
-            </button>
-          </div>
-        )}
+      {/* Logo + Brand */}
+      <div className="sidebar-brand">
+        <Logo size={34} />
+        {!collapsed && <span className="brand-name">{APP_NAME}</span>}
       </div>
 
       {/* Navigation */}

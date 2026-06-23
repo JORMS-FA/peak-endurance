@@ -79,7 +79,7 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
             aria-label={t('search')}
             onClick={() => setSearchOpen(true)}
           >
-            <Search size={17} strokeWidth={1.5} />
+            <Search size={22} strokeWidth={1.5} />
             <kbd className="topbar-kbd">{navigator.platform?.includes('Mac') ? '⌘K' : 'Ctrl+K'}</kbd>
           </button>
 
@@ -90,7 +90,7 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
             aria-label={t('notifications')}
             onClick={() => setNotifOpen((o) => !o)}
           >
-            <Bell size={17} strokeWidth={1.5} />
+            <Bell size={24} strokeWidth={1.5} />
             <span className="topbar-dot" />
           </button>
         </div>

@@ -30,6 +30,17 @@
   75%      { transform: translate(26vmax, 10vmax) scale(0.84); }
 }
 
+@property --rgb-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes rgb-rotate {
+  from { --rgb-angle: 0deg; }
+  to { --rgb-angle: 360deg; }
+}
+
 :root {
   /* Lava ambient palette tokens — easy to retune per-theme later. */
   --lava-blob-1: rgba(34, 197, 94, 0.55);   /* accent green */
@@ -268,6 +279,7 @@ html[data-accent="cyan"] {
   --radius-full: 9999px;
   --transition: 0.15s ease;
   --sidebar-width: 260px;
+  --rgb-speed: 5;
 }
 
 /* ─── Liquid Glass (Glassmorphism) ─────────────────────── */
@@ -277,6 +289,7 @@ html[data-accent="cyan"] {
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border-radius: var(--radius-lg);
 }
 .glass-card:hover {
   background: rgba(255, 255, 255, 0.05);
@@ -288,6 +301,7 @@ html[data-accent="cyan"] {
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -368,7 +382,7 @@ input, select, textarea { font: inherit; color: inherit; }
   border-right: 1px solid var(--border);
   display: none;
   flex-direction: column;
-  padding: 16px 10px;
+  padding: 0 10px;
   position: sticky;
   top: 0;
   height: 100vh;
@@ -395,7 +409,76 @@ input, select, textarea { font: inherit; color: inherit; }
   letter-spacing: -0.02em;
 }
 
-/* ── Avatar Profile Section ──────────────────────────────────── */
+/* ── Avatar Flush (top-left, click toggles sidebar) ──────────── */
+
+.sidebar-avatar-flush {
+  margin: 0 -10px; /* negate sidebar padding so it's truly flush */
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-avatar-flush-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  width: 100%;
+  transition: background var(--transition);
+}
+
+.sidebar-avatar-flush-btn:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.sidebar-avatar-flush-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid var(--accent-glow);
+}
+
+.sidebar-avatar-flush-letter {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+  border: 2px solid var(--accent-glow);
+}
+
+.sidebar-avatar-flush-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sidebar-avatar-flush-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar.collapsed .sidebar-avatar-flush-btn {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.sidebar.collapsed .sidebar-avatar-flush {
+  margin: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Avatar Profile Section (old — kept for backward compat) ─── */
 
 .sidebar-profile-section {
   position: relative;
@@ -722,8 +805,8 @@ input, select, textarea { font: inherit; color: inherit; }
 }
 
 .topbar-action {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-md);
   display: grid;
   place-items: center;
@@ -1041,6 +1124,7 @@ a:hover svg,
 .card-accent {
   border-color: var(--accent-soft);
   background: linear-gradient(135deg, var(--accent-soft), transparent);
+  border-radius: var(--radius-lg);
 }
 
 .card-header {
@@ -1871,17 +1955,20 @@ a:hover svg,
 .recovery-label { font-size: 0.7rem; color: var(--text-muted); display: block; }
 .recovery-value { font-size: 1rem; font-weight: 700; display: block; margin-top: 2px; }
 
-/* ─── Welcome Card (AI Dashboard Hero) ──────────────────────────── */
+/* ─── Coach Compact Card (merged welcome + quick ai coach) ──── */
 
-.welcome-card {
+.coach-compact-card {
   position: relative;
   overflow: hidden;
-  padding: 24px;
+  padding: 20px;
   margin-bottom: 16px;
   border: 1px solid rgba(34, 197, 94, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.welcome-card-glow {
+.coach-compact-glow {
   position: absolute;
   top: -20%;
   right: -10%;
@@ -1893,98 +1980,60 @@ a:hover svg,
   pointer-events: none;
 }
 
-.welcome-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.welcome-badge-row {
+.coach-compact-card .welcome-badge-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 2px;
 }
 
-.welcome-sparkle {
+.coach-compact-card .welcome-sparkle {
   color: var(--accent);
 }
 
-.welcome-greeting {
-  font-size: 1.3rem;
+.coach-compact-card .welcome-greeting {
+  font-size: 1.2rem;
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.02em;
 }
 
-.welcome-message {
+.coach-compact-card .welcome-message {
   color: var(--text-2);
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   line-height: 1.5;
   max-width: 600px;
   font-style: italic;
 }
 
-.welcome-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 6px;
-}
-
-/* ─── Quick AI Coach Card ──────────────────────────────────────── */
-
-.coach-quick-card {
-  padding: 20px;
-  margin-bottom: 16px;
-}
-
-.coach-quick-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  margin-bottom: 14px;
-  color: var(--text);
-}
-
-.coach-quick-header svg {
-  color: var(--accent);
-}
-
-.coach-quick-input-row {
+.coach-compact-input-row {
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
 }
 
-.coach-quick-input {
+.coach-compact-card .coach-quick-input {
   flex: 1;
-  height: 44px;
-  padding: 0 16px;
+  height: 40px;
+  padding: 0 14px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border);
   background: var(--bg-2);
   color: var(--text);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   outline: none;
   transition: border-color var(--transition);
 }
 
-.coach-quick-input:focus {
+.coach-compact-card .coach-quick-input:focus {
   border-color: var(--accent);
 }
 
-.coach-quick-input::placeholder {
+.coach-compact-card .coach-quick-input::placeholder {
   color: var(--text-muted);
 }
 
-.coach-quick-send {
-  width: 44px;
-  height: 44px;
+.coach-compact-card .coach-quick-send {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: var(--accent);
   color: #fff;
@@ -1995,26 +2044,26 @@ a:hover svg,
   box-shadow: 0 4px 12px var(--accent-glow);
 }
 
-.coach-quick-send:hover:not(:disabled) {
+.coach-compact-card .coach-quick-send:hover:not(:disabled) {
   background: var(--accent-hover);
   transform: scale(1.05);
 }
 
-.coach-quick-send:disabled {
+.coach-compact-card .coach-quick-send:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-.coach-quick-chips {
+.coach-compact-card .coach-quick-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.chip-sm {
+.coach-compact-card .chip-sm {
   font-size: 0.78rem;
   padding: 0 10px;
-  height: 30px;
+  height: 28px;
   border-radius: var(--radius-full);
   background: var(--bg-2);
   border: 1px solid var(--border);
@@ -2024,7 +2073,7 @@ a:hover svg,
   transition: all var(--transition);
 }
 
-.chip-sm:hover {
+.coach-compact-card .chip-sm:hover {
   background: var(--bg-3);
   color: var(--text);
   border-color: var(--border-strong);
@@ -2542,6 +2591,81 @@ a:hover svg,
   font-weight: 600;
   color: var(--text-2);
   text-transform: capitalize;
+}
+
+/* ─── RGB Speed Slider ──────────────────────────────────────── */
+
+.rgb-speed-control {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+}
+
+.rgb-speed-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.rgb-speed-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border-strong);
+  outline: none;
+  cursor: pointer;
+}
+
+.rgb-speed-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface-raised);
+  box-shadow: 0 0 8px var(--accent-glow);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.rgb-speed-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.rgb-speed-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface-raised);
+  box-shadow: 0 0 8px var(--accent-glow);
+  cursor: pointer;
+}
+
+.rgb-speed-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 24px;
+  text-align: center;
+}
+
+.rgb-speed-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.rgb-speed-default {
+  font-weight: 600;
+  color: var(--text-2);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -5994,7 +6118,7 @@ a:hover svg,
 
 .topbar-action {
   position: relative;
-  width: 38px; height: 38px;
+  width: 44px; height: 44px;
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--surface-raised, #111);
   border: 1px solid var(--border, rgba(255,255,255,0.08));

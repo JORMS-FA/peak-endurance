@@ -76,6 +76,11 @@ export function Settings() {
   const [nameInput, setNameInput] = useState('')
   const [savingName, setSavingName] = useState(false)
 
+  const [rgbSpeed, setRgbSpeed] = useState(() => {
+    const saved = localStorage.getItem('peak_rgb_speed')
+    return saved ? Number(saved) : 5
+  })
+
   async function startEditName() {
     setNameInput(profile?.display_name ?? '')
     setEditingName(true)
@@ -374,6 +379,36 @@ export function Settings() {
             </button>
           ))}
         </div>
+
+        {accentColor === 'rgb' && (
+          <div className="rgb-speed-control" style={{ marginBottom: 18 }}>
+            <label className="settings-sublabel">
+              {isEs ? 'Velocidad de cambio de color' : 'RGB Color Speed'}
+            </label>
+            <div className="rgb-speed-row">
+              <input
+                type="range"
+                min={1}
+                max={10}
+                step={1}
+                value={rgbSpeed}
+                onChange={(e) => {
+                  const v = Number(e.target.value)
+                  setRgbSpeed(v)
+                  localStorage.setItem('peak_rgb_speed', String(v))
+                  document.documentElement.style.setProperty('--rgb-speed', String(v))
+                }}
+                className="rgb-speed-slider"
+              />
+              <span className="rgb-speed-value">{rgbSpeed}</span>
+            </div>
+            <div className="rgb-speed-labels">
+              <span>{isEs ? 'Más lento' : 'Slower'}</span>
+              <span className="rgb-speed-default">{isEs ? 'Predet.' : 'Default'}</span>
+              <span>{isEs ? 'Rápido' : 'Fast'}</span>
+            </div>
+          </div>
+        )}
 
         <label className="settings-sublabel"><Globe size={13} style={{ verticalAlign: '-2px', marginRight: 4 }} />{t('language')}</label>
         <select value={language} onChange={handleLangChange} className="settings-select">
