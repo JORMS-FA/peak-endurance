@@ -6,6 +6,7 @@ import {
   Brain,
   CheckCircle2,
   ChevronRight,
+  Crown,
   Footprints,
   LineChart,
   Mountain,
@@ -253,7 +254,7 @@ export function Landing() {
 
           {/* Pro mensual */}
           <motion.div className="landing-pricing-card reveal" whileHover={{ y: -4 }}>
-            <div className="pricing-tier">Pro · {language === 'es' ? 'Mensual' : 'Monthly'}</div>
+            <div className="pricing-tier pricing-tier-pro"><Crown size={13} /> Pro · {language === 'es' ? 'Mensual' : 'Monthly'}</div>
             <div className="landing-pricing-amount">
               <span className="landing-price">COP$30.000</span>
               <span className="landing-price-period">/ {language === 'es' ? 'mes' : 'mo'}</span>
@@ -273,7 +274,7 @@ export function Landing() {
           {/* Pro anual — destacado */}
           <motion.div className="landing-pricing-card pricing-card-featured reveal-scale" whileHover={{ y: -6 }}>
             <span className="pricing-popular">{language === 'es' ? 'Mejor valor' : 'Best value'}</span>
-            <div className="pricing-tier">Pro · {language === 'es' ? 'Anual' : 'Annual'}</div>
+            <div className="pricing-tier pricing-tier-pro"><Crown size={13} /> Pro · {language === 'es' ? 'Anual' : 'Annual'}</div>
             <div className="landing-pricing-amount">
               <span className="landing-price">COP$300.000</span>
               <span className="landing-price-period">/ {language === 'es' ? 'año' : 'yr'}</span>

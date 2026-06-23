@@ -1,8 +1,8 @@
-import { Bell, Search } from 'lucide-react'
+import { Bell, Search, PanelLeft } from 'lucide-react'
 import { useI18n } from '../../hooks/useI18n'
 import { useAuth } from '../../hooks/useAuth'
 
-export function TopBar() {
+export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?: () => void; sidebarCollapsed?: boolean }) {
   const { t } = useI18n()
   const { profile } = useAuth()
   const fullName = profile?.display_name ?? 'Atleta'
@@ -11,15 +11,21 @@ export function TopBar() {
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <h1 className="topbar-greeting">
-          <span className="topbar-greeting-full">
-            {t('greeting')}, {fullName}
-          </span>
-          <span className="topbar-greeting-short">
-            {t('greeting')}, {firstName}
-          </span>
-        </h1>
-        <p className="topbar-subtitle">{t('subtitle')}</p>
+        <button
+          type="button"
+          className="topbar-collapse"
+          onClick={onToggleSidebar}
+          aria-label={sidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú'}
+        >
+          <PanelLeft size={18} />
+        </button>
+        <div>
+          <h1 className="topbar-greeting">
+            <span className="topbar-greeting-full">{t('greeting')}, {fullName}</span>
+            <span className="topbar-greeting-short">{t('greeting')}, {firstName}</span>
+          </h1>
+          <p className="topbar-subtitle">{t('subtitle')}</p>
+        </div>
       </div>
 
       <div className="topbar-right">

@@ -15,7 +15,7 @@ const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
   LineChart, TrendingUp, Plug, Mountain, Settings,
 }
 
-export function Sidebar() {
+export function Sidebar({ collapsed = false }: { collapsed?: boolean }) {
   const { language } = useI18n()
   const { profile, refresh } = useAuth()
   const displayName = profile?.display_name ?? 'Atleta'
@@ -26,10 +26,10 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
       <div className="sidebar-brand">
         <Logo size={34} />
-        <span className="brand-name">{APP_NAME}</span>
+        {!collapsed && <span className="brand-name">{APP_NAME}</span>}
       </div>
 
       <nav className="sidebar-nav">
@@ -42,27 +42,30 @@ export function Sidebar() {
               to={item.path}
               end={item.path === '/app'}
               className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
+              title={collapsed ? label : undefined}
             >
               <Icon size={18} />
-              <span>{label}</span>
+              {!collapsed && <span>{label}</span>}
             </NavLink>
           )
         })}
       </nav>
 
       <div className="sidebar-footer">
-        <button className="sidebar-profile" onClick={handleSignOut} type="button">
+        <button className="sidebar-profile" onClick={handleSignOut} type="button" title={collapsed ? displayName : undefined}>
           {profile?.avatar_url ? (
             <img src={profile.avatar_url} alt="" className="avatar-sm avatar-img" />
           ) : (
             <div className="avatar-sm">{displayName.charAt(0).toUpperCase()}</div>
           )}
-          <span className="sidebar-profile-name">{displayName}</span>
-          <LogOut size={14} />
+          {!collapsed && <span className="sidebar-profile-name">{displayName}</span>}
+          {!collapsed && <LogOut size={14} />}
         </button>
-        <div className="app-credits">
-          Peak Endurance © 2026 · <a href="https://github.com/JORMS-FA" target="_blank" rel="noopener noreferrer">Jorman Fagua</a>
-        </div>
+        {!collapsed && (
+          <div className="app-credits">
+            Peak Endurance © 2026 · <a href="https://github.com/JORMS-FA" target="_blank" rel="noopener noreferrer">Jorman Fagua</a>
+          </div>
+        )}
       </div>
     </aside>
   )
