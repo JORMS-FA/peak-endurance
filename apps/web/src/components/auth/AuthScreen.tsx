@@ -252,7 +252,7 @@ export function AuthScreen() {
           >
             {/* Header */}
             <motion.div className="auth-card-header" variants={itemVariants}>
-              <div className="auth-card-logo-mobile">
+              <div className="auth-card-logo">
                 <Logo size={40} />
               </div>
               <h2>{t('authTitle')}</h2>

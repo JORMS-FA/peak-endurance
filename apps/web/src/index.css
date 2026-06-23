@@ -261,13 +261,22 @@ html[data-accent="cyan"] {
 /* ─── Per-section accent color tokens (RGB multi-color theme) ─── */
 /* Each section gets its own subtle accent. The base --accent (green) */
 /* remains for structural/nav elements. These cascade to children. */
-.section-accent-green  { --accent: #22c55e; --accent-hover: #4ade80; --accent-soft: rgba(34, 197, 94, 0.12); --accent-glow: rgba(34, 197, 94, 0.08); --accent-rgb: 34, 197, 94; }
-.section-accent-orange { --accent: #f97316; --accent-hover: #fb923c; --accent-soft: rgba(249, 115, 22, 0.12); --accent-glow: rgba(249, 115, 22, 0.08); --accent-rgb: 249, 115, 22; }
-.section-accent-yellow { --accent: #eab308; --accent-hover: #facc15; --accent-soft: rgba(234, 179, 8, 0.12); --accent-glow: rgba(234, 179, 8, 0.08); --accent-rgb: 234, 179, 8; }
-.section-accent-blue   { --accent: #3b82f6; --accent-hover: #60a5fa; --accent-soft: rgba(59, 130, 246, 0.12); --accent-glow: rgba(59, 130, 246, 0.08); --accent-rgb: 59, 130, 246; }
-.section-accent-purple { --accent: #8b5cf6; --accent-hover: #a78bfa; --accent-soft: rgba(139, 92, 246, 0.12); --accent-glow: rgba(139, 92, 246, 0.08); --accent-rgb: 139, 92, 246; }
-.section-accent-pink   { --accent: #ec4899; --accent-hover: #f472b6; --accent-soft: rgba(236, 72, 153, 0.12); --accent-glow: rgba(236, 72, 153, 0.08); --accent-rgb: 236, 72, 153; }
-.section-accent-cyan   { --accent: #06b6d4; --accent-hover: #22d3ee; --accent-soft: rgba(6, 182, 212, 0.12); --accent-glow: rgba(6, 182, 212, 0.08); --accent-rgb: 6, 182, 212; }
+.section-accent-green  { --accent: #22c55e; --accent-hover: #4ade80; --accent-soft: rgba(34, 197, 94, 0.12); --accent-glow: rgba(34, 197, 94, 0.08); --accent-rgb: 34, 197, 94; --s-accent: #22c55e; --s-accent-hover: #4ade80; }
+.section-accent-orange { --accent: #f97316; --accent-hover: #fb923c; --accent-soft: rgba(249, 115, 22, 0.12); --accent-glow: rgba(249, 115, 22, 0.08); --accent-rgb: 249, 115, 22; --s-accent: #f97316; --s-accent-hover: #fb923c; }
+.section-accent-yellow { --accent: #eab308; --accent-hover: #facc15; --accent-soft: rgba(234, 179, 8, 0.12); --accent-glow: rgba(234, 179, 8, 0.08); --accent-rgb: 234, 179, 8; --s-accent: #eab308; --s-accent-hover: #facc15; }
+.section-accent-blue   { --accent: #3b82f6; --accent-hover: #60a5fa; --accent-soft: rgba(59, 130, 246, 0.12); --accent-glow: rgba(59, 130, 246, 0.08); --accent-rgb: 59, 130, 246; --s-accent: #3b82f6; --s-accent-hover: #60a5fa; }
+.section-accent-purple { --accent: #8b5cf6; --accent-hover: #a78bfa; --accent-soft: rgba(139, 92, 246, 0.12); --accent-glow: rgba(139, 92, 246, 0.08); --accent-rgb: 139, 92, 246; --s-accent: #8b5cf6; --s-accent-hover: #a78bfa; }
+.section-accent-pink   { --accent: #ec4899; --accent-hover: #f472b6; --accent-soft: rgba(236, 72, 153, 0.12); --accent-glow: rgba(236, 72, 153, 0.08); --accent-rgb: 236, 72, 153; --s-accent: #ec4899; --s-accent-hover: #f472b6; }
+.section-accent-cyan   { --accent: #06b6d4; --accent-hover: #22d3ee; --accent-soft: rgba(6, 182, 212, 0.12); --accent-glow: rgba(6, 182, 212, 0.08); --accent-rgb: 6, 182, 212; --s-accent: #06b6d4; --s-accent-hover: #22d3ee; }
+
+/* RGB multi-color theme — the default for the hero. Keeps the structural
+   accent green but leaves --s-accent unset so .hero-gradient-text renders
+   the full rotating RGB spectrum (green → cyan → blue → purple → pink → orange). */
+.section-accent-rgb {
+  --accent: #22c55e; --accent-hover: #4ade80;
+  --accent-soft: rgba(34, 197, 94, 0.12); --accent-glow: rgba(34, 197, 94, 0.08);
+  --accent-rgb: 34, 197, 94;
+}
 
 /* ─── Design Tokens ─────────────────────────────────────────── */
 :root {
@@ -749,6 +758,20 @@ input, select, textarea { font: inherit; color: inherit; }
 
 .topbar-collapse-icon.rotated {
   transform: rotate(180deg);
+}
+
+/* ── Circular round buttons (search / notifications / avatar) ── */
+.topbar-btn-round {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50% !important;
+  display: grid;
+  place-items: center;
+}
+
+.topbar-btn-round .topbar-kbd {
+  display: none;
 }
 
 .topbar-avatar {
@@ -1608,10 +1631,11 @@ a:hover svg,
   color: var(--accent);
 }
 
-@media (min-width: 900px) {
-  .auth-card-logo-mobile {
-    display: none;
-  }
+.auth-card-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+  color: var(--accent);
 }
 
 .auth-card-header h2 {
@@ -3603,6 +3627,28 @@ a:hover svg,
   animation: heroGlow 5s ease-in-out infinite;
 }
 
+/* ── Hero cinematic background photo ───────────────────────── */
+.hero-cine {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  opacity: 0.12;
+}
+.hero-cine img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: heroPan 40s ease-in-out infinite alternate;
+}
+@keyframes heroPan {
+  from { transform: scale(1) translateX(0); }
+  to   { transform: scale(1.08) translateX(-3%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-cine img { animation: none; }
+}
+
 /* ── Hero Split Container ───────────────────────────────────── */
 .hero-split {
   display: flex;
@@ -3716,17 +3762,24 @@ a:hover svg,
 }
 
 .hero-gradient-text {
-  background: linear-gradient(135deg,
-    var(--s-accent, var(--accent)),
-    var(--s-accent-hover, var(--accent-hover)) 40%,
-    #eab308 65%,
-    #f97316 80%,
-    #fc4c02 100%
+  background: linear-gradient(var(--rgb-angle, 0deg),
+    var(--s-accent, #22c55e),
+    var(--s-accent-hover, #2dd4bf) 18%,
+    #38bdf8 36%,
+    #8b5cf6 54%,
+    #ec4899 72%,
+    #f97316 90%,
+    #fbbf24 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   display: inline-block;
+  animation: rgb-rotate calc(var(--rgb-speed, 5) * 1s) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-gradient-text { animation: none; }
 }
 
 .hero-content-v2 p {

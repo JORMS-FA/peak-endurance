@@ -123,6 +123,11 @@ export function Landing() {
       <section className="landing-hero hero-v2 section-accent-green">
         <div className="hero-grain" aria-hidden />
 
+        {/* Cinematic background photo — subtle atmospheric layer */}
+        <div className="hero-cine" aria-hidden>
+          <img src="https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=2400&q=80&auto=format" alt="" />
+        </div>
+
         <div className="hero-split">
           {/* ── Left: Text content ── */}
           <div className="hero-text-side">

@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Bell, Search, X, ChevronLeft, Settings, LogOut } from 'lucide-react'
+import { Bell, Search, X, Settings, LogOut } from 'lucide-react'
 import { useI18n } from '../../hooks/useI18n'
 import { useAuth } from '../../hooks/useAuth'
 import { signOut } from '../../lib/auth'
+import { Logo } from '../ui/Logo'
 
 export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?: () => void; sidebarCollapsed?: boolean }) {
   const { t, language } = useI18n()
@@ -79,21 +80,14 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
     <>
       <header className="topbar">
         <div className="topbar-left">
-          <button
-            type="button"
-            className="topbar-collapse-btn"
-            onClick={onToggleSidebar}
-            aria-label={sidebarCollapsed ? (language === 'es' ? 'Abrir menú' : 'Open menu') : (language === 'es' ? 'Cerrar menú' : 'Close menu')}
-          >
-            <ChevronLeft size={18} strokeWidth={1.5} className={`topbar-collapse-icon${sidebarCollapsed ? ' rotated' : ''}`} />
-          </button>
+          <Logo size={24} />
         </div>
 
         <div className="topbar-right">
           {/* Search button */}
           <button
             type="button"
-            className="topbar-action topbar-search-btn"
+            className="topbar-action topbar-search-btn topbar-btn-round"
             aria-label={t('search')}
             onClick={() => setSearchOpen(true)}
           >
@@ -104,7 +98,7 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
           {/* Notifications button */}
           <button
             type="button"
-            className="topbar-action topbar-notif-btn"
+            className="topbar-action topbar-notif-btn topbar-btn-round"
             aria-label={t('notifications')}
             onClick={() => setNotifOpen((o) => !o)}
           >
@@ -116,7 +110,7 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
           <div className="avatar-menu-wrap" ref={avatarRef}>
             <button
               type="button"
-              className="avatar-menu-btn"
+              className="avatar-menu-btn topbar-btn-round"
               onClick={() => setAvatarOpen((o) => !o)}
               aria-label={t('settings')}
             >
