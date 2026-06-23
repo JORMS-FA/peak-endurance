@@ -11,6 +11,9 @@ import { useApiKey } from '../hooks/useApiKey'
 import { useAiCoach, useAiChat } from '../hooks/useAiCoach'
 import type { AiAction } from '../hooks/useAiCoach'
 import { SportIcon } from '../components/ui/SportIcon'
+import { useAuth } from '../hooks/useAuth'
+import { CoachBot } from '../components/ui/CoachBot'
+import { Paywall } from '../components/ui/Paywall'
 
 type ActionKey = 'analyzeWeek' | 'adjustPlan' | 'detectFatigue'
 
@@ -22,6 +25,7 @@ const ACTION_MAP: Record<ActionKey, AiAction> = {
 
 export function AiCoach() {
   const { t, language } = useI18n()
+  const { profile } = useAuth()
   const { status: strava } = useStravaConnection()
   const { metrics, hasData } = useDashboardMetrics()
   const { usage, isPro } = useSubscription()
@@ -88,22 +92,33 @@ export function AiCoach() {
         <span className="badge">Beta</span>
       </div>
 
-      {/* Hero */}
+      {/* Hero — animated bot + modern greeting */}
       <motion.section
-        className="ai-hero"
+        className="ai-hero ai-hero-bot"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        transition={{ duration: 0.45 }}
       >
-        <div className="ai-hero-icon">
-          <Bot size={28} />
+        <CoachBot size={96} thinking={chatLoading} />
+        <div className="ai-hero-text">
+          <span className="ai-hero-eyebrow"><Sparkles size={12} /> PEAK IA COACH</span>
+          <h3>
+            {language === 'es' ? 'Hola' : 'Hi'}
+            {profile?.display_name ? `, ${profile.display_name.split(' ')[0]}` : ''} 👋
+          </h3>
+          <p>
+            {language === 'es'
+              ? 'Soy tu coach. Pregúntame, analizo tu carga y te creo entrenamientos al instante.'
+              : "I'm your coach. Ask me, I analyze your load and build workouts instantly."}
+          </p>
         </div>
-        <h3>{t('aiHeroH')}</h3>
-        <p>{t('aiHeroP')}</p>
       </motion.section>
 
-      {/* Blocked banner */}
-      {blockedReason && (
+      {/* Paywall when locked by subscription / missing key */}
+      {blockedReason === 'aiBlockedNoKey' && <Paywall />}
+
+      {/* Blocked banner (Strava / activities) */}
+      {blockedReason && blockedReason !== 'aiBlockedNoKey' && (
         <motion.div
           className="card ai-blocked"
           initial={{ opacity: 0, y: 8 }}
