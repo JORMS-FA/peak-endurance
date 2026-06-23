@@ -32,7 +32,7 @@ export function MobileNav() {
         )
       })}
       <NavLink
-        to="/app/ajustes"
+        to="/app/perfil"
         className={({ isActive }) => `mobile-nav-item mobile-nav-profile${isActive ? ' active' : ''}`}
       >
         {profile?.avatar_url ? (

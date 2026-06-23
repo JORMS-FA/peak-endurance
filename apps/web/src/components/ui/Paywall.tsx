@@ -56,7 +56,7 @@ export function Paywall() {
           <Sparkles size={15} />
           {loading ? '...' : isEs ? 'Empezar con Pro' : 'Start with Pro'}
         </button>
-        <Link to="/app/ajustes" className="paywall2-byok">
+        <Link to="/app/perfil" className="paywall2-byok">
           <KeyRound size={13} /> {isEs ? 'o usa tu API key gratis' : 'or use your API key free'}
         </Link>
       </div>

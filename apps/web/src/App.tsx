@@ -10,7 +10,7 @@ import { Plan } from './pages/Plan'
 import { AiCoach } from './pages/AiCoach'
 import { Analysis } from './pages/Analysis'
 import { Connections } from './pages/Connections'
-import { Settings } from './pages/Settings'
+import { Profile } from './pages/Profile'
 import { Privacy } from './pages/Privacy'
 import { Terms } from './pages/Terms'
 
@@ -38,7 +38,9 @@ export default function App() {
         <Route path="conexiones" element={<Connections />} />
         {/* Segments hidden until implemented */}
         <Route path="segmentos" element={<Navigate to="/app/plan" replace />} />
-        <Route path="ajustes" element={<Settings />} />
+        <Route path="perfil" element={<Profile />} />
+        {/* Settings merged into Profile */}
+        <Route path="ajustes" element={<Navigate to="/app/perfil" replace />} />
       </Route>
 
       {/* Catch-all redirect */}

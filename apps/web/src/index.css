@@ -6042,6 +6042,129 @@ a:hover svg,
 .ai-hero-bot p { color: var(--text-2, #b8bcc8); font-size: 0.9rem; margin: 0; max-width: 52ch; }
 @media (max-width: 560px) { .ai-hero-bot { flex-direction: column; text-align: center; } }
 
+/* ── Coach Orb (Siri-like crystal mascot) ────────────────────────────────── */
+.coach-orb {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  isolation: isolate;
+}
+.coach-orb-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.coach-orb-aura {
+  position: absolute;
+  top: 50%; left: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.coach-orb-aura-inner { z-index: 1; }
+
+.coach-orb-core {
+  position: relative;
+  z-index: 2;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(40,44,56,0.55) 0%, rgba(8,8,12,0.96) 42%, #000 78%);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.coach-orb-core-swirl {
+  position: absolute;
+  inset: -20%;
+  border-radius: 50%;
+  opacity: 0.22;
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+.coach-orb-spec {
+  position: absolute;
+  top: 12%; left: 16%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.18) 45%, rgba(255,255,255,0) 70%);
+  filter: blur(2px);
+  pointer-events: none;
+}
+.coach-orb-pupil {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(180,200,255,0.9) 0%, rgba(120,160,255,0.25) 50%, rgba(120,160,255,0) 75%);
+  pointer-events: none;
+}
+.coach-orb-burst {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  pointer-events: none;
+}
+.coach-orb-spark {
+  position: absolute;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  filter: blur(1px);
+}
+
+/* Orb hero (profile / coach header) */
+.orb-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  background:
+    radial-gradient(110% 130% at 0% 0%, rgba(99,102,241,0.08), transparent 55%),
+    radial-gradient(120% 140% at 100% 100%, rgba(236,72,153,0.07), transparent 55%),
+    var(--surface-raised, #111);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 22px;
+  padding: 26px 26px;
+  overflow: hidden;
+}
+.orb-hero-rgb-wash {
+  position: absolute;
+  top: -50%; left: -10%;
+  width: 60%; height: 220%;
+  background: conic-gradient(from 0deg, #ef4444, #f59e0b, #22c55e, #06b6d4, #3b82f6, #8b5cf6, #ec4899, #ef4444);
+  filter: blur(90px);
+  opacity: 0.12;
+  pointer-events: none;
+  animation: orb-hero-spin 24s linear infinite;
+}
+@keyframes orb-hero-spin { to { transform: rotate(360deg); } }
+.orb-hero-body { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.orb-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-2, #b8bcc8);
+}
+.orb-hero-name { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; margin: 0; color: #fff; }
+.orb-hero-tagline { color: var(--text-2, #b8bcc8); font-size: 0.9rem; margin: 0; max-width: 52ch; }
+.orb-hero-stats { display: flex; gap: 18px; margin-top: 6px; }
+.orb-hero-stat { display: flex; flex-direction: column; gap: 2px; }
+.orb-hero-stat small { font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted, #7a8194); }
+.orb-hero-stat strong { font-size: 1.1rem; font-weight: 700; color: #fff; }
+@media (max-width: 560px) {
+  .orb-hero { flex-direction: column; text-align: center; padding: 22px 18px; }
+  .orb-hero-stats { justify-content: center; }
+}
+
 /* ── Phase 3: Paywall ────────────────────────────────────────────────────── */
 .paywall {
   position: relative; overflow: hidden;
@@ -6436,6 +6559,28 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .level-bar { height: 8px; border-radius: 6px; background: rgba(255,255,255,0.08); overflow: hidden; }
 .level-bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, #22c55e, #06b6d4); }
 
+/* Orb-based level card (compact, links to profile) */
+.level-card-orb .level-orb-row { display: flex; align-items: center; gap: 18px; margin: 4px 0 18px; }
+.level-orb-link { display: inline-flex; flex-shrink: 0; border-radius: 50%; transition: transform 0.2s ease; }
+.level-orb-link:hover { transform: scale(1.04); }
+.level-orb-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.level-rank-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.level-pill {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 2px 10px; border-radius: 999px;
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.04em;
+  background: #fff; color: #000;
+}
+.level-cta {
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-top: 16px; padding: 10px 16px; border-radius: 10px;
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  background: transparent; color: var(--text, #fff);
+  font-size: 0.84rem; font-weight: 600; text-decoration: none;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.level-cta:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.04); }
+
 .achievements-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .achievement {
   position: relative; overflow: hidden;
@@ -6444,12 +6589,31 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   background: var(--bg-2); border: 1px solid var(--border);
   opacity: 0.55; filter: grayscale(0.6);
 }
-.achievement.unlocked { opacity: 1; filter: none; border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.06); }
+.achievement.unlocked { opacity: 1; filter: none; border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.04); }
 .achievement-emoji { font-size: 1.5rem; line-height: 1; color: var(--text-muted); display: inline-flex; }
 .achievement-title { font-size: 0.72rem; font-weight: 600; line-height: 1.2; }
 .achievement-progress { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.06); }
 .achievement-progress span { display: block; height: 100%; background: var(--accent); }
 @media (max-width: 560px) { .achievements-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* Profile page */
+.page-profile { max-width: 760px; }
+
+/* ── Reduced motion: tame the orb ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .coach-orb-wrap,
+  .coach-orb-aura,
+  .coach-orb-aura-inner,
+  .coach-orb-core-swirl,
+  .coach-orb-pupil,
+  .coach-orb-spark,
+  .orb-hero-rgb-wash {
+    animation: none !important;
+    transition: none !important;
+  }
+  .coach-orb-wrap { transform: none !important; }
+  .coach-orb-aura { transform: translate(-50%, -50%) !important; }
+}
 
 /* ── Accent: RGB extreme (animated, default) ─────────────────────────────── */
 @property --accent-h {

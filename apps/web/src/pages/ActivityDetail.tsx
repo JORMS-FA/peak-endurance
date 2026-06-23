@@ -161,6 +161,7 @@ export default function ActivityDetail() {
       setError('No se pudo cargar la actividad')
       return
     }
+    const db = supabase
 
     let cancelled = false
 
@@ -169,7 +170,7 @@ export default function ActivityDetail() {
       setError(null)
 
       try {
-        const { data: row, error: qErr } = await supabase
+        const { data: row, error: qErr } = await db
           .from('imported_activities')
           .select('*')
           .eq('id', id)

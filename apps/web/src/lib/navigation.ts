@@ -7,7 +7,7 @@ export const sidebarNav: NavItem[] = [
   { id: 'plan', path: '/app/plan', icon: 'CalendarDays', label_es: 'Plan', label_en: 'Plan' },
   { id: 'analysis', path: '/app/analisis', icon: 'LineChart', label_es: 'Análisis', label_en: 'Analysis' },
   { id: 'connections', path: '/app/conexiones', icon: 'Plug', label_es: 'Conexiones', label_en: 'Connections' },
-  { id: 'segments', path: '/app/segmentos', icon: 'Mountain', label_es: 'Segmentos', label_en: 'Segments' },
+  { id: 'profile', path: '/app/perfil', icon: 'User', label_es: 'Perfil', label_en: 'Profile' },
 ]
 
 export const mobileNav: NavItem[] = [

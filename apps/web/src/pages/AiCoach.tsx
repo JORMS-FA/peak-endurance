@@ -12,7 +12,8 @@ import { useAiCoach, useAiChat } from '../hooks/useAiCoach'
 import type { AiAction } from '../hooks/useAiCoach'
 import { SportIcon } from '../components/ui/SportIcon'
 import { useAuth } from '../hooks/useAuth'
-import { CoachBot } from '../components/ui/CoachBot'
+import { CoachOrb } from '../components/ui/CoachOrb'
+import type { OrbMood } from '../components/ui/CoachOrb'
 import { Paywall } from '../components/ui/Paywall'
 
 type ActionKey = 'analyzeWeek' | 'adjustPlan' | 'detectFatigue'
@@ -45,6 +46,8 @@ export function AiCoach() {
       : !canUseAi
         ? 'aiBlockedNoKey'
         : null
+
+  const orbMood: OrbMood = aiError ? 'tired' : aiResult ? 'happy' : (aiLoading || chatLoading) ? 'thinking' : 'idle'
 
   function buildContext() {
     return {
@@ -92,15 +95,16 @@ export function AiCoach() {
         <span className="badge">Beta</span>
       </div>
 
-      {/* Hero — animated bot + modern greeting */}
+      {/* Hero — animated orb + modern greeting */}
       <motion.section
-        className="ai-hero ai-hero-bot"
+        className="ai-hero ai-hero-bot orb-hero"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
       >
-        <CoachBot size={96} thinking={chatLoading} />
-        <div className="ai-hero-text">
+        <div className="orb-hero-rgb-wash" aria-hidden />
+        <CoachOrb size={104} mood={orbMood} thinking={chatLoading} />
+        <div className="ai-hero-text orb-hero-body">
           <span className="ai-hero-eyebrow"><Sparkles size={12} /> PEAK IA COACH</span>
           <h3>
             {language === 'es' ? 'Hola' : 'Hi'}
@@ -128,21 +132,12 @@ export function AiCoach() {
           <div className="ai-blocked-body">
             <strong>{t('aiBlockedTitle')}</strong>
             <small>
-              {blockedReason === 'aiBlockedNoKey'
-                ? (language === 'es'
-                  ? 'Configura tu API key de Google AI Studio en Ajustes para usar el coach.'
-                  : 'Set up your Google AI Studio API key in Settings to use the coach.')
-                : t(blockedReason as 'aiBlockedNoStrava')}
+              {t(blockedReason as 'aiBlockedNoStrava')}
             </small>
           </div>
           {blockedReason === 'aiBlockedNoStrava' && (
             <Link to="/app/conexiones" className="btn-primary btn-sm">
               {t('connectStrava')}
-            </Link>
-          )}
-          {blockedReason === 'aiBlockedNoKey' && (
-            <Link to="/app/ajustes" className="btn-primary btn-sm">
-              {language === 'es' ? 'Configurar' : 'Configure'}
             </Link>
           )}
         </motion.div>

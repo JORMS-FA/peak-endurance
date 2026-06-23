@@ -11,6 +11,7 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
   const { profile, refresh } = useAuth()
   const fullName = profile?.display_name ?? 'Atleta'
   const firstName = fullName.split(' ')[0] ?? fullName
+  const isEs = language === 'es'
 
   // Search modal state
   const [searchOpen, setSearchOpen] = useState(false)
@@ -138,12 +139,12 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
                   {profile?.email && <small>{profile.email}</small>}
                 </div>
                 <Link
-                  to="/app/ajustes"
+                  to="/app/perfil"
                   className="avatar-menu-item"
                   onClick={() => setAvatarOpen(false)}
                 >
                   <Settings size={16} strokeWidth={1.5} />
-                  <span>{t('settings')}</span>
+                  <span>{isEs ? 'Perfil' : 'Profile'}</span>
                 </Link>
                 <button
                   type="button"

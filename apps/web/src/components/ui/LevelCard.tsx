@@ -1,29 +1,41 @@
 import { motion } from 'framer-motion'
-import { Trophy, Lock } from 'lucide-react'
+import { Lock, Sparkles } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useGamification } from '../../hooks/useGamification'
+import { CoachOrb } from './CoachOrb'
+import type { OrbMood } from './CoachOrb'
+import { useI18n } from '../../hooks/useI18n'
 
 export function LevelCard() {
+  const { language } = useI18n()
+  const isEs = language === 'es'
   const { level, levelTitle, xp, xpInLevel, xpForNextLevel, levelProgress, achievements, unlockedCount } = useGamification()
+
+  const justUnlocked = unlockedCount > 0 && unlockedCount === achievements.filter(a => a.unlocked).length
+  const orbMood: OrbMood = justUnlocked && unlockedCount === achievements.length ? 'celebrate' : 'idle'
 
   return (
     <motion.section
-      className="card level-card"
+      className="card level-card level-card-orb"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
     >
       <div className="card-header">
-        <Trophy size={16} />
-        <span>Nivel y logros</span>
+        <Sparkles size={16} />
+        <span>{isEs ? 'Tu progreso' : 'Your progress'}</span>
         <span className="level-count">{unlockedCount}/{achievements.length}</span>
       </div>
 
-      <div className="level-top">
-        <div className="level-badge">
-          <span className="level-num">{level}</span>
-        </div>
+      <div className="level-orb-row">
+        <Link to="/app/perfil" className="level-orb-link" aria-label={isEs ? 'Ver perfil' : 'View profile'}>
+          <CoachOrb size={84} mood={orbMood} />
+        </Link>
         <div className="level-info">
-          <strong>{levelTitle}</strong>
+          <div className="level-rank-row">
+            <span className="level-pill">LV {level}</span>
+            <strong>{levelTitle}</strong>
+          </div>
           <div className="level-bar">
             <motion.div
               className="level-bar-fill"
@@ -32,7 +44,7 @@ export function LevelCard() {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             />
           </div>
-          <small className="text-muted">{xpInLevel} / {xpForNextLevel} XP · {xp} XP totales</small>
+          <small className="text-muted">{xpInLevel} / {xpForNextLevel} XP · {xp} XP</small>
         </div>
       </div>
 
@@ -56,6 +68,10 @@ export function LevelCard() {
           </motion.div>
         ))}
       </div>
+
+      <Link to="/app/perfil" className="level-cta">
+        {isEs ? 'Ver perfil completo' : 'View full profile'}
+      </Link>
     </motion.section>
   )
 }

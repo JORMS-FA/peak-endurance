@@ -1,7 +1,7 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, Link } from 'react-router-dom'
 import {
   Home, CalendarDays, Dumbbell, Sparkles,
-  LineChart, TrendingUp, Plug, Mountain,
+  LineChart, TrendingUp, Plug, Mountain, User,
   ChevronLeft,
 } from 'lucide-react'
 import { sidebarNav } from '../../lib/navigation'
@@ -12,7 +12,7 @@ import { Logo } from '../ui/Logo'
 
 const iconMap: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
   Home, CalendarDays, Dumbbell, Sparkles,
-  LineChart, TrendingUp, Plug, Mountain,
+  LineChart, TrendingUp, Plug, Mountain, User,
 }
 
 export function Sidebar({ collapsed = false, onToggle }: { collapsed?: boolean; onToggle?: () => void }) {
@@ -22,12 +22,11 @@ export function Sidebar({ collapsed = false, onToggle }: { collapsed?: boolean; 
 
   return (
     <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
-      {/* Avatar flush to top — click toggles sidebar panel */}
+      {/* Avatar flush to top — click opens profile */}
       <div className="sidebar-avatar-flush">
-        <button
-          type="button"
+        <Link
+          to="/app/perfil"
           className="sidebar-avatar-flush-btn"
-          onClick={onToggle}
           title={displayName}
         >
           {profile?.avatar_url ? (
@@ -42,7 +41,7 @@ export function Sidebar({ collapsed = false, onToggle }: { collapsed?: boolean; 
               <span className="sidebar-avatar-flush-name">{displayName}</span>
             </div>
           )}
-        </button>
+        </Link>
       </div>
 
       {/* Logo + Brand */}
