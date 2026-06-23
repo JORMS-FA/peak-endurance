@@ -63,7 +63,7 @@ export function Settings() {
   const { subscription, usage, isPro, loading: subLoading, refetch: refetchSub } = useSubscription()
   const { keyData, hasKey, saving, validating, error: keyError, saveKey, deleteKey } = useApiKey()
   const { checkout, openPortal, loading: stripeLoading, error: stripeError } = useStripe()
-  const { status: strava } = useStravaConnection()
+  const { status: strava, loading: stravaLoading } = useStravaConnection()
 
   const isEs = language === 'es'
   const stravaConnected = Boolean(strava?.connected)
@@ -427,8 +427,8 @@ export function Settings() {
           </div>
           <div className="status-row">
             <span>Strava</span>
-            <span className={`status-badge ${stravaConnected ? 'success' : 'warning'}`}>
-              {stravaConnected ? t('connected') : t('disconnected')}
+            <span className={`status-badge ${stravaLoading ? 'warning' : stravaConnected ? 'success' : 'warning'}`}>
+              {stravaLoading ? t('loading') : stravaConnected ? t('connected') : t('disconnected')}
             </span>
           </div>
           <div className="status-row">

@@ -26,7 +26,7 @@ const ACTION_MAP: Record<ActionKey, AiAction> = {
 export function AiCoach() {
   const { t, language } = useI18n()
   const { profile } = useAuth()
-  const { status: strava } = useStravaConnection()
+  const { status: strava, loading: stravaLoading } = useStravaConnection()
   const { metrics, hasData } = useDashboardMetrics()
   const { usage, isPro } = useSubscription()
   const { hasKey } = useApiKey()
@@ -38,7 +38,7 @@ export function AiCoach() {
 
   const stravaConnected = Boolean(strava?.connected)
   const canUseAi = hasKey || isPro
-  const blockedReason = !stravaConnected
+  const blockedReason = !stravaLoading && !stravaConnected
     ? 'aiBlockedNoStrava'
     : !hasData
       ? 'aiBlockedNoActivities'

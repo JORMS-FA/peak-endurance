@@ -42,7 +42,7 @@ export function Training() {
   const [future, setFuture] = useState<PlannedSession[]>([])
 
   const { data, loading, refetch } = useActivities({ days: range.days, sport: filter })
-  const { status: strava } = useStravaConnection()
+  const { status: strava, loading: stravaLoading } = useStravaConnection()
   const { sync, loading: syncing } = useStravaSync()
   const stravaConnected = Boolean(strava?.connected)
 
@@ -148,7 +148,7 @@ export function Training() {
             <div className="empty-icon"><Dumbbell size={24} /></div>
             <p>{t('noActivities')}</p>
             <small>{stravaConnected ? t('syncToImport') : t('connectStravaToStart')}</small>
-            {!stravaConnected && (
+            {!stravaLoading && !stravaConnected && (
               <Link to="/app/conexiones" className="btn-primary btn-sm" style={{ marginTop: 12 }}>
                 <Zap size={14} /><span>{t('connectStrava')}</span>
               </Link>

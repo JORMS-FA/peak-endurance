@@ -115,7 +115,7 @@ export function Dashboard() {
   const { profile } = useAuth()
   const { metrics, hasData, loading } = useDashboardMetrics()
   const { data: today, loading: todayLoading } = useTodaySession()
-  const { status: stravaStatus } = useStravaConnection()
+  const { status: stravaStatus, loading: stravaLoading } = useStravaConnection()
 
   const stravaConnected = Boolean(stravaStatus?.connected)
   const showEmpty = !loading && !hasData
@@ -275,7 +275,7 @@ export function Dashboard() {
       </motion.section>
 
       {/* ── Connect-Strava nudge ──────────────────────────────────────── */}
-      {!stravaConnected && (
+      {!stravaLoading && !stravaConnected && (
         <motion.div
           className="card connect-banner"
           initial={{ opacity: 0, y: 8 }}

@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell, Search, X, ChevronLeft } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Bell, Search, X, ChevronLeft, Settings, LogOut } from 'lucide-react'
 import { useI18n } from '../../hooks/useI18n'
 import { useAuth } from '../../hooks/useAuth'
+import { signOut } from '../../lib/auth'
 
 export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?: () => void; sidebarCollapsed?: boolean }) {
   const { t, language } = useI18n()
-  const { profile } = useAuth()
+  const { profile, refresh } = useAuth()
   const fullName = profile?.display_name ?? 'Atleta'
   const firstName = fullName.split(' ')[0] ?? fullName
 
@@ -17,6 +19,10 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
   // Notifications panel state
   const [notifOpen, setNotifOpen] = useState(false)
   const notifRef = useRef<HTMLDivElement>(null)
+
+  // Avatar dropdown menu state
+  const [avatarOpen, setAvatarOpen] = useState(false)
+  const avatarRef = useRef<HTMLDivElement>(null)
 
   // Open search on Ctrl+K
   useEffect(() => {
@@ -50,6 +56,25 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
     return () => document.removeEventListener('mousedown', handleClick)
   }, [notifOpen])
 
+  // Close avatar menu on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
+        setAvatarOpen(false)
+      }
+    }
+    if (avatarOpen) {
+      document.addEventListener('mousedown', handleClick)
+    }
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [avatarOpen])
+
+  async function handleSignOut() {
+    setAvatarOpen(false)
+    await signOut()
+    await refresh()
+  }
+
   return (
     <>
       <header className="topbar">
@@ -62,13 +87,6 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
           >
             <ChevronLeft size={18} strokeWidth={1.5} className={`topbar-collapse-icon${sidebarCollapsed ? ' rotated' : ''}`} />
           </button>
-
-          {/* Avatar on left */}
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="topbar-avatar topbar-avatar-img" />
-          ) : (
-            <div className="topbar-avatar">{firstName.charAt(0).toUpperCase()}</div>
-          )}
         </div>
 
         <div className="topbar-right">
@@ -93,6 +111,47 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
             <Bell size={24} strokeWidth={1.5} />
             <span className="topbar-dot" />
           </button>
+
+          {/* Avatar with dropdown menu */}
+          <div className="avatar-menu-wrap" ref={avatarRef}>
+            <button
+              type="button"
+              className="avatar-menu-btn"
+              onClick={() => setAvatarOpen((o) => !o)}
+              aria-label={t('settings')}
+            >
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="" className="topbar-avatar topbar-avatar-img" />
+              ) : (
+                <div className="topbar-avatar">{firstName.charAt(0).toUpperCase()}</div>
+              )}
+            </button>
+
+            {avatarOpen && (
+              <div className="avatar-menu">
+                <div className="avatar-menu-header">
+                  <strong>{fullName}</strong>
+                  {profile?.email && <small>{profile.email}</small>}
+                </div>
+                <Link
+                  to="/app/ajustes"
+                  className="avatar-menu-item"
+                  onClick={() => setAvatarOpen(false)}
+                >
+                  <Settings size={16} strokeWidth={1.5} />
+                  <span>{t('settings')}</span>
+                </Link>
+                <button
+                  type="button"
+                  className="avatar-menu-item"
+                  onClick={handleSignOut}
+                >
+                  <LogOut size={16} strokeWidth={1.5} />
+                  <span>{t('signOut')}</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
