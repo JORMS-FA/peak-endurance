@@ -199,10 +199,37 @@ export function Training() {
                         <Stat icon={<Clock size={14} />} label={isEs ? 'Duración' : 'Duration'} value={a.duration_minutes ? `${a.duration_minutes} min` : '—'} />
                         <Stat icon={<Route size={14} />} label={isEs ? 'Distancia' : 'Distance'} value={a.distance_km ? `${a.distance_km.toFixed(2)} km` : '—'} />
                         <Stat icon={<HeartPulse size={14} />} label={isEs ? 'FC media' : 'Avg HR'} value={a.avg_hr ? `${a.avg_hr} bpm` : '—'} />
+                        <Stat icon={<HeartPulse size={14} />} label={isEs ? 'FC máx' : 'Max HR'} value={a.maxHr ? `${a.maxHr} bpm` : '—'} />
                         <Stat icon={<Mountain size={14} />} label={isEs ? 'Desnivel' : 'Elevation'} value={a.elevation_gain_m ? `${a.elevation_gain_m} m` : '—'} />
                         <Stat icon={<Flame size={14} />} label="TSS" value={a.tss != null ? String(a.tss) : '—'} />
-                        <Stat icon={<Gauge size={14} />} label={isEs ? 'Ritmo medio' : 'Avg pace'} value={paceOf(a.distance_km, a.duration_minutes, a.sport)} />
+                        <Stat icon={<Gauge size={14} />} label={isEs ? 'Ritmo/Vel.' : 'Pace/Speed'} value={paceOf(a.distance_km, a.duration_minutes, a.sport)} />
+                        {a.source_type && <Stat icon={<Zap size={14} />} label={isEs ? 'Fuente' : 'Source'} value={a.source_type === 'strava' ? 'Strava' : a.source_type} />}
                       </div>
+
+                      {/* Strava embed map */}
+                      {a.stravaId && a.source_type === 'strava' && (
+                        <div className="activity-map">
+                          <iframe
+                            src={`https://www.strava.com/activities/${a.stravaId}/embed/${a.stravaId}`}
+                            width="100%"
+                            height="200"
+                            style={{ border: 'none', borderRadius: 12, marginTop: 12 }}
+                            loading="lazy"
+                            title="Mapa Strava"
+                            allowFullScreen
+                          />
+                        </div>
+                      )}
+
+                      {a.stravaId && (
+                        <a
+                          href={`https://www.strava.com/activities/${a.stravaId}`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="activity-strava-link"
+                        >
+                          {isEs ? 'Ver en Strava ↗' : 'View on Strava ↗'}
+                        </a>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>

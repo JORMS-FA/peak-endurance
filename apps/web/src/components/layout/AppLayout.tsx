@@ -20,7 +20,7 @@ export function AppLayout() {
   return (
     <div className={`app-shell${collapsed ? ' sidebar-collapsed' : ''}`}>
       <div className="app-rgb-bg" aria-hidden />
-      <Sidebar collapsed={collapsed} />
+      <Sidebar collapsed={collapsed} onToggle={toggle} />
       <div className="app-main">
         <TopBar onToggleSidebar={toggle} sidebarCollapsed={collapsed} />
         <main className="app-content">

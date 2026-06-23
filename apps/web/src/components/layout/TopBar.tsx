@@ -1,4 +1,4 @@
-import { Bell, Search, PanelLeft } from 'lucide-react'
+import { Bell, Search } from 'lucide-react'
 import { useI18n } from '../../hooks/useI18n'
 import { useAuth } from '../../hooks/useAuth'
 
@@ -11,15 +11,6 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <button
-          type="button"
-          className="topbar-collapse"
-          onClick={onToggleSidebar}
-          aria-label={sidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú'}
-          title={sidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú'}
-        >
-          <PanelLeft size={16} />
-        </button>
         <div>
           <h1 className="topbar-greeting">
             <span className="topbar-greeting-full">{t('greeting')}, {fullName}</span>

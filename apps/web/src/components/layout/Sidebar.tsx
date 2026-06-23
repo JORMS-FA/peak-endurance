@@ -1,4 +1,4 @@
-import { NavLink, Link } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import {
   Home, CalendarDays, Dumbbell, Flag, Sparkles,
   LineChart, TrendingUp, Plug, Mountain, Settings, LogOut,
@@ -15,7 +15,7 @@ const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
   LineChart, TrendingUp, Plug, Mountain, Settings,
 }
 
-export function Sidebar({ collapsed = false }: { collapsed?: boolean }) {
+export function Sidebar({ collapsed = false, onToggle }: { collapsed?: boolean; onToggle?: () => void }) {
   const { language } = useI18n()
   const { profile, refresh } = useAuth()
   const displayName = profile?.display_name ?? 'Atleta'
@@ -27,10 +27,20 @@ export function Sidebar({ collapsed = false }: { collapsed?: boolean }) {
 
   return (
     <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
-      <Link to="/app" className="sidebar-brand">
+      <div className="sidebar-brand-wrap">
+        <button
+          type="button"
+          className="sidebar-toggle-overlay"
+          onClick={onToggle}
+          aria-label={collapsed ? 'Abrir menú' : 'Cerrar menú'}
+        />
         <Logo size={34} />
-        {!collapsed && <span className="brand-name">{APP_NAME}</span>}
-      </Link>
+        {!collapsed && (
+          <NavLink to="/app" end className="brand-name-link">
+            {APP_NAME}
+          </NavLink>
+        )}
+      </div>
 
       <nav className="sidebar-nav">
         {sidebarNav.map((item) => {

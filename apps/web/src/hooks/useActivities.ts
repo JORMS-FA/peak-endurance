@@ -14,6 +14,11 @@ export type Activity = {
   tss: number | null
   avg_hr: number | null
   elevation_gain_m: number | null
+  source_type: string | null
+  stravaId: string | null
+  mapPolyline: string | null
+  maxHr: number | null
+  avgSpeed: number | null
 }
 
 export function useActivities(opts: { days?: number; sport?: SportFilter } = {}) {
@@ -39,7 +44,7 @@ export function useActivities(opts: { days?: number; sport?: SportFilter } = {})
       let query = supabase
         .from('imported_activities')
         .select(
-          'id, activity_date, title, sport, duration_minutes, distance_km, tss, avg_hr, elevation_gain_m',
+          'id, activity_date, title, sport, duration_minutes, distance_km, tss, avg_hr, elevation_gain_m, source_type, raw_payload',
         )
         .eq('profile_id', session.user.id)
         .gte('activity_date', sinceIso)
@@ -53,19 +58,27 @@ export function useActivities(opts: { days?: number; sport?: SportFilter } = {})
       const { data: rows, error: qErr } = await query
       if (qErr) throw qErr
 
-      const mapped: Activity[] = (rows ?? []).map((r) => ({
-        id: r.id as string,
-        date: r.activity_date as string,
-        title: (r.title as string) ?? 'Activity',
-        sport: (r.sport as string) ?? 'other',
-        duration_minutes: r.duration_minutes as number | null,
-        distance_km: r.distance_km !== null && r.distance_km !== undefined
-          ? Number(r.distance_km)
-          : null,
-        tss: r.tss as number | null,
-        avg_hr: r.avg_hr as number | null,
-        elevation_gain_m: r.elevation_gain_m as number | null,
-      }))
+      const mapped: Activity[] = (rows ?? []).map((r) => {
+        const raw = (r.raw_payload ?? {}) as Record<string, unknown>
+        return {
+          id: r.id as string,
+          date: r.activity_date as string,
+          title: (r.title as string) ?? 'Activity',
+          sport: (r.sport as string) ?? 'other',
+          duration_minutes: r.duration_minutes as number | null,
+          distance_km: r.distance_km !== null && r.distance_km !== undefined
+            ? Number(r.distance_km)
+            : null,
+          tss: r.tss as number | null,
+          avg_hr: r.avg_hr as number | null,
+          elevation_gain_m: r.elevation_gain_m as number | null,
+          source_type: (r.source_type as string) ?? null,
+          stravaId: raw.id ? String(raw.id) : null,
+          mapPolyline: (raw.map as { summary_polyline?: string } | undefined)?.summary_polyline ?? null,
+          maxHr: typeof raw.max_heartrate === 'number' ? raw.max_heartrate : null,
+          avgSpeed: typeof raw.average_speed === 'number' ? raw.average_speed : null,
+        }
+      })
 
       setData(mapped)
     } catch (err) {
