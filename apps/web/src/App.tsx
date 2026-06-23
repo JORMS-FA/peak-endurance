@@ -5,6 +5,7 @@ import { AuthScreen } from './components/auth/AuthScreen'
 import { Landing } from './pages/Landing'
 import { Dashboard } from './pages/Dashboard'
 import { Training } from './pages/Training'
+import ActivityDetail from './pages/ActivityDetail'
 import { Plan } from './pages/Plan'
 import { AiCoach } from './pages/AiCoach'
 import { Analysis } from './pages/Analysis'
@@ -27,6 +28,7 @@ export default function App() {
         <Route index element={<Dashboard />} />
         <Route path="ia-coach" element={<AiCoach />} />
         <Route path="entrenamientos" element={<Training />} />
+        <Route path="entrenamientos/:id" element={<ActivityDetail />} />
         <Route path="plan" element={<Plan />} />
         {/* Calendar is now a view inside Plan */}
         <Route path="calendario" element={<Plan initialTab="calendar" />} />

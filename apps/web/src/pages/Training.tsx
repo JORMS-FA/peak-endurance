@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Activity, Dumbbell, Loader2, Mountain, RefreshCw, Zap,
@@ -34,6 +34,7 @@ function fmtDate(d: string, isEs: boolean) {
 export function Training() {
   const { t, language } = useI18n()
   const isEs = language === 'es'
+  const navigate = useNavigate()
   const { session } = useAuth()
   const [filter, setFilter] = useState<SportFilter>('all')
   const [range, setRange] = useState<DateRange>({ preset: 'month', days: 30 })
@@ -208,6 +209,17 @@ export function Training() {
 
                       {/* Route map rendered from polyline (SVG, no external API) */}
                       {a.mapPolyline && <PolylineMap encoded={a.mapPolyline} />}
+
+                      <div className="activity-detail-actions">
+                        <button
+                          type="button"
+                          className="btn-primary btn-sm"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/app/entrenamientos/${a.id}`) }}
+                        >
+                          <Activity size={14} />
+                          <span>{isEs ? 'Ver detalle completo' : 'View full details'}</span>
+                        </button>
+                      </div>
 
                       {a.stravaId && (
                         <a

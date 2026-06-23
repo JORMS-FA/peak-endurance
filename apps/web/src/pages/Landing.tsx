@@ -44,18 +44,21 @@ export function Landing() {
           <a href="#features" className="landing-nav-link">{t('navFeatures')}</a>
           <a href="#how" className="landing-nav-link">{t('navHow')}</a>
           <a href="#pricing" className="landing-nav-link">{t('navPricing')}</a>
-          <button
+          <motion.button
             type="button"
             className="btn-primary btn-sm"
             onClick={() => navigate('/login')}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 400, damping: 15 }}
           >
             {t('signInCta')}
-          </button>
+          </motion.button>
         </nav>
       </header>
 
       {/* ── Hero ───────────────────────────────────────────────────────── */}
-      <section className="landing-hero hero-v2">
+      <section className="landing-hero hero-v2 section-accent-green">
         <div className="hero-grain" aria-hidden />
 
         {/* Single cinematic B/W runner photo, full-width, auto-scrolling R→L */}
@@ -92,22 +95,28 @@ export function Landing() {
           >
             <StoreBadges />
             <div className="hero-cta-row">
-              <button
+              <motion.button
                 type="button"
                 className="hero-primary-cta"
                 onClick={() => navigate('/login')}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
               >
                 {t('ctaTryFree14')}
                 <ArrowRight size={14} />
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="button"
                 className="hero-secondary-cta-v2"
                 onClick={() => navigate('/login')}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
               >
                 <Play size={14} />
                 {t('signInCta')}
-              </button>
+              </motion.button>
             </div>
           </motion.div>
 
@@ -140,7 +149,9 @@ export function Landing() {
             <span className="hero-integrations-label">{t('socialProofIntegrationsLabel')}</span>
             <div className="hero-integrations-row">
               {['Strava', 'TrainingPeaks', 'Garmin', 'Apple Health'].map((name) => (
-                <span key={name} className="hero-integration-logo">{name}</span>
+                <motion.span key={name} className="hero-integration-logo"
+                  whileHover={{ scale: 1.1, y: -2, transition: { type: "spring", stiffness: 400, damping: 15 } }}
+                >{name}</motion.span>
               ))}
             </div>
           </motion.div>
@@ -155,6 +166,7 @@ export function Landing() {
           initial={{ opacity: 0, y: 30, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          whileHover={{ scale: 1.01, transition: { type: "spring", stiffness: 200, damping: 20 } }}
         >
           <div className="mockup-frame">
             <div className="mockup-header">
@@ -286,21 +298,21 @@ export function Landing() {
       </section>
 
       {/* ── Social proof / trust metrics ─────────────────────────────── */}
-      <section className="landing-social-proof">
+      <section className="landing-social-proof section-accent-purple">
         <p className="social-proof-eyebrow reveal">{t('socialProofEyebrow')}</p>
         <div className="social-proof-metrics stagger-children">
-          <motion.div className="social-proof-metric reveal" whileHover={{ y: -3 }}>
+          <motion.div className="social-proof-metric reveal" whileHover={{ scale: 1.05, y: -4, transition: { type: "spring", stiffness: 300, damping: 20 } }}>
             <strong>{t('socialProofAthletes')}</strong>
             <span>{t('socialProofAthletesLabel')}</span>
           </motion.div>
-          <motion.div className="social-proof-metric reveal" whileHover={{ y: -3 }}>
+          <motion.div className="social-proof-metric reveal" whileHover={{ scale: 1.05, y: -4, transition: { type: "spring", stiffness: 300, damping: 20 } }}>
             <strong className="social-proof-rating">
               {t('socialProofRating')}
               <span className="social-proof-stars" aria-hidden>★★★★★</span>
             </strong>
             <span>{t('socialProofRatingLabel')}</span>
           </motion.div>
-          <motion.div className="social-proof-metric reveal" whileHover={{ y: -3 }}>
+          <motion.div className="social-proof-metric reveal" whileHover={{ scale: 1.05, y: -4, transition: { type: "spring", stiffness: 300, damping: 20 } }}>
             <strong>{t('socialProofClubs')}</strong>
             <span>{t('socialProofClubsLabel')}</span>
           </motion.div>
@@ -319,10 +331,12 @@ export function Landing() {
             { I: Mountain, label: t('sportTrail') },
             { I: Activity, label: t('sportMulti') },
           ].map(({ I, label }) => (
-            <div key={label} className="audience-icon reveal">
+            <motion.div key={label} className="audience-icon reveal"
+              whileHover={{ scale: 1.08, transition: { type: "spring", stiffness: 400, damping: 15 } }}
+            >
               <I size={20} />
               <span>{label}</span>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -334,21 +348,21 @@ export function Landing() {
         <p className="section-subtitle reveal">{t('featuresSubtitle')}</p>
         <div className="landing-features-grid">
           {[
-            { I: Brain, key: 'AiCoach', comingSoon: false },
-            { I: LineChart, key: 'Analysis', comingSoon: true },
-            { I: Zap, key: 'Training', comingSoon: false },
-            { I: Trophy, key: 'Progress', comingSoon: false },
-            { I: Activity, key: 'Calendar', comingSoon: true },
-            { I: ChevronRight, key: 'Connections', comingSoon: false },
-          ].map(({ I, key, comingSoon }, i) => (
+            { I: Brain, key: 'AiCoach', comingSoon: false, accentClass: 'section-accent-green' },
+            { I: LineChart, key: 'Analysis', comingSoon: true, accentClass: 'section-accent-blue' },
+            { I: Zap, key: 'Training', comingSoon: false, accentClass: 'section-accent-orange' },
+            { I: Trophy, key: 'Progress', comingSoon: false, accentClass: 'section-accent-purple' },
+            { I: Activity, key: 'Calendar', comingSoon: true, accentClass: 'section-accent-cyan' },
+            { I: ChevronRight, key: 'Connections', comingSoon: false, accentClass: 'section-accent-pink' },
+          ].map(({ I, key, comingSoon, accentClass }, i) => (
             <motion.div
               key={key}
-              className="landing-feature-card"
+              className={`landing-feature-card ${accentClass}`}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
               transition={{ delay: i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ y: -6 }}
+              whileHover={{ scale: 1.03, y: -6, transition: { type: "spring", stiffness: 300, damping: 20 } }}
             >
               <div className="landing-feature-icon-wrap">
                 <div className="landing-feature-icon">
@@ -370,18 +384,18 @@ export function Landing() {
         <h2 className="reveal">{t('howTitle')}</h2>
         <div className="how-steps-v2">
           {([
-            { n: '01', icon: Download, titleKey: 'howStep1Title', descKey: 'howStep1Desc' },
-            { n: '02', icon: Brain, titleKey: 'howStep2Title', descKey: 'howStep2Desc' },
-            { n: '03', icon: TrendingUp, titleKey: 'howStep3Title', descKey: 'howStep3Desc' },
+            { n: '01', icon: Download, titleKey: 'howStep1Title', descKey: 'howStep1Desc', accentClass: 'section-accent-blue' },
+            { n: '02', icon: Brain, titleKey: 'howStep2Title', descKey: 'howStep2Desc', accentClass: 'section-accent-green' },
+            { n: '03', icon: TrendingUp, titleKey: 'howStep3Title', descKey: 'howStep3Desc', accentClass: 'section-accent-orange' },
           ] as const).map((s, i) => (
             <motion.div
               key={s.n}
-              className="how-step-v2"
+              className={`how-step-v2 ${s.accentClass}`}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
               transition={{ delay: i * 0.12, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ y: -4 }}
+              whileHover={{ scale: 1.02, y: -4, transition: { type: "spring", stiffness: 300, damping: 20 } }}
             >
               <div className="how-step-v2-icon">
                 <s.icon size={24} />
@@ -400,7 +414,7 @@ export function Landing() {
         <p className="section-subtitle reveal">{t('pricingSubtitle')}</p>
         <div className="pricing-grid pricing-grid-4">
           {/* Free — subdued, low-friction entry */}
-          <motion.div className="landing-pricing-card pricing-card-free reveal" whileHover={{ y: -4 }}>
+          <motion.div className="landing-pricing-card pricing-card-free reveal" whileHover={{ scale: 1.02, y: -4, transition: { type: "spring", stiffness: 300, damping: 15 } }}>
             <div className="pricing-tier">Free</div>
             <div className="landing-pricing-amount">
               <span className="landing-price">$0</span>
@@ -418,7 +432,7 @@ export function Landing() {
           </motion.div>
 
           {/* Pro mensual */}
-          <motion.div className="landing-pricing-card pricing-card-pro reveal" whileHover={{ y: -4 }}>
+          <motion.div className="landing-pricing-card pricing-card-pro reveal" whileHover={{ scale: 1.02, y: -4, transition: { type: "spring", stiffness: 300, damping: 15 } }}>
             <div className="pricing-tier pricing-tier-pro"><Crown size={13} /> Pro · {language === 'es' ? 'Mensual' : 'Monthly'}</div>
             <div className="landing-pricing-amount">
               <span className="landing-price">COP$30.000</span>
@@ -437,7 +451,7 @@ export function Landing() {
           </motion.div>
 
           {/* Pro anual — destacado */}
-          <motion.div className="landing-pricing-card pricing-card-featured reveal-scale" whileHover={{ y: -6 }}>
+          <motion.div className="landing-pricing-card pricing-card-featured reveal-scale" whileHover={{ scale: 1.03, y: -6, transition: { type: "spring", stiffness: 300, damping: 15 } }}>
             <span className="pricing-popular pricing-popular-featured">{language === 'es' ? '⭐ Mejor valor' : '⭐ Best value'}</span>
             <div className="pricing-tier pricing-tier-pro"><Crown size={13} /> Pro · {language === 'es' ? 'Anual' : 'Annual'}</div>
             <div className="landing-pricing-amount">
@@ -457,7 +471,7 @@ export function Landing() {
           </motion.div>
 
           {/* Equipos */}
-          <motion.div className="landing-pricing-card pricing-card-teams reveal" whileHover={{ y: -4 }}>
+          <motion.div className="landing-pricing-card pricing-card-teams reveal" whileHover={{ scale: 1.02, y: -4, transition: { type: "spring", stiffness: 300, damping: 15 } }}>
             <div className="pricing-tier pricing-tier-teams">{language === 'es' ? 'Equipos' : 'Teams'}</div>
             <div className="landing-pricing-amount">
               <span className="landing-price">{language === 'es' ? 'A medida' : 'Custom'}</span>
@@ -482,7 +496,7 @@ export function Landing() {
       <section id="download" className="landing-final-cta">
         <motion.div
           className="final-cta-card reveal-scale"
-          whileHover={{ scale: 1.008 }}
+          whileHover={{ scale: 1.01, transition: { type: "spring", stiffness: 200, damping: 20 } }}
         >
           <h2 className="final-cta-heading">{t('finalCtaTitle')}</h2>
           <p className="final-cta-subtitle">{t('finalCtaSubtitle')}</p>
