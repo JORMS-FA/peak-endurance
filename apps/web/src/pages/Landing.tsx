@@ -2,16 +2,20 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Activity,
+  ArrowRight,
   Bike,
   Brain,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   Crown,
+  Download,
   Footprints,
   LineChart,
   Mountain,
   Play,
   Sparkles,
+  TrendingUp,
   Trophy,
   Waves,
   Zap,
@@ -87,14 +91,24 @@ export function Landing() {
             transition={{ delay: 0.35, duration: 0.6 }}
           >
             <StoreBadges />
-            <button
-              type="button"
-              className="hero-secondary-cta"
-              onClick={() => navigate('/login')}
-            >
-              <Play size={14} />
-              {t('tryWebVersion')}
-            </button>
+            <div className="hero-cta-row">
+              <button
+                type="button"
+                className="hero-primary-cta"
+                onClick={() => navigate('/login')}
+              >
+                {t('ctaTryFree14')}
+                <ArrowRight size={14} />
+              </button>
+              <button
+                type="button"
+                className="hero-secondary-cta-v2"
+                onClick={() => navigate('/login')}
+              >
+                <Play size={14} />
+                {t('signInCta')}
+              </button>
+            </div>
           </motion.div>
 
           <motion.div
@@ -116,9 +130,26 @@ export function Landing() {
               <span>{t('trustAI')}</span>
             </div>
           </motion.div>
+
+          <motion.div
+            className="hero-integrations"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7, duration: 0.6 }}
+          >
+            <span className="hero-integrations-label">{t('socialProofIntegrationsLabel')}</span>
+            <div className="hero-integrations-row">
+              {['Strava', 'TrainingPeaks', 'Garmin', 'Apple Health'].map((name) => (
+                <span key={name} className="hero-integration-logo">{name}</span>
+              ))}
+            </div>
+          </motion.div>
         </motion.div>
 
-        {/* Mockup of the dashboard, built with CSS so it stays sharp on any device */}
+        {/* Animated gradient mesh/orb behind the mockup */}
+        <div className="hero-orb" aria-hidden />
+
+        {/* Premium dashboard mockup with calendar + SVG line chart */}
         <motion.div
           className="hero-mockup"
           initial={{ opacity: 0, y: 30, scale: 0.96 }}
@@ -131,46 +162,149 @@ export function Landing() {
                 <span /><span /><span />
               </div>
               <span className="mockup-title">{APP_NAME}</span>
+              <div className="mockup-header-right">
+                <span className="mockup-header-stat">CTL 52</span>
+                <span className="mockup-header-dot" />
+              </div>
             </div>
             <div className="mockup-body">
+              {/* Coach hero card */}
               <div className="mockup-hero">
                 <div className="mockup-badge">PEAK IA COACH</div>
                 <div className="mockup-h2">{t('mockupHero')}</div>
               </div>
+
+              {/* Metrics row with gradient cards */}
               <div className="mockup-metrics">
                 {[
-                  { l: 'Forma', v: '+18', c: 'var(--success)' },
-                  { l: 'Carga', v: '342', c: 'var(--info)' },
-                  { l: 'CTL', v: '52', c: 'var(--accent)' },
-                  { l: 'ATL', v: '34', c: 'var(--warning)' },
+                  { l: 'Forma', v: '+18', c: 'var(--success)', g: 'linear-gradient(135deg, rgba(52,211,153,0.18), transparent)' },
+                  { l: 'Carga', v: '342', c: 'var(--info)', g: 'linear-gradient(135deg, rgba(96,165,250,0.18), transparent)' },
+                  { l: 'CTL', v: '52', c: 'var(--accent)', g: 'linear-gradient(135deg, rgba(34,197,94,0.18), transparent)' },
+                  { l: 'ATL', v: '34', c: 'var(--warning)', g: 'linear-gradient(135deg, rgba(251,191,36,0.18), transparent)' },
                 ].map((m, i) => (
                   <motion.div
                     key={m.l}
-                    className="mockup-metric"
+                    className="mockup-metric-v2"
+                    style={{ background: m.g }}
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.7 + i * 0.07, duration: 0.4 }}
                   >
                     <small>{m.l}</small>
                     <strong style={{ color: m.c }}>{m.v}</strong>
+                    <span className="mockup-metric-bar" style={{ background: m.c }} />
                   </motion.div>
                 ))}
               </div>
-              <div className="mockup-chart">
-                {[24, 38, 14, 52, 30, 0, 46].map((h, i) => (
-                  <motion.span
-                    key={i}
-                    className="mockup-bar"
-                    initial={{ height: 0 }}
-                    animate={{ height: `${h * 1.6}%` }}
-                    transition={{ delay: 0.9 + i * 0.04, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                  />
-                ))}
+
+              {/* Weekly Training mini-calendar */}
+              <div className="mockup-calendar">
+                <div className="mockup-calendar-header">
+                  <span>Weekly Training</span>
+                  <span className="mockup-calendar-week">W22 · 42km</span>
+                </div>
+                <div className="mockup-calendar-grid">
+                  {[
+                    { d: 'Mon', t: 'Run', s: 'run', v: '10.2k' },
+                    { d: 'Tue', t: 'Bike', s: 'bike', v: '24.5k' },
+                    { d: 'Wed', t: 'Run', s: 'run', v: '8.0k' },
+                    { d: 'Thu', t: 'Rest', s: 'rest', v: '—' },
+                    { d: 'Fri', t: 'Swim', s: 'swim', v: '1.8k' },
+                    { d: 'Sat', t: 'Run', s: 'run', v: '16.4k' },
+                    { d: 'Sun', t: 'Bike', s: 'bike', v: '32.0k' },
+                  ].map((day) => (
+                    <div key={day.d} className="mockup-calendar-day">
+                      <span className="mockup-calendar-label">{day.d}</span>
+                      <span className={`mockup-calendar-dot ${day.s}`} />
+                      <span className="mockup-calendar-val">{day.v}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Performance Trend — SVG line chart */}
+              <div className="mockup-chart-section">
+                <div className="mockup-chart-header">
+                  <span>Performance Trend</span>
+                  <span className="mockup-chart-badge">Fitness +8%</span>
+                </div>
+                <div className="mockup-chart-viz">
+                  <svg viewBox="0 0 240 64" className="mockup-line-chart" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="lineFillGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.25" />
+                        <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M0,52 Q24,48 48,38 T96,32 T144,22 T192,16 T240,12"
+                      fill="none"
+                      stroke="var(--accent)"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      className="mockup-line-path"
+                    />
+                    <path
+                      d="M0,52 Q24,48 48,38 T96,32 T144,22 T192,16 T240,12 L240,64 L0,64 Z"
+                      fill="url(#lineFillGrad)"
+                    />
+                  </svg>
+                  <div className="mockup-chart-labels">
+                    <span>12 May</span>
+                    <span>19 May</span>
+                    <span>26 May</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Today's Plan row */}
+              <div className="mockup-today">
+                <div className="mockup-today-icon">
+                  <Activity size={14} />
+                </div>
+                <div className="mockup-today-body">
+                  <strong>Today's Plan</strong>
+                  <small>Endurance Run · 45 min Z2</small>
+                </div>
+                <span className="mockup-today-status">✓ Ready</span>
               </div>
             </div>
           </div>
           <div className="mockup-glow" aria-hidden />
         </motion.div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          className="hero-scroll-indicator"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 0.8 }}
+        >
+          <span className="hero-scroll-label">Scroll</span>
+          <ChevronDown size={14} className="hero-scroll-chevron" />
+        </motion.div>
+      </section>
+
+      {/* ── Social proof / trust metrics ─────────────────────────────── */}
+      <section className="landing-social-proof">
+        <p className="social-proof-eyebrow reveal">{t('socialProofEyebrow')}</p>
+        <div className="social-proof-metrics stagger-children">
+          <motion.div className="social-proof-metric reveal" whileHover={{ y: -3 }}>
+            <strong>{t('socialProofAthletes')}</strong>
+            <span>{t('socialProofAthletesLabel')}</span>
+          </motion.div>
+          <motion.div className="social-proof-metric reveal" whileHover={{ y: -3 }}>
+            <strong className="social-proof-rating">
+              {t('socialProofRating')}
+              <span className="social-proof-stars" aria-hidden>★★★★★</span>
+            </strong>
+            <span>{t('socialProofRatingLabel')}</span>
+          </motion.div>
+          <motion.div className="social-proof-metric reveal" whileHover={{ y: -3 }}>
+            <strong>{t('socialProofClubs')}</strong>
+            <span>{t('socialProofClubsLabel')}</span>
+          </motion.div>
+        </div>
       </section>
 
       {/* ── Sport icons / "para quién es" ─────────────────────────────── */}
@@ -195,42 +329,67 @@ export function Landing() {
 
       {/* ── Features ───────────────────────────────────────────────────── */}
       <section id="features" className="landing-features features-v2">
+        <div className="features-gradient-bg" aria-hidden />
         <h2 className="reveal">{t('featuresTitle')}</h2>
         <p className="section-subtitle reveal">{t('featuresSubtitle')}</p>
-        <div className="landing-features-grid stagger-children">
+        <div className="landing-features-grid">
           {[
-            { I: Brain, key: 'AiCoach' as const },
-            { I: LineChart, key: 'Analysis' as const },
-            { I: Zap, key: 'Training' as const },
-            { I: Trophy, key: 'Progress' as const },
-            { I: Activity, key: 'Calendar' as const },
-            { I: ChevronRight, key: 'Connections' as const },
-          ].map(({ I, key }) => (
-            <div key={key} className="landing-feature-card reveal">
-              <div className="landing-feature-icon">
-                <I size={22} />
+            { I: Brain, key: 'AiCoach', comingSoon: false },
+            { I: LineChart, key: 'Analysis', comingSoon: true },
+            { I: Zap, key: 'Training', comingSoon: false },
+            { I: Trophy, key: 'Progress', comingSoon: false },
+            { I: Activity, key: 'Calendar', comingSoon: true },
+            { I: ChevronRight, key: 'Connections', comingSoon: false },
+          ].map(({ I, key, comingSoon }, i) => (
+            <motion.div
+              key={key}
+              className="landing-feature-card"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ delay: i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ y: -6 }}
+            >
+              <div className="landing-feature-icon-wrap">
+                <div className="landing-feature-icon">
+                  <I size={22} />
+                </div>
+                {comingSoon && (
+                  <span className="feature-coming-soon">{language === 'es' ? 'Próximamente' : 'Coming soon'}</span>
+                )}
               </div>
               <h3>{t(`feature${key}` as 'featureAiCoach')}</h3>
               <p>{t(`feature${key}Desc` as 'featureAiCoachDesc')}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
 
       {/* ── How it works ───────────────────────────────────────────────── */}
-      <section id="how" className="landing-how">
+      <section id="how" className="landing-how-v2">
         <h2 className="reveal">{t('howTitle')}</h2>
-        <div className="how-steps stagger-children">
+        <div className="how-steps-v2">
           {([
-            { n: '01', titleKey: 'howStep1Title', descKey: 'howStep1Desc' },
-            { n: '02', titleKey: 'howStep2Title', descKey: 'howStep2Desc' },
-            { n: '03', titleKey: 'howStep3Title', descKey: 'howStep3Desc' },
-          ] as const).map((s) => (
-            <div key={s.n} className="how-step reveal">
-              <span className="how-step-num">{s.n}</span>
+            { n: '01', icon: Download, titleKey: 'howStep1Title', descKey: 'howStep1Desc' },
+            { n: '02', icon: Brain, titleKey: 'howStep2Title', descKey: 'howStep2Desc' },
+            { n: '03', icon: TrendingUp, titleKey: 'howStep3Title', descKey: 'howStep3Desc' },
+          ] as const).map((s, i) => (
+            <motion.div
+              key={s.n}
+              className="how-step-v2"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ delay: i * 0.12, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ y: -4 }}
+            >
+              <div className="how-step-v2-icon">
+                <s.icon size={24} />
+              </div>
+              <span className="how-step-num-v2">{s.n}</span>
               <h3>{t(s.titleKey)}</h3>
               <p>{t(s.descKey)}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -240,18 +399,18 @@ export function Landing() {
         <h2 className="reveal">{t('pricingTitle')}</h2>
         <p className="section-subtitle reveal">{t('pricingSubtitle')}</p>
         <div className="pricing-grid pricing-grid-4">
-          {/* Free */}
-          <motion.div className="landing-pricing-card reveal" whileHover={{ y: -4 }}>
+          {/* Free — subdued, low-friction entry */}
+          <motion.div className="landing-pricing-card pricing-card-free reveal" whileHover={{ y: -4 }}>
             <div className="pricing-tier">Free</div>
             <div className="landing-pricing-amount">
               <span className="landing-price">$0</span>
               <span className="landing-price-period">USD</span>
             </div>
             <p className="landing-price-annual">{language === 'es' ? 'Para siempre' : 'Forever'}</p>
-            <ul className="landing-pricing-features">
-              <li>{language === 'es' ? 'Conexión con Strava' : 'Strava connection'}</li>
-              <li>{language === 'es' ? 'Dashboard CTL/ATL/TSB' : 'CTL/ATL/TSB dashboard'}</li>
-              <li>{language === 'es' ? '20 consultas IA/mes (BYOK)' : '20 AI queries/mo (BYOK)'}</li>
+            <ul className="landing-pricing-features pricing-features-icons">
+              <li><CheckCircle2 size={14} className="feature-check-icon" /><span>{language === 'es' ? 'Conexión con Strava' : 'Strava connection'}</span></li>
+              <li><CheckCircle2 size={14} className="feature-check-icon" /><span>{language === 'es' ? 'Dashboard CTL/ATL/TSB' : 'CTL/ATL/TSB dashboard'}</span></li>
+              <li><CheckCircle2 size={14} className="feature-check-icon" /><span>{language === 'es' ? '20 consultas IA/mes (BYOK)' : '20 AI queries/mo (BYOK)'}</span></li>
             </ul>
             <button type="button" className="pricing-btn" onClick={() => navigate('/login')}>
               {language === 'es' ? 'Empezar gratis' : 'Start free'}
@@ -259,18 +418,18 @@ export function Landing() {
           </motion.div>
 
           {/* Pro mensual */}
-          <motion.div className="landing-pricing-card reveal" whileHover={{ y: -4 }}>
+          <motion.div className="landing-pricing-card pricing-card-pro reveal" whileHover={{ y: -4 }}>
             <div className="pricing-tier pricing-tier-pro"><Crown size={13} /> Pro · {language === 'es' ? 'Mensual' : 'Monthly'}</div>
             <div className="landing-pricing-amount">
               <span className="landing-price">COP$30.000</span>
               <span className="landing-price-period">/ {language === 'es' ? 'mes' : 'mo'}</span>
             </div>
             <p className="landing-price-annual">{language === 'es' ? 'Flexible, cancela cuando quieras' : 'Flexible, cancel anytime'}</p>
-            <ul className="landing-pricing-features">
-              <li>{language === 'es' ? 'Coach IA ilimitado' : 'Unlimited AI coach'}</li>
-              <li>{language === 'es' ? 'Planes multi-deporte' : 'Multi-sport plans'}</li>
-              <li>{language === 'es' ? 'Análisis avanzado' : 'Advanced analysis'}</li>
-              <li>{language === 'es' ? 'Sin anuncios' : 'No ads'}</li>
+            <ul className="landing-pricing-features pricing-features-icons">
+              <li><CheckCircle2 size={14} className="feature-check-icon" /><span>{language === 'es' ? 'Coach IA ilimitado' : 'Unlimited AI coach'}</span></li>
+              <li><CheckCircle2 size={14} className="feature-check-icon" /><span>{language === 'es' ? 'Planes multi-deporte' : 'Multi-sport plans'}</span></li>
+              <li><CheckCircle2 size={14} className="feature-check-icon" /><span>{language === 'es' ? 'Análisis avanzado' : 'Advanced analysis'}</span></li>
+              <li><CheckCircle2 size={14} className="feature-check-icon" /><span>{language === 'es' ? 'Sin anuncios' : 'No ads'}</span></li>
             </ul>
             <button type="button" className="pricing-btn" onClick={() => navigate('/login')}>
               {language === 'es' ? 'Elegir mensual' : 'Choose monthly'}
@@ -279,18 +438,18 @@ export function Landing() {
 
           {/* Pro anual — destacado */}
           <motion.div className="landing-pricing-card pricing-card-featured reveal-scale" whileHover={{ y: -6 }}>
-            <span className="pricing-popular">{language === 'es' ? 'Mejor valor' : 'Best value'}</span>
+            <span className="pricing-popular pricing-popular-featured">{language === 'es' ? '⭐ Mejor valor' : '⭐ Best value'}</span>
             <div className="pricing-tier pricing-tier-pro"><Crown size={13} /> Pro · {language === 'es' ? 'Anual' : 'Annual'}</div>
             <div className="landing-pricing-amount">
               <span className="landing-price">COP$300.000</span>
               <span className="landing-price-period">/ {language === 'es' ? 'año' : 'yr'}</span>
             </div>
-            <p className="landing-price-annual">{language === 'es' ? 'Ahorra 17% · 2 meses gratis' : 'Save 17% · 2 months free'}</p>
-            <ul className="landing-pricing-features">
-              <li>{language === 'es' ? 'Todo lo de Pro' : 'Everything in Pro'}</li>
-              <li>{language === 'es' ? 'Planes generados por IA' : 'AI-generated plans'}</li>
-              <li>{language === 'es' ? 'Múltiples modelos IA' : 'Multiple AI models'}</li>
-              <li>{language === 'es' ? 'Soporte prioritario' : 'Priority support'}</li>
+            <p className="landing-price-annual landing-price-savings">{language === 'es' ? 'Ahorra 17% · 2 meses gratis' : 'Save 17% · 2 months free'}</p>
+            <ul className="landing-pricing-features pricing-features-icons">
+              <li><CheckCircle2 size={14} className="feature-check-icon featured-check-icon" /><span>{language === 'es' ? 'Todo lo de Pro' : 'Everything in Pro'}</span></li>
+              <li><CheckCircle2 size={14} className="feature-check-icon featured-check-icon" /><span>{language === 'es' ? 'Planes generados por IA' : 'AI-generated plans'}</span></li>
+              <li><CheckCircle2 size={14} className="feature-check-icon featured-check-icon" /><span>{language === 'es' ? 'Múltiples modelos IA' : 'Multiple AI models'}</span></li>
+              <li><CheckCircle2 size={14} className="feature-check-icon featured-check-icon" /><span>{language === 'es' ? 'Soporte prioritario' : 'Priority support'}</span></li>
             </ul>
             <button type="button" className="pricing-btn pricing-btn-featured" onClick={() => navigate('/login')}>
               {language === 'es' ? 'Elegir anual' : 'Choose annual'}
@@ -298,40 +457,49 @@ export function Landing() {
           </motion.div>
 
           {/* Equipos */}
-          <motion.div className="landing-pricing-card reveal" whileHover={{ y: -4 }}>
-            <div className="pricing-tier">{language === 'es' ? 'Equipos' : 'Teams'}</div>
+          <motion.div className="landing-pricing-card pricing-card-teams reveal" whileHover={{ y: -4 }}>
+            <div className="pricing-tier pricing-tier-teams">{language === 'es' ? 'Equipos' : 'Teams'}</div>
             <div className="landing-pricing-amount">
               <span className="landing-price">{language === 'es' ? 'A medida' : 'Custom'}</span>
             </div>
             <p className="landing-price-annual">{language === 'es' ? 'Clubes y entrenadores' : 'Clubs & coaches'}</p>
-            <ul className="landing-pricing-features">
-              <li>{language === 'es' ? 'Multi-atleta' : 'Multi-athlete'}</li>
-              <li>{language === 'es' ? 'Panel de entrenador' : 'Coach dashboard'}</li>
-              <li>{language === 'es' ? 'Facturación unificada' : 'Unified billing'}</li>
+            <ul className="landing-pricing-features pricing-features-icons">
+              <li><CheckCircle2 size={14} className="feature-check-icon" /><span>{language === 'es' ? 'Multi-atleta' : 'Multi-athlete'}</span></li>
+              <li><CheckCircle2 size={14} className="feature-check-icon" /><span>{language === 'es' ? 'Panel de entrenador' : 'Coach dashboard'}</span></li>
+              <li><CheckCircle2 size={14} className="feature-check-icon" /><span>{language === 'es' ? 'Facturación unificada' : 'Unified billing'}</span></li>
             </ul>
             <a className="pricing-btn" href="mailto:hola@peakendurance.app">
               {language === 'es' ? 'Contáctanos' : 'Contact us'}
             </a>
           </motion.div>
         </div>
+
+        {/* Micro-copy: sin compromiso + trust */}
+        <p className="pricing-no-commitment">{language === 'es' ? 'Sin compromiso · Cancela cuando quieras · Sin tarjeta de crédito' : 'No commitment · Cancel anytime · No credit card required'}</p>
       </section>
 
       {/* ── Final CTA ──────────────────────────────────────────────────── */}
       <section id="download" className="landing-final-cta">
         <motion.div
           className="final-cta-card reveal-scale"
-          whileHover={{ scale: 1.005 }}
+          whileHover={{ scale: 1.008 }}
         >
-          <h2>{t('finalCtaTitle')}</h2>
-          <p>{t('finalCtaSubtitle')}</p>
+          <h2 className="final-cta-heading">{t('finalCtaTitle')}</h2>
+          <p className="final-cta-subtitle">{t('finalCtaSubtitle')}</p>
           <StoreBadges centered />
           <button
             type="button"
-            className="hero-secondary-cta"
+            className="final-cta-btn"
             onClick={() => navigate('/login')}
           >
-            {t('tryWebVersion')}
+            {t('ctaTryFree14')}
           </button>
+          <p className="final-cta-micro">
+            {language === 'es' ? 'Empieza hoy — sin tarjeta de crédito' : 'Start today — no credit card required'}
+          </p>
+          <p className="final-cta-trust">
+            {language === 'es' ? '🏃 Ya sea corredor, ciclista o triatleta' : '🏃 Runner, cyclist or triathlete'}
+          </p>
         </motion.div>
       </section>
 
