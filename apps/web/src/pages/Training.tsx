@@ -206,20 +206,8 @@ export function Training() {
                         {a.source_type && <Stat icon={<Zap size={14} />} label={isEs ? 'Fuente' : 'Source'} value={a.source_type === 'strava' ? 'Strava' : a.source_type} />}
                       </div>
 
-                      {/* Strava embed map */}
-                      {a.stravaId && a.source_type === 'strava' && (
-                        <div className="activity-map">
-                          <iframe
-                            src={`https://www.strava.com/activities/${a.stravaId}/embed/${a.stravaId}`}
-                            width="100%"
-                            height="200"
-                            style={{ border: 'none', borderRadius: 12, marginTop: 12 }}
-                            loading="lazy"
-                            title="Mapa Strava"
-                            allowFullScreen
-                          />
-                        </div>
-                      )}
+                      {/* Route map rendered from polyline (SVG, no external API) */}
+                      {a.mapPolyline && <PolylineMap encoded={a.mapPolyline} />}
 
                       {a.stravaId && (
                         <a
@@ -258,4 +246,47 @@ function paceOf(km: number | null, min: number | null, sport: string): string {
   const m = Math.floor(secPerKm / 60)
   const s = Math.round(secPerKm % 60)
   return `${m}:${String(s).padStart(2, '0')} /km`
+}
+
+// Decode a Google-encoded polyline into [lat, lng] pairs and render as SVG.
+function decodePolyline(encoded: string): [number, number][] {
+  const points: [number, number][] = []
+  let idx = 0
+  let lat = 0
+  let lng = 0
+  while (idx < encoded.length) {
+    let b: number, shift = 0, result = 0
+    do { b = encoded.charCodeAt(idx++) - 63; result |= (b & 0x1f) << shift; shift += 5 } while (b >= 0x20)
+    lat += result & 1 ? ~(result >> 1) : result >> 1
+    shift = 0; result = 0
+    do { b = encoded.charCodeAt(idx++) - 63; result |= (b & 0x1f) << shift; shift += 5 } while (b >= 0x20)
+    lng += result & 1 ? ~(result >> 1) : result >> 1
+    points.push([lat / 1e5, lng / 1e5])
+  }
+  return points
+}
+
+function PolylineMap({ encoded }: { encoded: string }) {
+  const pts = decodePolyline(encoded)
+  if (pts.length < 2) return null
+  const lats = pts.map((p) => p[0])
+  const lngs = pts.map((p) => p[1])
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats)
+  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs)
+  const w = 600, h = 180, pad = 16
+  const scaleX = (maxLng - minLng) || 0.001
+  const scaleY = (maxLat - minLat) || 0.001
+  const toX = (lng: number) => pad + ((lng - minLng) / scaleX) * (w - pad * 2)
+  const toY = (lat: number) => h - pad - ((lat - minLat) / scaleY) * (h - pad * 2)
+  const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${toX(p[1]).toFixed(1)},${toY(p[0]).toFixed(1)}`).join(' ')
+
+  return (
+    <div className="activity-map" style={{ marginTop: 12 }}>
+      <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height: 'auto', borderRadius: 12, background: '#0a0f14' }}>
+        <path d={d} fill="none" stroke="var(--accent, #22c55e)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx={toX(pts[0][1])} cy={toY(pts[0][0])} r="5" fill="#22c55e" />
+        <circle cx={toX(pts[pts.length - 1][1])} cy={toY(pts[pts.length - 1][0])} r="5" fill="#ef4444" />
+      </svg>
+    </div>
+  )
 }
