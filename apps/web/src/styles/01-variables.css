@@ -43,9 +43,9 @@
 
 :root {
   /* Lava ambient palette tokens — easy to retune per-theme later. */
-  --lava-blob-1: rgba(34, 197, 94, 0.55);   /* accent green */
-  --lava-blob-2: rgba(99, 102, 241, 0.50);  /* indigo */
-  --lava-blob-3: rgba(245, 158, 11, 0.38);  /* amber */
+  --lava-blob-1: rgba(249, 115, 22, 0.55);  /* accent orange */
+  --lava-blob-2: rgba(236, 72, 153, 0.50);  /* pink */
+  --lava-blob-3: rgba(59, 130, 246, 0.38);  /* blue */
   --lava-opacity: 0.08;
   --lava-blur: 90px;
 }
@@ -76,11 +76,11 @@
   --text-muted: #7a8194;
   --text-disabled: #4a5063;
 
-  --accent: #22c55e;
-  --accent-hover: #4ade80;
-  --accent-soft: rgba(34, 197, 94, 0.12);
-  --accent-glow: rgba(34, 197, 94, 0.25);
-  --accent-rgb: 34, 197, 94;
+  --accent: #f97316;
+  --accent-hover: #fb923c;
+  --accent-soft: rgba(249, 115, 22, 0.12);
+  --accent-glow: rgba(249, 115, 22, 0.25);
+  --accent-rgb: 249, 115, 22;
 
   --success: #34d399;
   --success-soft: rgba(52, 211, 153, 0.12);
@@ -94,7 +94,7 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 0 1px var(--accent-glow), 0 8px 24px rgba(34, 197, 94, 0.15);
+  --shadow-glow: 0 0 0 1px var(--accent-glow), 0 8px 24px rgba(249, 115, 22, 0.15);
 }
 
 /* ─── Theme: Light ──────────────────────────────────────────── */
@@ -269,13 +269,12 @@ html[data-accent="cyan"] {
 .section-accent-pink   { --accent: #ec4899; --accent-hover: #f472b6; --accent-soft: rgba(236, 72, 153, 0.12); --accent-glow: rgba(236, 72, 153, 0.08); --accent-rgb: 236, 72, 153; --s-accent: #ec4899; --s-accent-hover: #f472b6; }
 .section-accent-cyan   { --accent: #06b6d4; --accent-hover: #22d3ee; --accent-soft: rgba(6, 182, 212, 0.12); --accent-glow: rgba(6, 182, 212, 0.08); --accent-rgb: 6, 182, 212; --s-accent: #06b6d4; --s-accent-hover: #22d3ee; }
 
-/* RGB multi-color theme — the default for the hero. Keeps the structural
-   accent green for nav/structural elements while the hero keywords use the
-   shared .hero-gradient-rgb rotating spectrum gradient. */
+/* RGB multi-color theme — the default accent is orange. Sections use their
+   own .section-accent-* class to pick a different hue. */
 .section-accent-rgb {
-  --accent: #22c55e; --accent-hover: #4ade80;
-  --accent-soft: rgba(34, 197, 94, 0.12); --accent-glow: rgba(34, 197, 94, 0.08);
-  --accent-rgb: 34, 197, 94;
+  --accent: #f97316; --accent-hover: #fb923c;
+  --accent-soft: rgba(249, 115, 22, 0.12); --accent-glow: rgba(249, 115, 22, 0.08);
+  --accent-rgb: 249, 115, 22;
 }
 
 /* ─── Design Tokens ─────────────────────────────────────────── */
