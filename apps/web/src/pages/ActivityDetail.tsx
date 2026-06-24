@@ -400,7 +400,21 @@ export default function ActivityDetail() {
         </div>
       </div>
 
-      {/* ─── Summary Cards ─────────────────────────────────────────────────────── */}
+      {/* ─── Route Map ─────────────────────────────────────────────────────────── */}
+      <div className="detail-section detail-map-section">
+        <div className="detail-section-title">
+          <MapPin size={16} />
+          <span>{isEs ? 'Recorrido' : 'Route'}</span>
+        </div>
+        <PolylineMap
+          encoded={act.mapPolyline}
+          variant="large"
+          showUnavailable
+          unavailableLabel={isEs ? 'Mapa no disponible' : 'Map unavailable'}
+        />
+      </div>
+
+      {/* ─── Summary Cards ─────────────────────────────────────────────────────────── */}
       <div className="detail-summary-grid">
         <SummaryCard
           icon={<Clock size={18} />}
@@ -470,20 +484,6 @@ export default function ActivityDetail() {
             color="#06b6d4"
           />
         )}
-      </div>
-
-      {/* ─── Route Map ─────────────────────────────────────────────────────────── */}
-      <div className="detail-section detail-map-section">
-        <div className="detail-section-title">
-          <MapPin size={16} />
-          <span>{isEs ? 'Recorrido' : 'Route'}</span>
-        </div>
-        <PolylineMap
-          encoded={act.mapPolyline}
-          variant="large"
-          showUnavailable
-          unavailableLabel={isEs ? 'Mapa no disponible' : 'Map unavailable'}
-        />
       </div>
 
       {/* ─── Charts ────────────────────────────────────────────────────────────── */}
