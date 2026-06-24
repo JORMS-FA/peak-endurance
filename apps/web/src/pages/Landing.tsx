@@ -85,7 +85,7 @@ const SPORT_IMAGES: Record<string, string> = {
   run: 'https://v3b.fal.media/files/b/0a9f7ab3/jvs2XBV2AITg1nXOPyt-2_d4eQEjDV.png',
   bike: 'https://v3b.fal.media/files/b/0a9f7ab4/TmO6K8v5p9wa46NVfK2tI_x3UiInvR.png',
   swim: 'https://v3b.fal.media/files/b/0a9f7ab5/ASEOQraN21UHlHM46rdth_aXVML7LM.png',
-  triathlon: 'https://v3b.fal.media/files/b/0a9f7abd/VhCFVvTACYGT7exVPwjbC_A56G4JLN.png',
+  triathlon: 'https://v3b.fal.media/files/b/0a9f9de7/yHrDnh71NJiKykGHz-igN_T0YzCGKF.png',
   trail: 'https://v3b.fal.media/files/b/0a9f7ab6/22Y_192GFlP2r7OdQdI3U_Q7J76Xru.png',
   multi: 'https://v3b.fal.media/files/b/0a9f7ab2/TaUhP2CzEsPsOm9VKb0VR_zx6KYZo7.png',
 }
