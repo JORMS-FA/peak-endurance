@@ -1,18 +1,20 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   ArrowLeft, Clock, Route, HeartPulse, Mountain, Flame, Gauge, Zap,
-  Bike, Activity, ChevronDown, ChevronUp, TrendingUp, Timer,
-  MapPin, Info, Loader2,
+  Activity, TrendingUp, Timer,
+  MapPin, Info,
 } from 'lucide-react'
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Area, AreaChart, ComposedChart, Bar,
+  BarChart, Cell,
 } from 'recharts'
 import { supabase } from '../lib/supabase'
 import { useI18n } from '../hooks/useI18n'
 import { SportIcon, SPORT_COLORS } from '../components/ui/SportIcon'
+import { PolylineMap } from '../components/ui/PolylineMap'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -94,21 +96,45 @@ function kms(km: number | null): string {
   return km.toFixed(2)
 }
 
-// ─── POLYLINE DECODER ──────────────────────────────────────────────────────────
+// ─── HR ZONE TIME DISTRIBUTION ─────────────────────────────────────────────────
+//
+// hrData is distance-sampled ({ d: km, v: hr }). We bin each sample into a zone
+// and, when a total duration is known, distribute the elapsed minutes across
+// zones proportionally so the chart reads as "time in zone" rather than a raw
+// sample count. Falls back to percentage-of-samples when duration is unknown.
 
-function decodePolyline(encoded: string): [number, number][] {
-  const points: [number, number][] = []
-  let idx = 0, lat = 0, lng = 0
-  while (idx < encoded.length) {
-    let b: number, shift = 0, result = 0
-    do { b = encoded.charCodeAt(idx++) - 63; result |= (b & 0x1f) << shift; shift += 5 } while (b >= 0x20)
-    lat += result & 1 ? ~(result >> 1) : result >> 1
-    shift = 0; result = 0
-    do { b = encoded.charCodeAt(idx++) - 63; result |= (b & 0x1f) << shift; shift += 5 } while (b >= 0x20)
-    lng += result & 1 ? ~(result >> 1) : result >> 1
-    points.push([lat / 1e5, lng / 1e5])
+type ZoneTime = { zone: string; minutes: number; pct: number; color: string }
+
+function computeHrZoneTimes(
+  hrData: { d: number; v: number | null }[],
+  durationMinutes: number | null,
+): ZoneTime[] {
+  const counts = HR_ZONES.map(() => 0)
+  let total = 0
+  for (const p of hrData) {
+    if (p.v === null || p.v === undefined) continue
+    const idx = HR_ZONES.findIndex((z) => p.v! >= z.min && p.v! < z.max)
+    if (idx >= 0) {
+      counts[idx]++
+      total++
+    } else if (p.v >= HR_ZONES[HR_ZONES.length - 1].max) {
+      counts[HR_ZONES.length - 1]++
+      total++
+    }
   }
-  return points
+  if (total === 0) return []
+  return HR_ZONES.map((z, i) => {
+    const pct = (counts[i] / total) * 100
+    const minutes = durationMinutes ? (counts[i] / total) * durationMinutes : 0
+    return { zone: z.label, minutes: Math.round(minutes * 10) / 10, pct: Math.round(pct), color: z.color }
+  })
+}
+
+function fmtMin(m: number): string {
+  if (m <= 0) return '0m'
+  const h = Math.floor(m / 60)
+  const mm = Math.round(m % 60)
+  return h > 0 ? `${h}h ${mm}m` : `${mm}m`
 }
 
 // ─── SAMPLE CHART DATA GENERATOR ────────────────────────────────────────────────
@@ -148,7 +174,7 @@ function ChartTooltip({ active, payload, label, unit }: {
 export default function ActivityDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { t, language } = useI18n()
+  const { language } = useI18n()
   const isEs = language === 'es'
 
   const [loading, setLoading] = useState(true)
@@ -326,7 +352,8 @@ export default function ActivityDetail() {
   const showCadence = act.cadenceData.length > 0
   const showPower = act.avgWatts !== null && act.powerData.length > 0
   const showLaps = act.laps.length > 0
-  const showMap = act.mapPolyline && act.mapPolyline.length > 0
+  const zoneTimes = computeHrZoneTimes(act.hrData, act.duration_minutes)
+  const showZones = zoneTimes.length > 0
 
   // ─── Main Render ────────────────────────────────────────────────────────────
   return (
@@ -445,6 +472,20 @@ export default function ActivityDetail() {
         )}
       </div>
 
+      {/* ─── Route Map ─────────────────────────────────────────────────────────── */}
+      <div className="detail-section detail-map-section">
+        <div className="detail-section-title">
+          <MapPin size={16} />
+          <span>{isEs ? 'Recorrido' : 'Route'}</span>
+        </div>
+        <PolylineMap
+          encoded={act.mapPolyline}
+          variant="large"
+          showUnavailable
+          unavailableLabel={isEs ? 'Mapa no disponible' : 'Map unavailable'}
+        />
+      </div>
+
       {/* ─── Charts ────────────────────────────────────────────────────────────── */}
       {showCharts && (
         <div className="detail-charts-grid">
@@ -483,6 +524,63 @@ export default function ActivityDetail() {
                     </span>
                   ))}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* HR Zones — time in zone bar chart */}
+          {showZones && (
+            <div className="detail-chart-section">
+              <div className="detail-chart-title">
+                <HeartPulse size={16} color="#ef4444" />
+                <span>{isEs ? 'Tiempo por zona' : 'Time in Zone'}</span>
+              </div>
+              <div className="detail-chart-inner">
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart
+                    data={zoneTimes}
+                    layout="vertical"
+                    margin={{ top: 4, right: 16, left: 8, bottom: 0 }}
+                    barCategoryGap={6}
+                  >
+                    <CartesianGrid stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                    <XAxis
+                      type="number"
+                      tick={{ fill: '#7a8194', fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(v: number) => act.duration_minutes ? fmtMin(v) : `${v}%`}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="zone"
+                      tick={{ fill: '#b8bcc8', fontSize: 12, fontWeight: 600 }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={34}
+                    />
+                    <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+                      content={({ active, payload }) => {
+                        if (!active || !payload?.length) return null
+                        const row = payload[0].payload as ZoneTime
+                        return (
+                          <div className="detail-chart-tooltip">
+                            <span className="detail-chart-tooltip-dist">{row.zone}</span>
+                            <span className="detail-chart-tooltip-val">
+                              {act.duration_minutes ? `${fmtMin(row.minutes)}` : `${row.pct}%`}
+                            </span>
+                          </div>
+                        )
+                      }}
+                    />
+                    <Bar dataKey={act.duration_minutes ? 'minutes' : 'pct'} radius={[0, 6, 6, 0]} maxBarSize={26}>
+                      {zoneTimes.map((z) => (
+                        <Cell key={z.zone} fill={z.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </div>
           )}
@@ -539,12 +637,6 @@ export default function ActivityDetail() {
                       alt: act.altitudeData[i]?.v ?? null,
                     }))
                   } margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="altGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#22c55e" stopOpacity={0.25} />
-                        <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
                     <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
                     <XAxis dataKey="d" tick={{ fill: '#7a8194', fontSize: 11 }} axisLine={false} tickLine={false}
                       tickFormatter={(v) => `${v}km`} />
@@ -554,8 +646,7 @@ export default function ActivityDetail() {
                       domain={['dataMin - 20', 'dataMax + 20']} hide />
                     <Tooltip content={<ChartTooltip unit={act.sport === 'bike' ? 'km/h' : 'm/s'} />}
                       cursor={{ stroke: 'rgba(255,255,255,0.1)' }} />
-                    <Area yAxisId="alt" type="monotone" dataKey="alt" stroke="#22c55e" strokeWidth={1}
-                      fill="url(#altGradient)" dot={false} />
+                    <Bar yAxisId="alt" dataKey="alt" fill="rgba(34, 197, 94, 0.35)" maxBarSize={14} radius={[3, 3, 0, 0]} />
                     <Line yAxisId="speed" type="monotone" dataKey="v" stroke="#3b82f6" strokeWidth={2} dot={false} />
                   </ComposedChart>
                 </ResponsiveContainer>
@@ -635,19 +726,6 @@ export default function ActivityDetail() {
         </div>
       )}
 
-      {/* ─── Route Map ─────────────────────────────────────────────────────────── */}
-      {showMap && (
-        <div className="detail-section">
-          <div className="detail-section-title">
-            <MapPin size={16} />
-            <span>{isEs ? 'Recorrido' : 'Route'}</span>
-          </div>
-          <div className="detail-map">
-            <PolylineMapLarge encoded={act.mapPolyline!} />
-          </div>
-        </div>
-      )}
-
       {/* ─── Training Load Analysis ────────────────────────────────────────────── */}
       <div className="detail-section">
         <div className="detail-section-title">
@@ -707,47 +785,5 @@ function SummaryCard({ icon, value, label, color }: {
       <strong className="detail-summary-card-value">{value}</strong>
       <span className="detail-summary-card-label">{label}</span>
     </div>
-  )
-}
-
-function PolylineMapLarge({ encoded }: { encoded: string }) {
-  const pts = useMemo(() => decodePolyline(encoded), [encoded])
-  if (pts.length < 2) return null
-
-  const lats = pts.map((p) => p[0])
-  const lngs = pts.map((p) => p[1])
-  const minLat = Math.min(...lats), maxLat = Math.max(...lats)
-  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs)
-  const w = 600, h = 300, pad = 24
-  const scaleX = (maxLng - minLng) || 0.001
-  const scaleY = (maxLat - minLat) || 0.001
-  const toX = (lng: number) => pad + ((lng - minLng) / scaleX) * (w - pad * 2)
-  const toY = (lat: number) => h - pad - ((lat - minLat) / scaleY) * (h - pad * 2)
-  const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${toX(p[1]).toFixed(1)},${toY(p[0]).toFixed(1)}`).join(' ')
-
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height: 'auto', borderRadius: 16, background: '#000' }}>
-      <defs>
-        <linearGradient id="routeGlow" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#22c55e" stopOpacity={0.5} />
-          <stop offset="100%" stopColor="#22c55e" stopOpacity={1} />
-        </linearGradient>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-      </defs>
-      {/* Grid dots pattern */}
-      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-        <circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.06)" />
-      </pattern>
-      <rect width={w} height={h} fill="url(#grid)" />
-      <path d={d} fill="none" stroke="url(#routeGlow)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" filter="url(#glow)" />
-      <circle cx={toX(pts[0][1])} cy={toY(pts[0][0])} r="6" fill="#22c55e" stroke="#000" strokeWidth="2" />
-      <circle cx={toX(pts[pts.length - 1][1])} cy={toY(pts[pts.length - 1][0])} r="6" fill="#ef4444" stroke="#000" strokeWidth="2" />
-      {/* Start/End labels */}
-      <text x={toX(pts[0][1])} y={toY(pts[0][0]) - 12} textAnchor="middle" fill="#22c55e" fontSize="10" fontWeight="600">Inicio</text>
-      <text x={toX(pts[pts.length - 1][1])} y={toY(pts[pts.length - 1][0]) - 12} textAnchor="middle" fill="#ef4444" fontSize="10" fontWeight="600">Fin</text>
-    </svg>
   )
 }

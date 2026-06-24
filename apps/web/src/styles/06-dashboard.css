@@ -302,6 +302,101 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   DASHBOARD WIDGETS — reorderable / hideable sections
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Customize toggle bar */
+.dashboard-customize-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.dashboard-customize-bar .btn-secondary.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Single-column stack of widgets (replaces the fixed 2-col grid) */
+.dashboard-widgets {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Each widget wrapper */
+.dashboard-widget {
+  position: relative;
+}
+.dashboard-widget.is-customizing {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg, 16px);
+  padding: 10px;
+  margin: -10px;
+  transition: border-color 0.18s ease;
+}
+.dashboard-widget.is-customizing:hover {
+  border-color: var(--accent);
+}
+.dashboard-widget.is-hidden {
+  opacity: 0.45;
+}
+
+/* Per-widget control row (only in customize mode) */
+.widget-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius-md, 10px);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+}
+.widget-controls-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.widget-controls-buttons {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.widget-control-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-1);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.widget-control-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.widget-control-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .dashboard-widgets { gap: 12px; }
+  .widget-controls-label { font-size: 0.75rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    LANDING V2 (funnel)
    ═══════════════════════════════════════════════════════════════ */
 

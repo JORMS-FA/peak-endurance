@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import type { ReactNode } from 'react'
 
@@ -10,6 +11,9 @@ const { mocks } = vi.hoisted(() => ({
     useDashboardMetrics: vi.fn(),
     useTodaySession: vi.fn(),
     useStravaConnection: vi.fn(),
+    useHealthSources: vi.fn(),
+    useHealthMetrics: vi.fn(),
+    useDashboardLayout: vi.fn(),
   },
 }))
 
@@ -18,6 +22,9 @@ vi.mock('@/hooks/useAuth', () => ({ useAuth: mocks.useAuth }))
 vi.mock('@/hooks/useDashboardMetrics', () => ({ useDashboardMetrics: mocks.useDashboardMetrics }))
 vi.mock('@/hooks/useTodaySession', () => ({ useTodaySession: mocks.useTodaySession }))
 vi.mock('@/hooks/useStrava', () => ({ useStravaConnection: mocks.useStravaConnection }))
+vi.mock('@/hooks/useHealthSources', () => ({ useHealthSources: mocks.useHealthSources }))
+vi.mock('@/hooks/useHealthMetrics', () => ({ useHealthMetrics: mocks.useHealthMetrics }))
+vi.mock('@/hooks/useDashboardLayout', () => ({ useDashboardLayout: mocks.useDashboardLayout }))
 vi.mock('@/components/ui/AnimatedNumber', () => ({
   AnimatedNumber: ({ value }: { value: number | string }) => (
     <span data-testid="an">{String(value)}</span>
@@ -44,6 +51,26 @@ vi.mock('recharts', async () => {
 
 import { Dashboard } from '../Dashboard'
 
+const DEFAULT_WIDGET_KEYS = [
+  'coach', 'recovery', 'connect_banner', 'metrics', 'level',
+  'pmc_chart', 'weekly_load', 'sport_distribution',
+  'today_session', 'quick_read', 'recent_activities',
+] as const
+
+function defaultLayout(customizeMode = false) {
+  return {
+    widgets: DEFAULT_WIDGET_KEYS.map((widget_key, i) => ({ widget_key, position: i, visible: true })),
+    loading: false,
+    error: null,
+    customizeMode,
+    setCustomizeMode: vi.fn(),
+    moveUp: vi.fn(),
+    moveDown: vi.fn(),
+    toggleVisible: vi.fn(),
+    refetch: vi.fn(),
+  }
+}
+
 function setup(opts: {
   hasData?: boolean
   loading?: boolean
@@ -51,10 +78,16 @@ function setup(opts: {
   stravaLoading?: boolean
   today?: object | null
   todayLoading?: boolean
+  hasSources?: boolean
+  hasToday?: boolean
+  healthToday?: object | null
+  customizeMode?: boolean
 } = {}) {
   const hasData = opts.hasData ?? false
   const loading = opts.loading ?? false
   const stravaConnected = opts.stravaConnected ?? false
+  const hasSources = opts.hasSources ?? false
+  const hasToday = opts.hasToday ?? false
 
   mocks.useI18n.mockReturnValue({ t: (k: string) => k, language: 'es' })
   mocks.useAuth.mockReturnValue({
@@ -103,6 +136,22 @@ function setup(opts: {
     error: null,
     refetch: vi.fn(),
   })
+  mocks.useHealthSources.mockReturnValue({
+    sources: hasSources ? [{ id: 's1', profile_id: 'u1', source_type: 'oura' }] : [],
+    hasSources,
+    loading: false,
+    error: null,
+    refetch: vi.fn(),
+  })
+  mocks.useHealthMetrics.mockReturnValue({
+    today: hasToday ? (opts.healthToday ?? { recovery_pct: 82, sleep_hours: 7.2, hrv_ms: 58 }) : null,
+    latest: null,
+    hasToday,
+    loading: false,
+    error: null,
+    refetch: vi.fn(),
+  })
+  mocks.useDashboardLayout.mockReturnValue(defaultLayout(opts.customizeMode ?? false))
 
   return render(
     <MemoryRouter>
@@ -202,5 +251,57 @@ describe('Dashboard', () => {
   it('shows the no-session empty state when no session is scheduled today', () => {
     setup({ hasData: true, stravaConnected: true, today: null, todayLoading: false })
     expect(screen.getByText('noSessionToday')).toBeInTheDocument()
+  })
+
+  // ── Recovery gating (Energy Ring) ────────────────────────────────────────
+  it('shows the recovery locked state (no fake numbers) when no health source is connected', () => {
+    setup({ hasData: true, stravaConnected: true, hasSources: false })
+    expect(screen.getByText('recoveryLockedTitle')).toBeInTheDocument()
+    expect(screen.getByText('recoveryLockedCta')).toBeInTheDocument()
+    expect(screen.getByText('connectHealth')).toBeInTheDocument()
+    // The hardcoded fake values must NOT appear when locked.
+    expect(screen.queryByText('7.2h')).not.toBeInTheDocument()
+    expect(screen.queryByText('58ms')).not.toBeInTheDocument()
+  })
+
+  it('shows the syncing state when a health source is connected but today has no metric', () => {
+    setup({ hasData: true, stravaConnected: true, hasSources: true, hasToday: false })
+    expect(screen.getByText('recoverySyncingToday')).toBeInTheDocument()
+  })
+
+  it('shows real recovery values when a health source has today metrics', () => {
+    setup({
+      hasData: true,
+      stravaConnected: true,
+      hasSources: true,
+      hasToday: true,
+      healthToday: { recovery_pct: 82, sleep_hours: 7.2, hrv_ms: 58 },
+    })
+    expect(screen.getAllByText('82%').length).toBeGreaterThan(0)
+    expect(screen.getByText('7.2h')).toBeInTheDocument()
+    expect(screen.getByText('58ms')).toBeInTheDocument()
+  })
+
+  // ── Dashboard customization ──────────────────────────────────────────────
+  it('renders the Customize button when data exists', () => {
+    setup({ hasData: true, stravaConnected: true })
+    expect(screen.getByRole('button', { name: /customize/i })).toBeInTheDocument()
+  })
+
+  it('calls setCustomizeMode when the Customize button is clicked', async () => {
+    const user = userEvent.setup()
+    setup({ hasData: true, stravaConnected: true, customizeMode: false })
+    await user.click(screen.getByRole('button', { name: /customize/i }))
+    expect(mocks.useDashboardLayout.mock.results[0].value.setCustomizeMode).toHaveBeenCalled()
+  })
+
+  it('shows per-widget reorder/visibility controls when customize mode is on', () => {
+    setup({ hasData: true, stravaConnected: true, customizeMode: true })
+    // moveUp / moveDown / hideWidget aria-labels come from the WidgetFrame controls.
+    expect(screen.getAllByLabelText('moveUp').length).toBeGreaterThan(0)
+    expect(screen.getAllByLabelText('moveDown').length).toBeGreaterThan(0)
+    expect(screen.getAllByLabelText('hideWidget').length).toBeGreaterThan(0)
+    // The hint is shown while customizing.
+    expect(screen.getByText('customizeHint')).toBeInTheDocument()
   })
 })

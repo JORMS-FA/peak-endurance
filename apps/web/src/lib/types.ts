@@ -118,3 +118,49 @@ export type NavItem = {
   label_es: string
   label_en: string
 }
+
+// ─── Health (recovery / readiness) ────────────────────────────────────────────
+
+export type HealthSourceType = 'oura' | 'garmin' | 'whoop' | 'apple_health' | 'google_fit'
+
+export type HealthSource = {
+  id: string
+  profile_id: string
+  source_type: HealthSourceType
+  connected_at: string | null
+  last_sync_at: string | null
+}
+
+export type HealthMetric = {
+  id: string
+  profile_id: string
+  date: string // YYYY-MM-DD
+  sleep_hours: number | null
+  hrv_ms: number | null
+  recovery_pct: number | null
+  source: string | null
+}
+
+// ─── Dashboard widgets (personalizable layout) ────────────────────────────────
+
+export type WidgetKey =
+  | 'coach'
+  | 'recovery'
+  | 'connect_banner'
+  | 'metrics'
+  | 'level'
+  | 'pmc_chart'
+  | 'weekly_load'
+  | 'sport_distribution'
+  | 'today_session'
+  | 'quick_read'
+  | 'recent_activities'
+
+export type DashboardWidget = {
+  id: string
+  profile_id: string
+  widget_key: WidgetKey
+  position: number
+  visible: boolean
+}
+

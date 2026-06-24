@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -9,12 +10,11 @@ import {
   TrendingUp,
   Zap,
   Send,
-  Bot,
   Sparkles,
+  Lock,
 } from 'lucide-react'
 import {
   ResponsiveContainer,
-  AreaChart,
   Area,
   Line,
   XAxis,
@@ -34,9 +34,18 @@ import { useAuth } from '../hooks/useAuth'
 import { useDashboardMetrics } from '../hooks/useDashboardMetrics'
 import { useTodaySession } from '../hooks/useTodaySession'
 import { useStravaConnection } from '../hooks/useStrava'
+import { useHealthSources } from '../hooks/useHealthSources'
+import { useHealthMetrics } from '../hooks/useHealthMetrics'
+import { useDashboardLayout } from '../hooks/useDashboardLayout'
 import { AnimatedNumber } from '../components/ui/AnimatedNumber'
 import { SportIcon, SPORT_COLORS } from '../components/ui/SportIcon'
 import { LevelCard } from '../components/ui/LevelCard'
+import {
+  CustomizeToggle,
+  WidgetFrame,
+  WIDGET_LABEL_KEYS,
+} from '../components/ui/DashboardWidgetGrid'
+import type { WidgetKey } from '../lib/types'
 
 // ─── Animation Variants ─────────────────────────────────────────────────────
 const cardVariants = {
@@ -116,6 +125,9 @@ export function Dashboard() {
   const { metrics, hasData, loading } = useDashboardMetrics()
   const { data: today, loading: todayLoading } = useTodaySession()
   const { status: stravaStatus, loading: stravaLoading } = useStravaConnection()
+  const { hasSources } = useHealthSources()
+  const { today: healthToday, hasToday } = useHealthMetrics()
+  const layout = useDashboardLayout()
 
   const stravaConnected = Boolean(stravaStatus?.connected)
   const showEmpty = !loading && !hasData
@@ -123,6 +135,11 @@ export function Dashboard() {
   const showSyncing = showEmpty && stravaConnected
   const fullName = profile?.display_name ?? 'Atleta'
   const firstName = fullName.split(' ')[0] ?? fullName
+
+  // Recovery ring state — gated on real health data, never fake numbers.
+  const recoveryPct = healthToday?.recovery_pct ?? null
+  const recoveryLocked = !hasSources
+  const recoverySyncing = hasSources && !hasToday
 
   const [coachInput, setCoachInput] = useState('')
 
@@ -155,501 +172,610 @@ export function Dashboard() {
       : 'Connect Strava to get personalized training insights.'
   }, [latestActivity, language])
 
-  return (
-    <div className="page-dashboard">
-      {/* ── 1. Peak IA Coach — MERGED compact card ───────────────── */}
-      <motion.section
-        className="glass-card coach-compact-card"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <div className="coach-compact-glow" aria-hidden />
-        <div className="welcome-badge-row">
-          <Sparkles size={16} strokeWidth={1.5} className="welcome-sparkle" />
-          <span className="badge">Peak IA Coach</span>
-        </div>
-        <h2 className="welcome-greeting">
-          👋 {language === 'es' ? 'BUENOS DÍAS' : 'GOOD MORNING'}, {firstName}
-        </h2>
-        <p className="welcome-message">
-          "{aiMessage}"
-        </p>
-        <div className="coach-compact-input-row">
-          <input
-            type="text"
-            className="coach-quick-input"
-            placeholder={language === 'es' ? 'Pregunta a tu coach...' : 'Ask your coach...'}
-            value={coachInput}
-            onChange={(e) => setCoachInput(e.target.value)}
-          />
-          <button
-            type="button"
-            className="coach-quick-send"
-            disabled={!coachInput.trim()}
-            onClick={() => {
-              if (coachInput.trim()) {
-                window.location.href = '/app/ia-coach'
-              }
-            }}
+  // ── Widget content renderers ──────────────────────────────────────────────
+  // Each dashboard section is keyed by a WidgetKey so the layout hook can
+  // reorder / hide it. Returns null when a widget has nothing to show.
+  const widgetContent = (key: WidgetKey): ReactNode => {
+    switch (key) {
+      case 'coach':
+        return (
+          <motion.section
+            className="glass-card coach-compact-card"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            <Send size={16} strokeWidth={1.5} />
-          </button>
-        </div>
-        <div className="coach-quick-chips">
-          {suggestionChips.map((chip) => (
-            <Link key={chip.label} to={chip.path} className="chip chip-sm">
-              💡 {chip.label}
-            </Link>
-          ))}
-        </div>
-      </motion.section>
-
-      {/* ── 2. Energy / Readiness Ring ──────────────────────────── */}
-      <motion.section
-        className="glass-card energy-card"
-        custom={2}
-        initial="hidden"
-        animate="visible"
-        variants={cardVariants}
-      >
-        <div className="energy-ring-container">
-          <div className="energy-ring-chart">
-            <ResponsiveContainer width={140} height={140}>
-              <PieChart>
-                <Pie
-                  data={[
-                    { name: 'Energy', value: 82 },
-                    { name: 'Remaining', value: 18 },
-                  ]}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={44}
-                  outerRadius={62}
-                  startAngle={90}
-                  endAngle={-270}
-                  dataKey="value"
-                  stroke="none"
-                  cornerRadius={10}
-                >
-                  <Cell fill="var(--accent)" />
-                  <Cell fill="rgba(255,255,255,0.06)" />
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="energy-ring-label">
-              <span className="energy-ring-pct">82%</span>
-              <span className="energy-ring-title">Energy</span>
+            <div className="coach-compact-glow" aria-hidden />
+            <div className="welcome-badge-row">
+              <Sparkles size={16} strokeWidth={1.5} className="welcome-sparkle" />
+              <span className="badge">Peak IA Coach</span>
             </div>
-          </div>
-          <div className="energy-metrics">
-            <h3 className="energy-card-title">{language === 'es' ? 'Nivel de Recuperación' : 'Readiness Level'}</h3>
-            <div className="energy-metrics-grid">
-              <div className="energy-metric">
-                <Moon size={14} strokeWidth={1.5} />
-                <div className="energy-metric-body">
-                  <span className="energy-metric-label">{language === 'es' ? 'Sueño' : 'Sleep'}</span>
-                  <span className="energy-metric-value">7.2h</span>
-                </div>
-              </div>
-              <div className="energy-metric">
-                <Heart size={14} strokeWidth={1.5} />
-                <div className="energy-metric-body">
-                  <span className="energy-metric-label">HRV</span>
-                  <span className="energy-metric-value">58ms</span>
-                </div>
-              </div>
-              <div className="energy-metric">
-                <Activity size={14} strokeWidth={1.5} />
-                <div className="energy-metric-body">
-                  <span className="energy-metric-label">{language === 'es' ? 'Recuperación' : 'Recovery'}</span>
-                  <span className="energy-metric-value">92%</span>
-                </div>
-              </div>
+            <h2 className="welcome-greeting">
+              👋 {language === 'es' ? 'BUENOS DÍAS' : 'GOOD MORNING'}, {firstName}
+            </h2>
+            <p className="welcome-message">
+              "{aiMessage}"
+            </p>
+            <div className="coach-compact-input-row">
+              <input
+                type="text"
+                className="coach-quick-input"
+                placeholder={language === 'es' ? 'Pregunta a tu coach...' : 'Ask your coach...'}
+                value={coachInput}
+                onChange={(e) => setCoachInput(e.target.value)}
+              />
+              <button
+                type="button"
+                className="coach-quick-send"
+                disabled={!coachInput.trim()}
+                onClick={() => {
+                  if (coachInput.trim()) {
+                    window.location.href = '/app/ia-coach'
+                  }
+                }}
+              >
+                <Send size={16} strokeWidth={1.5} />
+              </button>
             </div>
-            <small className="text-muted energy-hint">
-              {language === 'es'
-                ? '📱 Datos en vivo cuando conectes tu smartwatch o anillo.'
-                : '📱 Live data when you connect your smartwatch or ring.'}
-            </small>
-          </div>
-        </div>
-      </motion.section>
+            <div className="coach-quick-chips">
+              {suggestionChips.map((chip) => (
+                <Link key={chip.label} to={chip.path} className="chip chip-sm">
+                  💡 {chip.label}
+                </Link>
+              ))}
+            </div>
+          </motion.section>
+        )
 
-      {/* ── Connect-Strava nudge ──────────────────────────────────────── */}
-      {!stravaLoading && !stravaConnected && !showOnboarding && (
-        <motion.div
-          className="card connect-banner"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-        >
-          <div className="connect-banner-icon" style={{ background: '#fc4c02' }}>S</div>
-          <div className="connect-banner-body">
-            <strong>{t('connectStravaTitle')}</strong>
-            <small>{t('connectStravaHint')}</small>
-          </div>
-          <Link to="/app/conexiones" className="btn-primary btn-sm">
-            {t('connectStrava')}
-          </Link>
-        </motion.div>
-      )}
-
-      {/* ── Onboarding state: no Strava connected ────────────────────── */}
-      {showOnboarding ? (
-        <motion.section
-          className="glass-card onboarding-card"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className="onboarding-illustration">
-            <Zap size={48} strokeWidth={1.5} />
-          </div>
-          <h2 className="onboarding-title">{t('onboardingTitle')}</h2>
-          <p className="onboarding-subtitle">{t('onboardingSubtitle')}</p>
-          <Link to="/app/conexiones" className="btn-primary onboarding-cta">
-            <span className="strava-mark">S</span>
-            {t('connectStrava')}
-          </Link>
-          <div className="onboarding-meta">
-            <span className="onboarding-meta-item"><TrendingUp size={14} strokeWidth={1.5} /> CTL · ATL · TSB</span>
-            <span className="onboarding-meta-item"><Activity size={14} strokeWidth={1.5} /> {language === 'es' ? 'Carga semanal' : 'Weekly load'}</span>
-            <span className="onboarding-meta-item"><Flame size={14} strokeWidth={1.5} /> {language === 'es' ? 'Distribución por deporte' : 'Sport distribution'}</span>
-          </div>
-        </motion.section>
-      ) : showSyncing ? (
-        <motion.section
-          className="glass-card onboarding-card"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className="onboarding-illustration is-syncing">
-            <div className="spinner" />
-          </div>
-          <h2 className="onboarding-title">{t('syncingTitle')}</h2>
-          <p className="onboarding-subtitle">{t('syncingSubtitle')}</p>
-        </motion.section>
-      ) : (
-      <>
-      {/* ── Metrics Grid ───────────────────────────────────────────────── */}
-      <section className="metrics-grid">
-        {[
-          { icon: <Heart size={18} strokeWidth={1.5} />, label: t('mForma'), value: metrics.formPct, unit: '%', color: 'green' },
-          { icon: <Zap size={18} strokeWidth={1.5} />, label: t('mCarga'), value: metrics.weeklyTss, unit: 'TSS', color: 'blue' },
-          { icon: <TrendingUp size={18} strokeWidth={1.5} />, label: t('mAptitud'), value: metrics.ctl, unit: 'CTL', color: 'purple' },
-          { icon: <Flame size={18} strokeWidth={1.5} />, label: t('mFatiga'), value: metrics.atl, unit: 'ATL', color: 'orange' },
-        ].map((m, i) => (
-          <motion.div
-            key={m.label}
-            className={`metric-card metric-${m.color}`}
-            custom={i + 3}
+      case 'recovery':
+        return (
+          <motion.section
+            className="glass-card energy-card"
+            custom={2}
             initial="hidden"
             animate="visible"
             variants={cardVariants}
           >
-            <div className="metric-icon">{m.icon}</div>
-            <div className="metric-body">
-              <span className="metric-label">{m.label}</span>
-              <div className="metric-value">
-                <strong>
-                  {showEmpty ? '--' : <AnimatedNumber value={m.value} />}
-                </strong>
-                <small>{m.unit}</small>
+            {recoveryLocked ? (
+              <div className="energy-locked">
+                <div className="energy-locked-icon">
+                  <Lock size={26} strokeWidth={1.5} />
+                </div>
+                <div className="energy-locked-body">
+                  <h3 className="energy-card-title">{t('recoveryLockedTitle')}</h3>
+                  <p className="energy-locked-cta">{t('recoveryLockedCta')}</p>
+                  <Link to="/app/conexiones" className="btn-primary btn-sm energy-locked-btn">
+                    <span>{t('connectHealth')}</span>
+                  </Link>
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
-      </section>
-
-      {/* ── Level & achievements (gamification) ────────────────────────── */}
-      <LevelCard />
-
-      {/* ── Performance Management Chart (PMC) ─────────────────────────── */}
-      <motion.section
-        className="card chart-card"
-        custom={7}
-        initial="hidden"
-        animate="visible"
-        variants={cardVariants}
-      >
-        <div className="card-header">
-          <TrendingUp size={16} strokeWidth={1.5} />
-          <span>{t('weeklyState')} — PMC (90 días)</span>
-        </div>
-        {showEmpty ? (
-          <div className="empty-state"><p>{t('noData')}</p></div>
-        ) : (
-          <div style={{ width: '100%', height: 280 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={pmcSeries} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="tsbGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#22c55e" stopOpacity={0.4} />
-                    <stop offset="100%" stopColor="#22c55e" stopOpacity={0.05} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fill: CHART_TEXT_COLOR, fontSize: 11 }}
-                  tickFormatter={(val: string) => val.slice(5)}
-                  interval="preserveStartEnd"
-                  axisLine={{ stroke: CHART_GRID_STROKE }}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fill: CHART_TEXT_COLOR, fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip content={<PmcTooltip />} />
-                <Legend
-                  wrapperStyle={{ fontSize: 12, color: CHART_TEXT_COLOR }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="tsb"
-                  name="TSB (Form)"
-                  stroke="#22c55e"
-                  fill="url(#tsbGradient)"
-                  strokeWidth={1.5}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="ctl"
-                  name="CTL (Fitness)"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4, fill: '#3b82f6' }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="atl"
-                  name="ATL (Fatigue)"
-                  stroke="#f97316"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4, fill: '#f97316' }}
-                />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </motion.section>
-
-      {/* ── Two-column dashboard grid ──────────────────────────────────── */}
-      <div className="dashboard-grid">
-        {/* Weekly Load BarChart */}
-        <motion.section
-          className="card chart-card"
-          custom={8}
-          initial="hidden"
-          animate="visible"
-          variants={cardVariants}
-        >
-          <div className="card-header">
-            <Zap size={16} strokeWidth={1.5} />
-            <span>Carga Semanal (TSS)</span>
-          </div>
-          {showEmpty ? (
-            <div className="empty-state"><p>{t('noData')}</p></div>
-          ) : (
-            <div style={{ width: '100%', height: 220 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={metrics.weeklySeries} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#a855f7" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#06b6d4" stopOpacity={1} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} vertical={false} />
-                  <XAxis
-                    dataKey="day"
-                    tick={{ fill: CHART_TEXT_COLOR, fontSize: 12 }}
-                    axisLine={{ stroke: CHART_GRID_STROKE }}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fill: CHART_TEXT_COLOR, fontSize: 11 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip content={<WeeklyTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                  <Bar
-                    dataKey="tss"
-                    fill="url(#barGradient)"
-                    radius={[6, 6, 0, 0]}
-                    maxBarSize={40}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </motion.section>
-
-        {/* Sport Distribution PieChart */}
-        <motion.section
-          className="card chart-card"
-          custom={9}
-          initial="hidden"
-          animate="visible"
-          variants={cardVariants}
-        >
-          <div className="card-header">
-            <Activity size={16} strokeWidth={1.5} />
-            <span>Distribución por Deporte</span>
-          </div>
-          {pieData.length === 0 ? (
-            <div className="empty-state"><p>{t('noData')}</p></div>
-          ) : (
-            <div style={{ width: '100%', height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={80}
-                    paddingAngle={3}
-                    dataKey="value"
-                    nameKey="name"
-                    stroke="none"
-                  >
-                    {pieData.map((entry) => (
-                      <Cell
-                        key={entry.name}
-                        fill={SPORT_COLORS[entry.name] || SPORT_COLORS.other}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      background: TOOLTIP_BG,
-                      border: `1px solid ${TOOLTIP_BORDER}`,
-                      borderRadius: 8,
-                      fontSize: 12,
-                      color: CHART_TEXT_COLOR,
-                    }}
-                    formatter={(value, name) => [`${value} actividades`, String(name)] as [string, string]}
-                  />
-                  <Legend
-                    wrapperStyle={{ fontSize: 12, color: CHART_TEXT_COLOR }}
-                    formatter={(value: string) => <span style={{ color: CHART_TEXT_COLOR }}>{value}</span>}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </motion.section>
-
-        {/* Today's session */}
-        <motion.section
-          className="card"
-          custom={10}
-          initial="hidden"
-          animate="visible"
-          variants={cardVariants}
-        >
-          <div className="card-header">
-            <Activity size={16} strokeWidth={1.5} />
-            <span>{t('trainingOfDay')}</span>
-          </div>
-          {todayLoading ? (
-            <div className="empty-state"><div className="spinner" /></div>
-          ) : today ? (
-            <div className="today-session">
-              <div className="today-session-icon"><SportIcon sport={today.sport} size={16} /></div>
-              <div className="today-session-body">
-                <strong>{today.title}</strong>
-                <span className="text-muted">
-                  {today.duration_minutes ? `${today.duration_minutes} min` : ''}
-                  {today.intensity ? ` · ${today.intensity}` : ''}
-                </span>
-                {today.notes && <small className="text-muted">{today.notes}</small>}
-              </div>
-              <span className={`status-badge ${today.status === 'completed' ? 'success' : 'warning'}`}>
-                {t(today.status === 'completed' ? 'completed' : 'planned')}
-              </span>
-            </div>
-          ) : (
-            <div className="empty-state">
-              <p>{t('noData')}</p>
-              <small>{stravaConnected ? t('noSessionToday') : t('connectSource')}</small>
-            </div>
-          )}
-        </motion.section>
-
-        {/* Recovery / Quick read */}
-        <motion.section
-          className="card"
-          custom={11}
-          initial="hidden"
-          animate="visible"
-          variants={cardVariants}
-        >
-          <div className="card-header">
-            <Moon size={16} strokeWidth={1.5} />
-            <span>{t('quickRead')}</span>
-          </div>
-          <div className="recovery-grid">
-            <div className="recovery-item">
-              <span className="recovery-label">TSB</span>
-              <span className="recovery-value">{showEmpty ? '--' : <AnimatedNumber value={metrics.tsb} />}</span>
-            </div>
-            <div className="recovery-item">
-              <span className="recovery-label">{t('weeklyHours')}</span>
-              <span className="recovery-value">{showEmpty ? '--' : <AnimatedNumber value={metrics.weeklyHours} decimals={1} />}</span>
-            </div>
-            <div className="recovery-item">
-              <span className="recovery-label">{t('weeklyDistance')}</span>
-              <span className="recovery-value">{showEmpty ? '--' : <AnimatedNumber value={metrics.weeklyDistance} decimals={1} />}</span>
-            </div>
-          </div>
-        </motion.section>
-
-        {/* Recent activities */}
-        <motion.section
-          className="card"
-          custom={12}
-          initial="hidden"
-          animate="visible"
-          variants={cardVariants}
-        >
-          <div className="card-header">
-            <Zap size={16} strokeWidth={1.5} />
-            <span>{t('recentActivities')}</span>
-          </div>
-          {metrics.recent.length === 0 ? (
-            <div className="empty-state">
-              <p>{t('noData')}</p>
-              <small>{stravaConnected ? t('syncToSeeActivities') : t('connectSource')}</small>
-            </div>
-          ) : (
-            <ul className="recent-list">
-              {metrics.recent.map((a) => (
-                <li key={a.id} className="recent-item">
-                  <span className="recent-icon"><SportIcon sport={a.sport} size={14} /></span>
-                  <div className="recent-body">
-                    <strong>{a.title}</strong>
-                    <small className="text-muted">
-                      {a.date}
-                      {a.distance_km ? ` · ${a.distance_km.toFixed(1)} km` : ''}
-                      {a.duration_minutes ? ` · ${a.duration_minutes} min` : ''}
-                      {a.tss ? ` · ${a.tss} TSS` : ''}
-                    </small>
+            ) : (
+              <div className="energy-ring-container">
+                <div className="energy-ring-chart">
+                  <ResponsiveContainer width={140} height={140}>
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Energy', value: recoverySyncing ? 0 : (recoveryPct ?? 0) },
+                          { name: 'Remaining', value: recoverySyncing ? 100 : 100 - (recoveryPct ?? 0) },
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={44}
+                        outerRadius={62}
+                        startAngle={90}
+                        endAngle={-270}
+                        dataKey="value"
+                        stroke="none"
+                        cornerRadius={10}
+                      >
+                        <Cell fill="var(--accent)" />
+                        <Cell fill="rgba(255,255,255,0.06)" />
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="energy-ring-label">
+                    {recoverySyncing ? (
+                      <>
+                        <span className="energy-ring-pct">…</span>
+                        <span className="energy-ring-title">{t('recoveryEnergy')}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="energy-ring-pct">{recoveryPct !== null ? `${Math.round(recoveryPct)}%` : '—'}</span>
+                        <span className="energy-ring-title">{t('recoveryEnergy')}</span>
+                      </>
+                    )}
                   </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </motion.section>
-      </div>
-      </>
+                </div>
+                <div className="energy-metrics">
+                  <h3 className="energy-card-title">{t('recoveryTitle')}</h3>
+                  {recoverySyncing ? (
+                    <div className="energy-syncing">
+                      <div className="spinner" />
+                      <small className="text-muted">{t('recoverySyncingToday')}</small>
+                    </div>
+                  ) : (
+                    <div className="energy-metrics-grid">
+                      <div className="energy-metric">
+                        <Moon size={14} strokeWidth={1.5} />
+                        <div className="energy-metric-body">
+                          <span className="energy-metric-label">{t('recoverySleep')}</span>
+                          <span className="energy-metric-value">
+                            {healthToday?.sleep_hours !== null && healthToday?.sleep_hours !== undefined
+                              ? `${healthToday.sleep_hours}h`
+                              : '—'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="energy-metric">
+                        <Heart size={14} strokeWidth={1.5} />
+                        <div className="energy-metric-body">
+                          <span className="energy-metric-label">{t('recoveryHrv')}</span>
+                          <span className="energy-metric-value">
+                            {healthToday?.hrv_ms !== null && healthToday?.hrv_ms !== undefined
+                              ? `${healthToday.hrv_ms}ms`
+                              : '—'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="energy-metric">
+                        <Activity size={14} strokeWidth={1.5} />
+                        <div className="energy-metric-body">
+                          <span className="energy-metric-label">{t('recoveryRecovery')}</span>
+                          <span className="energy-metric-value">
+                            {recoveryPct !== null ? `${Math.round(recoveryPct)}%` : '—'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <small className="text-muted energy-hint">{t('recoveryLiveHint')}</small>
+                </div>
+              </div>
+            )}
+          </motion.section>
+        )
+
+      case 'connect_banner':
+        if (stravaLoading || stravaConnected || showOnboarding) return null
+        return (
+          <motion.div
+            className="card connect-banner"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <div className="connect-banner-icon" style={{ background: '#fc4c02' }}>S</div>
+            <div className="connect-banner-body">
+              <strong>{t('connectStravaTitle')}</strong>
+              <small>{t('connectStravaHint')}</small>
+            </div>
+            <Link to="/app/conexiones" className="btn-primary btn-sm">
+              {t('connectStrava')}
+            </Link>
+          </motion.div>
+        )
+
+      case 'metrics':
+        return (
+          <section className="metrics-grid">
+            {[
+              { icon: <Heart size={18} strokeWidth={1.5} />, label: t('mForma'), value: metrics.formPct, unit: '%', color: 'green' },
+              { icon: <Zap size={18} strokeWidth={1.5} />, label: t('mCarga'), value: metrics.weeklyTss, unit: 'TSS', color: 'blue' },
+              { icon: <TrendingUp size={18} strokeWidth={1.5} />, label: t('mAptitud'), value: metrics.ctl, unit: 'CTL', color: 'purple' },
+              { icon: <Flame size={18} strokeWidth={1.5} />, label: t('mFatiga'), value: metrics.atl, unit: 'ATL', color: 'orange' },
+            ].map((m, i) => (
+              <motion.div
+                key={m.label}
+                className={`metric-card metric-${m.color}`}
+                custom={i + 3}
+                initial="hidden"
+                animate="visible"
+                variants={cardVariants}
+              >
+                <div className="metric-icon">{m.icon}</div>
+                <div className="metric-body">
+                  <span className="metric-label">{m.label}</span>
+                  <div className="metric-value">
+                    <strong>
+                      {showEmpty ? '--' : <AnimatedNumber value={m.value} />}
+                    </strong>
+                    <small>{m.unit}</small>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </section>
+        )
+
+      case 'level':
+        return <LevelCard />
+
+      case 'pmc_chart':
+        return (
+          <motion.section
+            className="card chart-card"
+            custom={7}
+            initial="hidden"
+            animate="visible"
+            variants={cardVariants}
+          >
+            <div className="card-header">
+              <TrendingUp size={16} strokeWidth={1.5} />
+              <span>{t('weeklyState')} — PMC (90 días)</span>
+            </div>
+            {showEmpty ? (
+              <div className="empty-state"><p>{t('noData')}</p></div>
+            ) : (
+              <div style={{ width: '100%', height: 280 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={pmcSeries} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="tsbGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#22c55e" stopOpacity={0.4} />
+                        <stop offset="100%" stopColor="#22c55e" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fill: CHART_TEXT_COLOR, fontSize: 11 }}
+                      tickFormatter={(val: string) => val.slice(5)}
+                      interval="preserveStartEnd"
+                      axisLine={{ stroke: CHART_GRID_STROKE }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: CHART_TEXT_COLOR, fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip content={<PmcTooltip />} />
+                    <Legend
+                      wrapperStyle={{ fontSize: 12, color: CHART_TEXT_COLOR }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="tsb"
+                      name="TSB (Form)"
+                      stroke="#22c55e"
+                      fill="url(#tsbGradient)"
+                      strokeWidth={1.5}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="ctl"
+                      name="CTL (Fitness)"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4, fill: '#3b82f6' }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="atl"
+                      name="ATL (Fatigue)"
+                      stroke="#f97316"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4, fill: '#f97316' }}
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </motion.section>
+        )
+
+      case 'weekly_load':
+        return (
+          <motion.section
+            className="card chart-card"
+            custom={8}
+            initial="hidden"
+            animate="visible"
+            variants={cardVariants}
+          >
+            <div className="card-header">
+              <Zap size={16} strokeWidth={1.5} />
+              <span>Carga Semanal (TSS)</span>
+            </div>
+            {showEmpty ? (
+              <div className="empty-state"><p>{t('noData')}</p></div>
+            ) : (
+              <div style={{ width: '100%', height: 220 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={metrics.weeklySeries} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#a855f7" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#06b6d4" stopOpacity={1} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} vertical={false} />
+                    <XAxis
+                      dataKey="day"
+                      tick={{ fill: CHART_TEXT_COLOR, fontSize: 12 }}
+                      axisLine={{ stroke: CHART_GRID_STROKE }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: CHART_TEXT_COLOR, fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip content={<WeeklyTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                    <Bar
+                      dataKey="tss"
+                      fill="url(#barGradient)"
+                      radius={[6, 6, 0, 0]}
+                      maxBarSize={40}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </motion.section>
+        )
+
+      case 'sport_distribution':
+        return (
+          <motion.section
+            className="card chart-card"
+            custom={9}
+            initial="hidden"
+            animate="visible"
+            variants={cardVariants}
+          >
+            <div className="card-header">
+              <Activity size={16} strokeWidth={1.5} />
+              <span>Distribución por Deporte</span>
+            </div>
+            {pieData.length === 0 ? (
+              <div className="empty-state"><p>{t('noData')}</p></div>
+            ) : (
+              <div style={{ width: '100%', height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={3}
+                      dataKey="value"
+                      nameKey="name"
+                      stroke="none"
+                    >
+                      {pieData.map((entry) => (
+                        <Cell
+                          key={entry.name}
+                          fill={SPORT_COLORS[entry.name] || SPORT_COLORS.other}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        background: TOOLTIP_BG,
+                        border: `1px solid ${TOOLTIP_BORDER}`,
+                        borderRadius: 8,
+                        fontSize: 12,
+                        color: CHART_TEXT_COLOR,
+                      }}
+                      formatter={(value, name) => [`${value} actividades`, String(name)] as [string, string]}
+                    />
+                    <Legend
+                      wrapperStyle={{ fontSize: 12, color: CHART_TEXT_COLOR }}
+                      formatter={(value: string) => <span style={{ color: CHART_TEXT_COLOR }}>{value}</span>}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </motion.section>
+        )
+
+      case 'today_session':
+        return (
+          <motion.section
+            className="card"
+            custom={10}
+            initial="hidden"
+            animate="visible"
+            variants={cardVariants}
+          >
+            <div className="card-header">
+              <Activity size={16} strokeWidth={1.5} />
+              <span>{t('trainingOfDay')}</span>
+            </div>
+            {todayLoading ? (
+              <div className="empty-state"><div className="spinner" /></div>
+            ) : today ? (
+              <div className="today-session">
+                <div className="today-session-icon"><SportIcon sport={today.sport} size={16} /></div>
+                <div className="today-session-body">
+                  <strong>{today.title}</strong>
+                  <span className="text-muted">
+                    {today.duration_minutes ? `${today.duration_minutes} min` : ''}
+                    {today.intensity ? ` · ${today.intensity}` : ''}
+                  </span>
+                  {today.notes && <small className="text-muted">{today.notes}</small>}
+                </div>
+                <span className={`status-badge ${today.status === 'completed' ? 'success' : 'warning'}`}>
+                  {t(today.status === 'completed' ? 'completed' : 'planned')}
+                </span>
+              </div>
+            ) : (
+              <div className="empty-state">
+                <p>{t('noData')}</p>
+                <small>{stravaConnected ? t('noSessionToday') : t('connectSource')}</small>
+              </div>
+            )}
+          </motion.section>
+        )
+
+      case 'quick_read':
+        return (
+          <motion.section
+            className="card"
+            custom={11}
+            initial="hidden"
+            animate="visible"
+            variants={cardVariants}
+          >
+            <div className="card-header">
+              <Moon size={16} strokeWidth={1.5} />
+              <span>{t('quickRead')}</span>
+            </div>
+            <div className="recovery-grid">
+              <div className="recovery-item">
+                <span className="recovery-label">TSB</span>
+                <span className="recovery-value">{showEmpty ? '--' : <AnimatedNumber value={metrics.tsb} />}</span>
+              </div>
+              <div className="recovery-item">
+                <span className="recovery-label">{t('weeklyHours')}</span>
+                <span className="recovery-value">{showEmpty ? '--' : <AnimatedNumber value={metrics.weeklyHours} decimals={1} />}</span>
+              </div>
+              <div className="recovery-item">
+                <span className="recovery-label">{t('weeklyDistance')}</span>
+                <span className="recovery-value">{showEmpty ? '--' : <AnimatedNumber value={metrics.weeklyDistance} decimals={1} />}</span>
+              </div>
+            </div>
+          </motion.section>
+        )
+
+      case 'recent_activities':
+        return (
+          <motion.section
+            className="card"
+            custom={12}
+            initial="hidden"
+            animate="visible"
+            variants={cardVariants}
+          >
+            <div className="card-header">
+              <Zap size={16} strokeWidth={1.5} />
+              <span>{t('recentActivities')}</span>
+            </div>
+            {metrics.recent.length === 0 ? (
+              <div className="empty-state">
+                <p>{t('noData')}</p>
+                <small>{stravaConnected ? t('syncToSeeActivities') : t('connectSource')}</small>
+              </div>
+            ) : (
+              <ul className="recent-list">
+                {metrics.recent.map((a) => (
+                  <li key={a.id} className="recent-item">
+                    <span className="recent-icon"><SportIcon sport={a.sport} size={14} /></span>
+                    <div className="recent-body">
+                      <strong>{a.title}</strong>
+                      <small className="text-muted">
+                        {a.date}
+                        {a.distance_km ? ` · ${a.distance_km.toFixed(1)} km` : ''}
+                        {a.duration_minutes ? ` · ${a.duration_minutes} min` : ''}
+                        {a.tss ? ` · ${a.tss} TSS` : ''}
+                      </small>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </motion.section>
+        )
+
+      default:
+        return null
+    }
+  }
+
+  const renderWidget = (
+    w: { widget_key: WidgetKey; visible: boolean },
+    idx: number,
+    total: number,
+  ) => {
+    const content = widgetContent(w.widget_key)
+    if (content === null || content === false) return null
+    return (
+      <WidgetFrame
+        key={w.widget_key}
+        widgetKey={w.widget_key}
+        label={t(WIDGET_LABEL_KEYS[w.widget_key])}
+        customizeMode={layout.customizeMode}
+        visible={w.visible}
+        canUp={idx > 0}
+        canDown={idx < total - 1}
+        onUp={() => layout.moveUp(w.widget_key)}
+        onDown={() => layout.moveDown(w.widget_key)}
+        onToggle={() => layout.toggleVisible(w.widget_key)}
+        t={t}
+      >
+        {content}
+      </WidgetFrame>
+    )
+  }
+
+  const visibleWidgets = layout.widgets.filter((w) => layout.customizeMode || w.visible)
+
+  return (
+    <div className="page-dashboard">
+      {/* Customize toggle — hidden during onboarding/syncing */}
+      {!showOnboarding && !showSyncing && (
+        <CustomizeToggle
+          customizeMode={layout.customizeMode}
+          onToggle={() => layout.setCustomizeMode(!layout.customizeMode)}
+          t={t}
+        />
+      )}
+
+      {showOnboarding ? (
+        <div className="dashboard-widgets">
+          {renderWidget({ widget_key: 'coach', visible: true }, 0, 2)}
+          {renderWidget({ widget_key: 'recovery', visible: true }, 1, 2)}
+          <motion.section
+            className="glass-card onboarding-card"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className="onboarding-illustration">
+              <Zap size={48} strokeWidth={1.5} />
+            </div>
+            <h2 className="onboarding-title">{t('onboardingTitle')}</h2>
+            <p className="onboarding-subtitle">{t('onboardingSubtitle')}</p>
+            <Link to="/app/conexiones" className="btn-primary onboarding-cta">
+              <span className="strava-mark">S</span>
+              {t('connectStrava')}
+            </Link>
+            <div className="onboarding-meta">
+              <span className="onboarding-meta-item"><TrendingUp size={14} strokeWidth={1.5} /> CTL · ATL · TSB</span>
+              <span className="onboarding-meta-item"><Activity size={14} strokeWidth={1.5} /> {language === 'es' ? 'Carga semanal' : 'Weekly load'}</span>
+              <span className="onboarding-meta-item"><Flame size={14} strokeWidth={1.5} /> {language === 'es' ? 'Distribución por deporte' : 'Sport distribution'}</span>
+            </div>
+          </motion.section>
+        </div>
+      ) : showSyncing ? (
+        <div className="dashboard-widgets">
+          {renderWidget({ widget_key: 'coach', visible: true }, 0, 2)}
+          {renderWidget({ widget_key: 'recovery', visible: true }, 1, 2)}
+          <motion.section
+            className="glass-card onboarding-card"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className="onboarding-illustration is-syncing">
+              <div className="spinner" />
+            </div>
+            <h2 className="onboarding-title">{t('syncingTitle')}</h2>
+            <p className="onboarding-subtitle">{t('syncingSubtitle')}</p>
+          </motion.section>
+        </div>
+      ) : (
+        <div className="dashboard-widgets">
+          {visibleWidgets.map((w, idx) => renderWidget(w, idx, visibleWidgets.length))}
+        </div>
       )}
     </div>
   )

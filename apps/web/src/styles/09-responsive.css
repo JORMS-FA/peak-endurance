@@ -96,3 +96,44 @@
 }
 
 /* ─── Hero card buttons on mobile: stack neatly ──────────────── */
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE (< 640px) — Connections & Training full-width cards
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  /* Connection cards: fill the viewport, no excess padding */
+  .page-connections .connection-card,
+  .page-connections .connection-card-primary {
+    width: 100%;
+    max-width: 100%;
+    padding: 12px;
+    gap: 10px;
+  }
+  .page-connections .connection-info { min-width: 0; }
+  .page-connections .connection-actions { flex-wrap: wrap; }
+
+  /* Training activity cards: full width, consistent padding */
+  .page-training .activity-card {
+    width: 100%;
+    max-width: 100%;
+    padding: 12px;
+  }
+  .page-training .activity-card-expandable {
+    padding: 12px;
+  }
+  .page-training .detail-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Training filters: horizontal scroll, never wrap */
+  .training-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-left: -4px;
+    margin-right: -4px;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  .training-filters .chip { flex-shrink: 0; }
+}
