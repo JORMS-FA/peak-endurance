@@ -26,15 +26,15 @@
   .final-cta-card { padding: 56px 40px; }
   .final-cta-card h2 { font-size: 1.8rem; }
   .landing-audience { padding: 56px 32px 16px; }
-  .landing-how-v2 { padding: 64px 32px; }
+  .landing-how-v2 { padding: 48px 32px; }
   .landing-how-v2 h2 { font-size: 1.6rem; }
-  .landing-final-cta { padding: 64px 32px; }
+  .landing-final-cta { padding: 48px 32px; }
   .connection-actions { flex-wrap: nowrap; }
   .audience-cards { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (min-width: 1200px) {
-  .hero-gallery-section { padding: 120px 48px 80px; }
+  .hero-gallery-section { padding: 96px 48px 64px; }
   .audience-cards { grid-template-columns: repeat(3, 1fr); gap: 24px; }
 }
 
@@ -82,10 +82,11 @@
   flex-shrink: 0;
 }
 
-/* hide search/notifications on small screens to free up space */
+/* hide search/notifications and hamburger on small screens */
 .topbar-icon-desktop {
   display: none;
 }
+.topbar-collapse-btn { display: none; }
 
 @media (min-width: 768px) {
   .topbar-greeting { font-size: 1.2rem; }
@@ -136,4 +137,33 @@
     padding-right: 4px;
   }
   .training-filters .chip { flex-shrink: 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE (< 768px) — Landing header compact for small screens
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .landing-header-v3 {
+    padding: 10px 16px;
+    gap: 8px;
+  }
+  .landing-logo-v3 .logo-svg,
+  .landing-logo-v3 svg {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  .landing-brand-name {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+  }
+  .landing-nav-v3 { display: none; }
+  .btn-ghost-cta {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 0.7rem;
+    border-radius: 8px;
+  }
+  .landing-header-actions {
+    gap: 4px;
+  }
 }

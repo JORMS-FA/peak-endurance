@@ -1,4 +1,43 @@
-.detail-not-found {
+/* ═══════════════════════════════════════════════════════════════════════════════
+   Activity Detail — Strava-inspired design
+   Full-width map, floating overlays, 2-column stats, Athlete Intelligence
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Page container (edge-to-edge) ──────────────────────────────────────────── */
+.strava-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 100%;
+  margin: 0 auto;
+  padding-bottom: 48px;
+  background: var(--bg);
+}
+
+/* ── Skeleton ──────────────────────────────────────────────────────────────── */
+.strava-skeleton {
+  display: flex;
+  flex-direction: column;
+}
+.strava-skel-map {
+  height: 320px;
+  background: linear-gradient(90deg, var(--bg-3) 25%, var(--bg-4) 50%, var(--bg-3) 75%);
+  background-size: 200% 100%;
+  animation: strava-shimmer 1.6s ease-in-out infinite;
+}
+.strava-skel-body { padding: 20px 16px; display: flex; flex-direction: column; gap: 16px; }
+.strava-skel-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--bg-3); }
+.strava-skel-title { height: 32px; width: 70%; border-radius: 8px; background: var(--bg-3); }
+.strava-skel-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.strava-skel-stat { height: 48px; border-radius: 8px; background: var(--bg-3); }
+
+@keyframes strava-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Not found / error ────────────────────────────────────────────────────── */
+.strava-not-found {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -6,390 +45,393 @@
   text-align: center;
   padding: 80px 20px;
   gap: 14px;
-}
-.detail-not-found-icon {
-  width: 80px; height: 80px;
-  border-radius: 20px;
-  background: var(--accent-soft);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--accent);
-  margin-bottom: 8px;
-}
-.detail-not-found h2 { font-size: 1.4rem; font-weight: 700; }
-.detail-not-found p { color: var(--text-muted); max-width: 360px; line-height: 1.5; }
-
-/* ── Header ──────────────────────────────────────────────────────────────── */
-.detail-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-}
-.detail-back-btn {
-  width: 42px; height: 42px; flex-shrink: 0;
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--surface-raised);
-  color: var(--text-2);
-  cursor: pointer;
-  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
-}
-.detail-back-btn:hover {
-  border-color: var(--border-strong);
-  color: var(--text);
-  background: var(--bg-3);
-}
-.detail-header-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
-.detail-header-top {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.detail-header-sport-icon {
-  width: 48px; height: 48px;
-  border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.detail-header-text {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.detail-title {
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-  margin: 0;
-}
-.detail-date {
-  font-size: 0.82rem;
   color: var(--text-muted);
 }
-.detail-header-actions {
+.strava-not-found h2 { font-size: 1.3rem; font-weight: 700; color: var(--text); margin: 0; }
+.strava-not-found p { max-width: 360px; line-height: 1.5; margin: 0; }
+
+/* ── Map — edge-to-edge ───────────────────────────────────────────────────── */
+.strava-map-wrap {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  overflow: hidden;
+}
+.strava-map-wrap .polyline-map {
+  border-radius: 0 !important;
+  height: 100% !important;
+}
+.strava-map-wrap .polyline-map-large {
+  height: 100% !important;
+}
+
+/* Floating overlay buttons */
+.strava-map-overlay {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
   display: flex;
-  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 10;
+}
+.strava-map-overlay > * { pointer-events: auto; }
+.strava-map-overlay-right {
+  display: flex;
   gap: 8px;
 }
-.detail-strava-link {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 14px; border-radius: 10px;
-  border: 1px solid rgba(252, 76, 2, 0.25);
-  background: rgba(252, 76, 2, 0.06);
-  color: #fc4c02;
-  font-size: 0.82rem; font-weight: 600; text-decoration: none;
-  white-space: nowrap;
+.strava-map-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   transition: background 0.18s ease;
 }
-.detail-strava-link:hover { background: rgba(252, 76, 2, 0.14); }
+.strava-map-btn:hover { background: rgba(0, 0, 0, 0.8); }
 
-/* ── Summary Grid ───────────────────────────────────────────────────────── */
-.detail-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+/* Play button floating on map (right side) */
+.strava-map-play {
+  position: absolute;
+  right: 12px;
+  bottom: 60px;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
 }
-@media (max-width: 820px) { .detail-summary-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 640px) { .detail-summary-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 400px) { .detail-summary-grid { grid-template-columns: repeat(3, 1fr); } }
 
-.detail-summary-card {
+/* ── Athlete info row ──────────────────────────────────────────────────────── */
+.strava-athlete-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 16px 0;
+  margin-top: -2px;
+}
+.strava-athlete-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a2e;
+}
+.strava-athlete-avatar svg { display: block; }
+.strava-athlete-info {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.strava-athlete-name {
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
   align-items: center;
-  text-align: center;
   gap: 6px;
-  padding: 14px 10px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  color: var(--text);
 }
-.detail-summary-card:hover {
-  border-color: var(--border-strong);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+.strava-flag { font-size: 1.1rem; line-height: 1; }
+.strava-athlete-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
-.detail-summary-card-icon {
-  width: 36px; height: 36px;
+.strava-sport-icon-small { display: inline-flex; align-items: center; }
+
+/* ── Activity title ────────────────────────────────────────────────────────── */
+.strava-title {
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 6px 16px 0;
+  color: var(--text);
+}
+
+/* ── 2-column stats grid ───────────────────────────────────────────────────── */
+.strava-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 0 16px;
+  margin-top: 16px;
+}
+.strava-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.strava-stat:nth-last-child(-n+2) { border-bottom: none; }
+.strava-stat-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+}
+.strava-stat-main svg { opacity: 0.6; flex-shrink: 0; }
+.strava-stat-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.strava-stat-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  padding-left: 22px;
+}
+
+/* ── Athlete Intelligence card ──────────────────────────────────────────────── */
+.strava-card {
+  margin: 16px 16px 0;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 16px;
+  backdrop-filter: blur(12px);
+}
+.strava-intel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.strava-intel-icon {
+  width: 32px;
+  height: 32px;
   border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
-.detail-summary-card-value {
-  font-size: 1.1rem;
+.strava-intel-title {
+  font-size: 0.95rem;
   font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1.1;
+  color: var(--text);
 }
-.detail-summary-card-label {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  font-weight: 600;
+.strava-intel-text {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-2);
+  margin: 0;
 }
 
-/* ── Charts Grid ─────────────────────────────────────────────────────────── */
-.detail-charts-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
+/* ── View on Strava link ──────────────────────────────────────────────────── */
+.strava-strava-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 16px 16px 0;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(252, 76, 2, 0.3);
+  background: rgba(252, 76, 2, 0.06);
+  color: #fc4c02;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.18s ease;
 }
+.strava-strava-link:hover { background: rgba(252, 76, 2, 0.12); }
 
-.detail-chart-section {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-  padding: 16px;
+/* ── Charts ──────────────────────────────────────────────────────────────────── */
+.strava-charts {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
+  margin-top: 8px;
 }
-.detail-chart-title {
+.strava-chart-block {
+  padding: 16px 16px 8px;
+}
+.strava-chart-title {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--text-2);
+  margin-bottom: 8px;
+  padding: 0 4px;
 }
-.detail-chart-inner {
+.strava-chart-box {
   position: relative;
 }
-.detail-chart-zones {
+.strava-chart-zones {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 8px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  padding: 10px 4px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
-.detail-zone-tag {
+.strava-zone {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 3px 9px;
   border-radius: 6px;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   flex-shrink: 0;
 }
-.zone-range { font-weight: 400; opacity: 0.7; }
-.detail-chart-meta {
+.strava-zone-range { font-weight: 400; opacity: 0.6; }
+.strava-chart-meta {
   margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255,255,255,0.05);
-}
-.detail-meta-tag {
-  display: inline-block;
+  padding: 6px 4px 0;
   font-size: 0.72rem;
   color: var(--text-muted);
   font-weight: 500;
-  padding: 4px 10px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.04);
 }
 
-/* ── Chart tooltip ──────────────────────────────────────────────────────── */
-.detail-chart-tooltip {
-  background: #000;
-  border: 1px solid rgba(255,255,255,0.12);
+/* ── Chart tooltip ────────────────────────────────────────────────────────── */
+.strava-chart-tooltip {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   padding: 8px 12px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
-.detail-chart-tooltip-dist {
+.strava-chart-tooltip-dist {
   font-size: 0.65rem;
   color: var(--text-muted);
   font-weight: 500;
 }
-.detail-chart-tooltip-val {
+.strava-chart-tooltip-val {
   font-size: 0.9rem;
   font-weight: 700;
 }
 
-/* ── Sections (laps, map, load) ──────────────────────────────────────────── */
-.detail-section {
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+/* ── Sections (laps, load) ────────────────────────────────────────────────── */
+.strava-section {
+  margin: 16px 16px 0;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 16px;
 }
-.detail-section-title {
+.strava-section-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--text);
+  margin-bottom: 12px;
 }
-.detail-section-count {
+.strava-section-badge {
   margin-left: auto;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: var(--text-muted);
   font-weight: 600;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   padding: 2px 10px;
   border-radius: 999px;
 }
 
-/* ── Laps Table ──────────────────────────────────────────────────────────── */
-.detail-laps-table-wrap {
+/* ── Laps table ────────────────────────────────────────────────────────────── */
+.strava-table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
-.detail-laps-table {
+.strava-table {
   width: 100%;
-  min-width: 560px;
+  min-width: 400px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 0.82rem;
 }
-.detail-laps-table th {
+.strava-table th {
   text-align: left;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border);
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   white-space: nowrap;
 }
-.detail-laps-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+.strava-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   color: var(--text);
   font-weight: 500;
   white-space: nowrap;
 }
-.detail-laps-table tbody tr:nth-child(odd) {
-  background: rgba(255,255,255,0.02);
-}
-.detail-laps-table tbody tr:hover {
-  background: rgba(255,255,255,0.05);
-}
-.lap-num {
-  font-weight: 700;
-  color: var(--accent);
-}
+.strava-table tbody tr:nth-child(odd) { background: rgba(255, 255, 255, 0.015); }
+.strava-lap-num { font-weight: 700; color: var(--accent); }
 
-/* ── Map ──────────────────────────────────────────────────────────────────── */
-.detail-map {
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-/* ── Training Load Analysis ──────────────────────────────────────────────── */
-.detail-load-grid {
+/* ── Training Load ──────────────────────────────────────────────────────────── */
+.strava-load-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
 }
-@media (max-width: 820px) { .detail-load-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 480px) { .detail-load-grid { grid-template-columns: 1fr; } }
-
-.detail-load-card {
+@media (max-width: 400px) { .strava-load-grid { grid-template-columns: 1fr; } }
+.strava-load-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 14px;
-  border-radius: 12px;
-  background: var(--bg-1);
-  border: 1px solid var(--border);
+  gap: 3px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
-.detail-load-label {
-  font-size: 0.7rem;
+.strava-load-label {
+  font-size: 0.65rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  font-weight: 600;
+  font-weight: 700;
 }
-.detail-load-value {
-  font-size: 1.2rem;
+.strava-load-value {
+  font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
-.detail-load-sub {
-  font-size: 0.72rem;
+.strava-load-sub {
+  font-size: 0.7rem;
   color: var(--text-muted);
 }
 
-/* ── Training list: "View detail" action button ─────────────────────────── */
-.activity-detail-actions {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  gap: 8px;
+/* ── Mobile fine-tune ──────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .strava-map-wrap { height: 280px; }
+  .strava-title { font-size: 1.4rem; }
+  .strava-stat-value { font-size: 1.05rem; }
+  .strava-athlete-avatar { width: 40px; height: 40px; }
 }
-
-/* ── Polyline map (shared SVG renderer) ─────────────────────────────────── */
-.detail-map-section .polyline-map { margin-top: 2px; }
-
-.polyline-map {
-  border-radius: 16px;
-  overflow: hidden;
-  background: #0a0a0a;
-  border: 1px solid var(--border);
-}
-.polyline-map-svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-/* Large variant — ActivityDetail route block */
-.polyline-map-large {
-  height: 420px;
-}
-/* Compact variant — inline preview in Training list */
-.polyline-map-compact {
-  height: 180px;
-  margin-top: 12px;
-}
-/* Empty / unavailable state */
-.polyline-map-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: var(--text-muted);
-  font-size: 0.82rem;
-  border: 1px dashed var(--border-strong);
-  background: var(--bg-1);
-}
-.polyline-map-empty svg { opacity: 0.6; }
-
-@media (max-width: 640px) {
-  .polyline-map-large { height: 340px; }
-  .polyline-map-compact { height: 150px; }
-  .detail-section { padding: 14px; }
-  .detail-chart-section { padding: 10px; }
-  .detail-laps-table th,
-  .detail-laps-table td { padding: 8px 8px; }
-  .detail-header { gap: 10px; }
-  .detail-title { font-size: 1.15rem; }
-  .detail-back-btn { width: 38px; height: 38px; }
-  .detail-summary-card-value { font-size: 0.95rem; }
-  .detail-summary-card-label { font-size: 0.65rem; }
-}
-/* ── EOF ──────────────────────────────────────────────────────────────────── */
+/* ── EOF ────────────────────────────────────────────────────────────────────── */

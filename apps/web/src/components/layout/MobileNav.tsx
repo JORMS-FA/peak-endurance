@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Dumbbell, Sparkles, CalendarDays } from 'lucide-react'
+import { Home, Dumbbell, Star, CalendarDays } from 'lucide-react'
 import { mobileNav } from '../../lib/navigation'
 import { useI18n } from '../../hooks/useI18n'
 import { useAuth } from '../../hooks/useAuth'
 
 const iconMap: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
-  Home, Dumbbell, Sparkles, CalendarDays,
+  Home, Dumbbell, Star, CalendarDays,
 }
 
 export function MobileNav() {
@@ -26,7 +26,7 @@ export function MobileNav() {
             end={item.path === '/app'}
             className={({ isActive }) => `mobile-nav-item${isActive ? ' active' : ''}`}
           >
-            <Icon size={20} strokeWidth={1.5} />
+            <Icon size={20} strokeWidth={2.5} />
             <span>{label}</span>
           </NavLink>
         )

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -9,9 +9,8 @@ import {
   Moon,
   TrendingUp,
   Zap,
-  Send,
-  Sparkles,
   Lock,
+  Pencil,
 } from 'lucide-react'
 import {
   ResponsiveContainer,
@@ -40,8 +39,8 @@ import { useDashboardLayout } from '../hooks/useDashboardLayout'
 import { AnimatedNumber } from '../components/ui/AnimatedNumber'
 import { SportIcon, SPORT_COLORS } from '../components/ui/SportIcon'
 import { LevelCard } from '../components/ui/LevelCard'
+
 import {
-  CustomizeToggle,
   WidgetFrame,
   WIDGET_LABEL_KEYS,
 } from '../components/ui/DashboardWidgetGrid'
@@ -111,13 +110,6 @@ function WeeklyTooltip({ active, payload, label }: { active?: boolean; payload?:
   )
 }
 
-// ─── Suggestion Chips ───────────────────────────────────────────────────────
-const suggestionChips = [
-  { label: 'Analiza mi semana', path: '/app/ia-coach' },
-  { label: 'Ajusta mi plan', path: '/app/ia-coach' },
-  { label: '¿Estoy sobreentrenando?', path: '/app/ia-coach' },
-]
-
 // ─── Dashboard Component ────────────────────────────────────────────────────
 export function Dashboard() {
   const { t, language } = useI18n()
@@ -136,12 +128,40 @@ export function Dashboard() {
   const fullName = profile?.display_name ?? 'Atleta'
   const firstName = fullName.split(' ')[0] ?? fullName
 
+  // ═══ Weekly snapshot for the scrollable panel ═══
+  const activitiesThisWeek = metrics.weeklySeries.filter((d) => d.tss > 0).length
+  const totalActivities = metrics.recent.length
+  const streakDays = useMemo(() => {
+    if (!metrics.recent.length) return 0
+    const dates = [...new Set(metrics.recent.map((a) => a.date))].sort().reverse()
+    let streak = 1
+    for (let i = 1; i < dates.length; i++) {
+      const prev = new Date(dates[i - 1])
+      const curr = new Date(dates[i])
+      const diff = (prev.getTime() - curr.getTime()) / (1000 * 60 * 60 * 24)
+      if (diff === 1) streak++
+      else break
+    }
+    return streak
+  }, [metrics.recent])
+
+  // Weekly TSS target (scaled from last month average)
+  const weeklyTssTarget = Math.max(Math.round(metrics.ctl * 7), 200)
+  const tssProgress = Math.min(Math.round((metrics.weeklyTss / weeklyTssTarget) * 100), 100)
+
+  // Snapshot carousel index
+  const [snapshotIdx, setSnapshotIdx] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const onSnapshotScroll = useCallback(() => {
+    if (!containerRef.current) return
+    const idx = Math.round(containerRef.current.scrollLeft / containerRef.current.clientWidth)
+    setSnapshotIdx(idx)
+  }, [])
+
   // Recovery ring state — gated on real health data, never fake numbers.
   const recoveryPct = healthToday?.recovery_pct ?? null
   const recoveryLocked = !hasSources
   const recoverySyncing = hasSources && !hasToday
-
-  const [coachInput, setCoachInput] = useState('')
 
   // Compute PMC series for chart
   const pmcSeries = useMemo(() => computePmcSeries(metrics.daily), [metrics.daily])
@@ -156,76 +176,14 @@ export function Dashboard() {
     return Object.entries(sportCounts).map(([name, value]) => ({ name, value }))
   }, [metrics.recent])
 
-  // Get the latest activity for dynamic AI welcome message
-  const latestActivity = metrics.recent[0]
-  const aiMessage = useMemo(() => {
-    if (latestActivity) {
-      const sportLabel = latestActivity.sport === 'bike' ? 'rodada' : latestActivity.sport === 'run' ? 'carrera' : 'sesión'
-      const distStr = latestActivity.distance_km ? ` de ${latestActivity.distance_km.toFixed(1)}km` : ''
-      const powerStr = latestActivity.avg_hr ? ` a ${latestActivity.avg_hr}bpm` : ''
-      return language === 'es'
-        ? `Hoy estuviste a tope en tu ${sportLabel}${distStr}${powerStr}. ¡Gran ritmo! 🚴`
-        : `You crushed it on your ${latestActivity.sport} session${distStr}${powerStr}. Great pace! 🚴`
-    }
-    return language === 'es'
-      ? 'Conecta Strava para recibir análisis personalizados de tu entrenamiento.'
-      : 'Connect Strava to get personalized training insights.'
-  }, [latestActivity, language])
-
   // ── Widget content renderers ──────────────────────────────────────────────
   // Each dashboard section is keyed by a WidgetKey so the layout hook can
   // reorder / hide it. Returns null when a widget has nothing to show.
   const widgetContent = (key: WidgetKey): ReactNode => {
     switch (key) {
       case 'coach':
-        return (
-          <motion.section
-            className="glass-card coach-compact-card"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className="coach-compact-glow" aria-hidden />
-            <div className="welcome-badge-row">
-              <Sparkles size={16} strokeWidth={1.5} className="welcome-sparkle" />
-              <span className="badge">Peak IA Coach</span>
-            </div>
-            <h2 className="welcome-greeting">
-              👋 {language === 'es' ? 'BUENOS DÍAS' : 'GOOD MORNING'}, {firstName}
-            </h2>
-            <p className="welcome-message">
-              "{aiMessage}"
-            </p>
-            <div className="coach-compact-input-row">
-              <input
-                type="text"
-                className="coach-quick-input"
-                placeholder={language === 'es' ? 'Pregunta a tu coach...' : 'Ask your coach...'}
-                value={coachInput}
-                onChange={(e) => setCoachInput(e.target.value)}
-              />
-              <button
-                type="button"
-                className="coach-quick-send"
-                disabled={!coachInput.trim()}
-                onClick={() => {
-                  if (coachInput.trim()) {
-                    window.location.href = '/app/ia-coach'
-                  }
-                }}
-              >
-                <Send size={16} strokeWidth={1.5} />
-              </button>
-            </div>
-            <div className="coach-quick-chips">
-              {suggestionChips.map((chip) => (
-                <Link key={chip.label} to={chip.path} className="chip chip-sm">
-                  💡 {chip.label}
-                </Link>
-              ))}
-            </div>
-          </motion.section>
-        )
+        // Coach is now a floating FAB, not a widget card
+        return null
 
       case 'recovery':
         return (
@@ -718,16 +676,19 @@ export function Dashboard() {
 
   const visibleWidgets = layout.widgets.filter((w) => layout.customizeMode || w.visible)
 
+  // Push "unavailable" widgets (health-source locked) to the bottom
+  const unavailableKeys = new Set<WidgetKey>(
+    recoveryLocked ? ['recovery'] : []
+  )
+  const sortedWidgets = [
+    ...visibleWidgets.filter((w) => !unavailableKeys.has(w.widget_key)),
+    ...visibleWidgets.filter((w) => unavailableKeys.has(w.widget_key)),
+  ]
+
   return (
-    <div className="page-dashboard">
-      {/* Customize toggle — hidden during onboarding/syncing */}
-      {!showOnboarding && !showSyncing && (
-        <CustomizeToggle
-          customizeMode={layout.customizeMode}
-          onToggle={() => layout.setCustomizeMode(!layout.customizeMode)}
-          t={t}
-        />
-      )}
+    <>
+      <div className="page-dashboard">
+      {/* Removed CustomizeToggle — keeping first screen clean per user request */}
 
       {showOnboarding ? (
         <div className="dashboard-widgets">
@@ -774,9 +735,128 @@ export function Dashboard() {
         </div>
       ) : (
         <div className="dashboard-widgets">
-          {visibleWidgets.map((w, idx) => renderWidget(w, idx, visibleWidgets.length))}
+          {/* Greeting + Quick Stats Strip */}
+          <motion.div
+            className="dashboard-greeting-row"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className="dashboard-greeting-left">
+              <h2 className="dashboard-greeting-text">
+                👋 {language === 'es' ? (new Date().getHours() < 12 ? 'Buenos días' : new Date().getHours() < 19 ? 'Buenas tardes' : 'Buenas noches') : 'Good morning'}, {firstName}
+              </h2>
+              <span className="dashboard-greeting-sub">
+                {showEmpty ? '' : `Última actividad: ${metrics.recent[0]?.sport === 'run' ? 'corriendo' : metrics.recent[0]?.sport === 'bike' ? 'bicicleta' : metrics.recent[0]?.sport} · ${(metrics.recent[0]?.distance_km ?? 0).toFixed(1)}km`}
+              </span>
+            </div>
+            <button
+              className="dashboard-customize-btn"
+              onClick={() => layout.setCustomizeMode(!layout.customizeMode)}
+              aria-label={language === 'es' ? 'Personalizar' : 'Customize'}
+            >
+              <Pencil size={14} strokeWidth={2} />
+              <span>{language === 'es' ? 'Personalizar' : 'Customize'}</span>
+            </button>
+          </motion.div>
+          {/* Scrollable snapshot panels — full-width carousel */}
+          <div className="snapshot-section">
+            <motion.div
+              ref={containerRef}
+              className="snapshot-carousel"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
+              onScroll={onSnapshotScroll}
+            >
+              {/* ── Weekly Summary ── */}
+              <div className="snapshot-slide">
+                <div className="snapshot-card">
+                  <div className="snapshot-card-header">
+                    <Activity size={14} strokeWidth={1.5} />
+                    <span className="snapshot-card-title">{language === 'es' ? 'Resumen semanal' : 'Weekly summary'}</span>
+                  </div>
+                  <div className="snapshot-metrics">
+                    <div className="snapshot-metric">
+                      <span className="snapshot-metric-value">{activitiesThisWeek}</span>
+                      <span className="snapshot-metric-label">{language === 'es' ? 'Actividades' : 'Activities'}</span>
+                    </div>
+                    <div className="snapshot-metric">
+                      <span className="snapshot-metric-value">{metrics.weeklyHours.toFixed(1)}<small>h</small></span>
+                      <span className="snapshot-metric-label">{language === 'es' ? 'Duración' : 'Duration'}</span>
+                    </div>
+                    <div className="snapshot-metric">
+                      <span className="snapshot-metric-value">{metrics.weeklyDistance.toFixed(1)}<small>km</small></span>
+                      <span className="snapshot-metric-label">{language === 'es' ? 'Distancia' : 'Distance'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Goals / Metas ── */}
+              <div className="snapshot-slide">
+                <div className="snapshot-card">
+                  <div className="snapshot-card-header">
+                    <Zap size={14} strokeWidth={1.5} />
+                    <span className="snapshot-card-title">{language === 'es' ? 'Metas' : 'Goals'}</span>
+                  </div>
+                  <div className="snapshot-goals">
+                    <div className="snapshot-goal">
+                      <div className="snapshot-goal-row">
+                        <span className="snapshot-goal-label">TSS</span>
+                        <span className="snapshot-goal-numbers">{Math.round(metrics.weeklyTss).toLocaleString()} / {weeklyTssTarget.toLocaleString()}</span>
+                      </div>
+                      <div className="snapshot-goal-bar">
+                        <div className="snapshot-goal-fill" style={{ width: `${tssProgress}%` }} />
+                      </div>
+                    </div>
+                    <div className="snapshot-goal">
+                      <div className="snapshot-goal-row">
+                        <span className="snapshot-goal-label">{language === 'es' ? 'Distancia' : 'Distance'}</span>
+                        <span className="snapshot-goal-numbers">{metrics.weeklyDistance.toFixed(0)} / 80<small>km</small></span>
+                      </div>
+                      <div className="snapshot-goal-bar">
+                        <div className="snapshot-goal-fill is-purple" style={{ width: `${Math.min(Math.round((metrics.weeklyDistance / 80) * 100), 100)}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Streak / Racha ── */}
+              <div className="snapshot-slide">
+                <div className="snapshot-card is-streak">
+                  <div className="snapshot-streak-icon">🔥</div>
+                  <div className="snapshot-streak-body">
+                    <span className="snapshot-streak-count">{streakDays}</span>
+                    <span className="snapshot-streak-label">{language === 'es' ? 'días seguidos' : 'day streak'}</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Dot indicators */}
+            <div className="snapshot-dots">
+              {[0, 1, 2].map((i) => (
+                <button
+                  key={i}
+                  className={`snapshot-dot${i === snapshotIdx ? ' is-active' : ''}`}
+                  aria-label={`${language === 'es' ? 'Ir al panel' : 'Go to panel'} ${i + 1}`}
+                  onClick={() => {
+                    if (containerRef.current) {
+                      containerRef.current.scrollTo({ left: i * containerRef.current.clientWidth, behavior: 'smooth' })
+                      setSnapshotIdx(i)
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {sortedWidgets.map((w, idx) => renderWidget(w, idx, sortedWidgets.length))}
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }

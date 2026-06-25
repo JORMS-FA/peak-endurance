@@ -91,7 +91,7 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
               <Menu size={20} strokeWidth={1.5} />
             </button>
           )}
-          <Logo size={24} />
+          <Logo size={36} />
         </div>
 
         <div className="topbar-right">
@@ -102,7 +102,7 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
             aria-label={t('search')}
             onClick={() => setSearchOpen(true)}
           >
-            <Search size={22} strokeWidth={1.5} />
+            <Search size={22} strokeWidth={2.5} />
             <kbd className="topbar-kbd">{navigator.platform?.includes('Mac') ? '⌘K' : 'Ctrl+K'}</kbd>
           </button>
 
@@ -113,7 +113,7 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
             aria-label={t('notifications')}
             onClick={() => setNotifOpen((o) => !o)}
           >
-            <Bell size={24} strokeWidth={1.5} />
+            <Bell size={24} strokeWidth={2.5} />
             <span className="topbar-dot" />
           </button>
 
@@ -165,7 +165,7 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
         <div className="search-overlay" onClick={() => setSearchOpen(false)}>
           <div className="search-modal" onClick={(e) => e.stopPropagation()}>
             <div className="search-modal-header">
-              <Search size={18} strokeWidth={1.5} className="search-modal-icon" />
+              <Search size={18} strokeWidth={2.5} className="search-modal-icon" />
               <input
                 ref={searchInputRef}
                 type="text"

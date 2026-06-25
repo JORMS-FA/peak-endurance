@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import {
   User, CreditCard, Bot, Palette, Globe, Activity as ActivityIcon,
   ShieldCheck, FileText, LogOut, Check, ExternalLink, Pencil, Trash2,
-  Trophy, Lock, Sparkles,
+  Trophy, Lock, Sparkles, Camera,
 } from 'lucide-react'
 import { useI18n } from '../hooks/useI18n'
 import { useTheme } from '../hooks/useTheme'
@@ -85,6 +85,31 @@ export function Profile() {
     const saved = localStorage.getItem('peak_rgb_speed')
     return saved ? Number(saved) : 5
   })
+
+  // ── Avatar upload ─────────────────────────────────────────────
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !profile || !supabase) return
+    setUploadingAvatar(true)
+    try {
+      const ext = file.name.split('.').pop() ?? 'jpg'
+      const path = `avatars/${profile.id}.${ext}`
+      const { error: uploadErr } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true })
+      if (uploadErr && !uploadErr.message?.includes('bucket')) throw uploadErr
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
+      await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', profile.id)
+      await refresh()
+    } catch (err) {
+      console.error('[avatar] upload error:', err)
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
 
   const orbMood: OrbMood = gamification.unlockedCount === gamification.achievements.length && gamification.achievements.length > 0
     ? 'celebrate'
@@ -247,11 +272,33 @@ export function Profile() {
       {profile && (
         <Section icon={<User size={16} />} title={isEs ? 'Cuenta' : 'Account'}>
           <div className="settings-profile">
-            {profile.avatar_url ? (
-              <img src={profile.avatar_url} alt="" className="avatar-lg avatar-img" />
-            ) : (
-              <div className="avatar-lg">{(profile.display_name ?? 'A').charAt(0).toUpperCase()}</div>
-            )}
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleAvatarUpload}
+              style={{ display: 'none' }}
+            />
+            <button
+              type="button"
+              className="avatar-upload-btn"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              title={isEs ? 'Cambiar foto' : 'Change photo'}
+            >
+              {profile.avatar_url ? (
+                <img src={profile.avatar_url} alt="" className="avatar-lg avatar-img" />
+              ) : (
+                <div className="avatar-lg">{(profile.display_name ?? 'A').charAt(0).toUpperCase()}</div>
+              )}
+              <div className="avatar-upload-overlay">
+                {uploadingAvatar ? (
+                  <span className="avatar-upload-spinner" />
+                ) : (
+                  <Camera size={18} />
+                )}
+              </div>
+            </button>
             <div style={{ flex: 1, minWidth: 0 }}>
               {editingName ? (
                 <div className="account-name-edit">

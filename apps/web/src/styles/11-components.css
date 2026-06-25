@@ -160,7 +160,7 @@
   box-shadow: 0 0 0 2px var(--surface-raised, #111);
 }
 .topbar-avatar {
-  width: 38px; height: 38px; border-radius: 10px;
+  width: 38px; height: 38px; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--accent, #22c55e); color: #04140b; font-weight: 700;
   overflow: hidden;
@@ -661,13 +661,10 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 .pricing-btn:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.3); }
 .pricing-btn-featured {
-  border: none; color: #000; font-weight: 700;
-  background: linear-gradient(135deg, #22c55e, #06b6d4, #8b5cf6);
-  background-size: 200% 200%;
-  animation: rgbslide 5s linear infinite;
-  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);
+  border: none; color: #000; font-weight: 600;
+  background: #ffffff;
 }
-.pricing-btn-featured:hover { color: #000; filter: brightness(1.12); transform: scale(1.03); }
+.pricing-btn-featured:hover { color: #000; opacity: 0.85; transform: scale(1.02); }
 
 @media (max-width: 980px) { .pricing-grid-4 { grid-template-columns: repeat(2, 1fr); } .pricing-card-featured { transform: scale(1.02); } }
 
@@ -932,9 +929,9 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 
 /* ── Activity Detail page (premium TrainingPeaks‑style) ──────────────────── */
 .activity-detail-page {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 20px 48px;
+  padding: 24px 24px 48px;
   display: flex;
   flex-direction: column;
   gap: 20px;

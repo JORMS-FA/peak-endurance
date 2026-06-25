@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 96px 16px 80px;
+  padding: 80px 16px 64px;
   background: #000;
 }
 
@@ -75,22 +75,9 @@
    Cycles the full spectrum (green -> cyan -> blue -> purple -> pink -> orange -> yellow -> green)
    by rotating the gradient angle via the existing --rgb-angle / rgb-rotate keyframe. */
 .hero-gradient-rgb {
-  background: linear-gradient(
-    var(--rgb-angle, 0deg),
-    #22c55e,
-    #06b6d4,
-    #3b82f6,
-    #8b5cf6,
-    #ec4899,
-    #f97316,
-    #eab308,
-    #22c55e
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #ffffff;
+  font-weight: 700;
   display: inline-block;
-  animation: rgb-rotate calc(var(--rgb-speed) * 1s) linear infinite;
 }
 
 .hero-tagline {
@@ -344,28 +331,19 @@
   gap: 8px;
   padding: 12px 24px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-  color: #fff;
-  font-weight: 700;
+  background: #ffffff;
+  color: #000000;
+  font-weight: 600;
   font-size: 0.88rem;
   border: none;
-  box-shadow: 0 4px 20px var(--accent-glow), 0 0 0 1px rgba(255,255,255,0.06);
-  transition: all 0.2s ease;
-  animation: heroCtaPulse 3s ease-in-out infinite;
+  transition: opacity 0.15s, transform 0.1s;
 }
 .hero-primary-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px var(--accent-glow), 0 0 0 1px rgba(255,255,255,0.1);
+  opacity: 0.85;
+  transform: none;
 }
 .hero-primary-cta:active {
   transform: scale(0.97);
-}
-@keyframes heroCtaPulse {
-  0%, 100% { box-shadow: 0 4px 20px var(--accent-glow), 0 0 0 1px rgba(255,255,255,0.06); }
-  50% { box-shadow: 0 4px 32px var(--accent-glow), 0 0 0 1px rgba(255,255,255,0.1), 0 0 40px var(--accent-glow); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-primary-cta { animation: none; }
 }
 
 /* Secondary CTA — outline with hover fill effect */

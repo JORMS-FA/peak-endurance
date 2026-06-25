@@ -29,6 +29,7 @@ import { LavaBackground } from '@/components/ui/LavaBackground'
 import { Logo } from '@/components/ui/Logo'
 import { StoreBadges } from '@/components/ui/StoreBadges'
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber'
+import { HeroGallery } from '@/components/ui/HeroGallery'
 
 /* ── SVG integration icons ───────────────────────────────────── */
 const INTEGRATION_ICONS: Record<string, React.ReactNode> = {
@@ -76,10 +77,6 @@ const INTEGRATION_ICONS: Record<string, React.ReactNode> = {
   ),
 }
 
-/* ── Hero visual: sunset trail-runner photograph ────────────── */
-const HERO_IMAGE =
-  'https://v3b.fal.media/files/b/0a9f7ab2/TaUhP2CzEsPsOm9VKb0VR_zx6KYZo7.png'
-
 /* Maps audience sport card to a B&W image */
 const SPORT_IMAGES: Record<string, string> = {
   run: 'https://v3b.fal.media/files/b/0a9f7ab3/jvs2XBV2AITg1nXOPyt-2_d4eQEjDV.png',
@@ -112,7 +109,7 @@ export function Landing() {
       <header className={`landing-header-v3${scrolled ? ' scrolled' : ''}`}>
         <Link to="/" className="landing-brand-v3">
           <span className="landing-logo-v3">
-            <Logo size={26} />
+            <Logo size={36} />
           </span>
           <span className="landing-brand-name">PEAK ENDURANCE</span>
         </Link>
@@ -127,21 +124,11 @@ export function Landing() {
         <div className="landing-header-actions">
           <button
             type="button"
-            className="btn-ghost-outline"
+            className="btn-ghost-cta"
             onClick={() => navigate('/login')}
-          >
-            {language === 'es' ? 'Iniciar sesión' : 'Sign in'}
-          </button>
-          <motion.button
-            type="button"
-            className="btn-orange-cta"
-            onClick={() => navigate('/login')}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            transition={SPRING}
           >
             {language === 'es' ? 'Comenzar ahora' : 'Get started'}
-          </motion.button>
+          </button>
         </div>
       </header>
 
@@ -210,93 +197,18 @@ export function Landing() {
                 whileTap={{ scale: 0.97 }}
                 transition={SPRING}
               >
-                {t('ctaTryFree14')}
+                {language === 'es' ? 'Comenzar ahora' : 'Get started'}
                 <ArrowRight size={15} />
-              </motion.button>
-              <motion.button
-                type="button"
-                className="hero-secondary-cta-v2"
-                onClick={() => navigate('/login')}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                transition={SPRING}
-              >
-                <Play size={14} />
-                {language === 'es' ? 'Ver cómo funciona' : 'See how it works'}
               </motion.button>
             </motion.div>
           </div>
 
-          {/* Right: image + floating dashboard card */}
+          {/* Right: auto-rotating HeroGallery with B&W images + floating stats */}
           <div className="hero-split-right">
-            <motion.div
-              className="hero-visual-frame"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.25, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <img src={HERO_IMAGE} alt="" className="hero-visual-img" loading="eager" />
-              <div className="hero-visual-overlay" aria-hidden />
-            </motion.div>
-
-            <motion.div
-              className="hero-float-card glass-card-elevated"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div className="float-card-head">
-                <div>
-                  <p className="float-greeting">
-                    {language === 'es' ? 'Hola, Jorman' : 'Hi, Jorman'} <span aria-hidden>👋</span>
-                  </p>
-                  <p className="float-subtext">
-                    {language === 'es' ? 'Listo para superar tus límites hoy.' : 'Ready to push your limits today.'}
-                  </p>
-                </div>
-                <span className="float-status">
-                  <span className="status-dot dot-green" />
-                  {language === 'es' ? 'En forma' : 'In form'}
-                </span>
-              </div>
-
-              <div className="float-metrics">
-                <FloatMetric
-                  label={language === 'es' ? 'Fitness' : 'Fitness'}
-                  sub="CTL"
-                  value={78}
-                  change="+5"
-                  changeTone="green"
-                  lineColor="#f97316"
-                />
-                <FloatMetric
-                  label={language === 'es' ? 'Fatiga' : 'Fatigue'}
-                  sub="ATL"
-                  value={42}
-                  change="-3"
-                  changeTone="orange"
-                  lineColor="#3b82f6"
-                />
-                <FloatMetric
-                  label={language === 'es' ? 'Forma' : 'Form'}
-                  sub="TSB"
-                  value={18}
-                  prefix="+"
-                  badge={language === 'es' ? 'Óptimo' : 'Optimal'}
-                  changeTone="green"
-                  lineColor="#22c55e"
-                />
-              </div>
-
-              <button
-                type="button"
-                className="float-cta"
-                onClick={() => navigate('/login')}
-              >
-                {language === 'es' ? 'Ver análisis completo' : 'View full analysis'}
-                <ArrowRight size={13} />
-              </button>
-            </motion.div>
+            <HeroGallery
+              language={language}
+              onNavigate={() => navigate('/login')}
+            />
           </div>
         </div>
 
@@ -317,8 +229,18 @@ export function Landing() {
           {language === 'es' ? 'CONFIANZA DE ATLETAS Y ENTRENADORES' : 'TRUSTED BY ATHLETES & COACHES'}
         </p>
         <div className="trust-brands-row">
-          {['STRAVA', 'TRAININGPEAKS', 'GARMIN', 'SUUNTO', 'POLAR', 'COROS'].map((b) => (
-            <span key={b} className="trust-brand">{b}</span>
+          {[
+            { name: 'STRAVA', key: 'strava' },
+            { name: 'TRAININGPEAKS', key: 'trainingpeaks' },
+            { name: 'GARMIN', key: 'garmin' },
+            { name: 'SUUNTO', key: 'suunto' },
+            { name: 'POLAR', key: 'polar' },
+            { name: 'COROS', key: 'coros' },
+          ].map(({ name, key }) => (
+            <span key={name} className="trust-brand">
+              {INTEGRATION_ICONS[key as keyof typeof INTEGRATION_ICONS]}
+              <span>{name}</span>
+            </span>
           ))}
         </div>
         <div className="trust-stats-row stagger-children">
@@ -329,7 +251,9 @@ export function Landing() {
             <span>{language === 'es' ? 'Atletas' : 'Athletes'}</span>
           </motion.div>
           <motion.div className="trust-stat reveal" whileHover={{ scale: 1.05, y: -3, transition: SPRING }}>
-            <strong>★★★★★ 4.9</strong>
+            <strong>
+              <CheckCircle2 size={18} strokeWidth={1.8} style={{ display: 'inline', verticalAlign: -2 }} /> 4.9
+            </strong>
             <span>{language === 'es' ? 'Valoración' : 'Rating'}</span>
           </motion.div>
           <motion.div className="trust-stat reveal" whileHover={{ scale: 1.05, y: -3, transition: SPRING }}>
@@ -687,51 +611,6 @@ export function Landing() {
 
       {/* AMOLED ambient lava-lamp background */}
       <LavaBackground />
-    </div>
-  )
-}
-
-/* ── Floating dashboard metric sub-component ────────────────── */
-function FloatMetric({
-  label,
-  sub,
-  value,
-  prefix = '',
-  badge,
-  change,
-  changeTone,
-  lineColor,
-}: {
-  label: string
-  sub: string
-  value: number
-  prefix?: string
-  badge?: string
-  change: string
-  changeTone: 'green' | 'orange'
-  lineColor: string
-}) {
-  return (
-    <div className="float-metric">
-      <div className="float-metric-top">
-        <span className="float-metric-label">{label} · {sub}</span>
-        {change && (
-          <span className={`float-metric-change change-${changeTone}`}>{change}</span>
-        )}
-      </div>
-      <strong className="float-metric-value">
-        {prefix}
-        <AnimatedNumber value={value} duration={1400} />
-      </strong>
-      {badge && <span className="float-metric-badge">{badge}</span>}
-      <svg viewBox="0 0 80 24" className="float-metric-line">
-        <polyline
-          points="0,18 14,14 28,16 42,9 56,11 70,5 80,7"
-          fill="none"
-          stroke={lineColor}
-          strokeWidth="1.6"
-        />
-      </svg>
     </div>
   )
 }

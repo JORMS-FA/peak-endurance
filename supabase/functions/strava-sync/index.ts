@@ -209,7 +209,7 @@ async function fetchStravaActivities(
     url.searchParams.set('page', String(page))
 
     const res = await fetch(url.toString(), {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { Authorization: Bearer ${accessToken}` },
     })
     if (!res.ok) {
       const txt = await res.text()

@@ -360,7 +360,7 @@ async function handleDisconnect(
     try {
       await fetch('https://www.strava.com/oauth/deauthorize', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token.access_token}` },
+        headers: { Authorization: Bearer ${token.access_token}` },
       })
     } catch (err) {
       console.warn('[strava-auth] deauthorize warning:', err)

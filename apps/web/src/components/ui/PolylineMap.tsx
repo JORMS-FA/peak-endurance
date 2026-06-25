@@ -1,9 +1,12 @@
-import { useMemo } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import { MapPin } from 'lucide-react'
+import '../../styles/13-polyline-map.css'
 
-// ─── Polyline decoder (Google encoded polyline format) ────────────────────────
+// ─── Polyline decoder (Google encoded polyline format) ────────────────────
 
-export function decodePolyline(encoded: string): [number, number][] {
+function decodePolyline(encoded: string): [number, number][] {
   const points: [number, number][] = []
   let idx = 0
   let lat = 0
@@ -20,23 +23,54 @@ export function decodePolyline(encoded: string): [number, number][] {
   return points
 }
 
-// ─── Shared SVG polyline map ──────────────────────────────────────────────────
-//
-// Renders a Strava `summary_polyline` as a pure SVG path — no external map
-// tiles. B&W gradient stroke over an AMOLED-black canvas with white start/end
-// dots, matching the app's calm monochrome aesthetic.
-//
-// `variant`:
-//   - "compact" → inline route preview (Training list), small height
-//   - "large"   → full ActivityDetail route block, taller, with grid + glow
+// ─── Tile layer configs ────────────────────────────────────────────────────
+
+type ViewMode = 'street' | 'satellite' | 'terrain' | 'dark'
+
+interface TileConfig {
+  url: string
+  attribution: string
+  label: string
+  labelEs: string
+}
+
+const TILE_LAYERS: Record<ViewMode, TileConfig> = {
+  street: {
+    url: 'https://tiles.openfreemap.org/styles/liberty/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://openfreemap.org">OpenFreeMap</a> &copy; <a href="https://openmaptiles.org">OpenMapTiles</a>',
+    label: 'Street',
+    labelEs: 'Mapa',
+  },
+  satellite: {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; <a href="https://esri.com">Esri</a>',
+    label: 'Satellite',
+    labelEs: 'Satélite',
+  },
+  terrain: {
+    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
+    label: 'Terrain',
+    labelEs: 'Terreno',
+  },
+  dark: {
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://carto.com">CARTO</a>',
+    label: 'Dark',
+    labelEs: 'Oscuro',
+  },
+}
+
+// ─── Props ──────────────────────────────────────────────────────────────────
 
 type PolylineMapProps = {
   encoded: string | null | undefined
   variant?: 'compact' | 'large'
-  /** When true and there is no polyline, render an empty-state skeleton. */
   showUnavailable?: boolean
   unavailableLabel?: string
 }
+
+// ─── Component ──────────────────────────────────────────────────────────────
 
 export function PolylineMap({
   encoded,
@@ -44,75 +78,123 @@ export function PolylineMap({
   showUnavailable = false,
   unavailableLabel = 'Mapa no disponible',
 }: PolylineMapProps) {
+  const mapRef = useRef<HTMLDivElement>(null)
+  const mapInstance = useRef<L.Map | null>(null)
+  const tileLayer = useRef<L.TileLayer | null>(null)
+  const routeLayer = useRef<L.Polyline | null>(null)
+  const markersLayer = useRef<L.LayerGroup | null>(null)
+  const [view, setView] = useState<ViewMode>('dark')
+
   const pts = useMemo(() => (encoded ? decodePolyline(encoded) : []), [encoded])
 
+  const isEs = unavailableLabel.includes('disponible')
+
+  // ── Build leaflet map (once) ───────────────────────────────────────────────
+  useEffect(() => {
+    // Wait until ref is attached
+    if (!mapRef.current || pts.length < 2) return
+    if (mapInstance.current) return
+
+    const container = mapRef.current
+    const map = L.map(container, {
+      zoomControl: true,
+      attributionControl: true,
+      scrollWheelZoom: true,
+      dragging: true,
+      touchZoom: true,
+    })
+
+    // Fit the polyline bounds
+    const lats = pts.map((p) => p[0])
+    const lngs = pts.map((p) => p[1])
+    const padding = variant === 'large' ? 0.005 : 0.01
+    map.fitBounds(
+      [
+        [Math.min(...lats) - padding, Math.min(...lngs) - padding],
+        [Math.max(...lats) + padding, Math.max(...lngs) + padding],
+      ],
+      { padding: [24, 24] },
+    )
+
+    // Tile layer
+    const cfg = TILE_LAYERS[view]
+    const layer = L.tileLayer(cfg.url, {
+      attribution: cfg.attribution,
+      maxZoom: 19,
+    }).addTo(map)
+    tileLayer.current = layer
+
+    // Route polyline
+    const latlngs: [number, number][] = pts
+    const line = L.polyline(latlngs, {
+      color: '#ffffff',
+      weight: variant === 'large' ? 4 : 3,
+      opacity: 0.85,
+      lineCap: 'round',
+      lineJoin: 'round',
+    }).addTo(map)
+    routeLayer.current = line
+
+    // Start / end markers
+    const markers = L.layerGroup().addTo(map)
+    const startIcon = L.divIcon({ className: 'marker-start', iconSize: [12, 12], iconAnchor: [6, 6] })
+    const endIcon = L.divIcon({ className: 'marker-end', iconSize: [12, 12], iconAnchor: [6, 6] })
+    L.marker(latlngs[0], { icon: startIcon }).addTo(markers)
+    L.marker(latlngs[latlngs.length - 1], { icon: endIcon }).addTo(markers)
+    markersLayer.current = markers
+
+    mapInstance.current = map
+
+    // Cleanup on unmount
+    return () => {
+      map.remove()
+      mapInstance.current = null
+    }
+    // We intentionally only init once when pts first become available
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pts.length > 1])
+
+  // ── Switch tile layer when view changes ────────────────────────────────────
+  useEffect(() => {
+    const map = mapInstance.current
+    if (!map) return
+    const cfg = TILE_LAYERS[view]
+    if (tileLayer.current) {
+      map.removeLayer(tileLayer.current)
+    }
+    tileLayer.current = L.tileLayer(cfg.url, {
+      attribution: cfg.attribution,
+      maxZoom: 19,
+    }).addTo(map)
+  }, [view])
+
+  // ── No polyline handler ────────────────────────────────────────────────────
   if (pts.length < 2) {
     if (!showUnavailable) return null
     return (
-      <div className={`polyline-map polyline-map-${variant} polyline-map-empty`} role="img" aria-label={unavailableLabel}>
+      <div className="polyline-map-empty" role="img" aria-label={unavailableLabel}>
         <MapPin size={variant === 'large' ? 22 : 16} strokeWidth={1.5} />
         <span>{unavailableLabel}</span>
       </div>
     )
   }
 
-  const lats = pts.map((p) => p[0])
-  const lngs = pts.map((p) => p[1])
-  const minLat = Math.min(...lats), maxLat = Math.max(...lats)
-  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs)
-
-  const w = 600
-  const h = variant === 'large' ? 400 : 200
-  const pad = variant === 'large' ? 28 : 16
-  const scaleX = (maxLng - minLng) || 0.001
-  const scaleY = (maxLat - minLat) || 0.001
-  const toX = (lng: number) => pad + ((lng - minLng) / scaleX) * (w - pad * 2)
-  const toY = (lat: number) => h - pad - ((lat - minLat) / scaleY) * (h - pad * 2)
-  const d = pts
-    .map((p, i) => `${i === 0 ? 'M' : 'L'}${toX(p[1]).toFixed(1)},${toY(p[0]).toFixed(1)}`)
-    .join(' ')
-
-  const start = pts[0]
-  const end = pts[pts.length - 1]
-  const gradId = variant === 'large' ? 'routeGlowLarge' : 'routeGlowCompact'
-  const gridId = variant === 'large' ? 'routeGridLarge' : 'routeGridCompact'
-
   return (
-    <div className={`polyline-map polyline-map-${variant}`} role="img" aria-label="Route map">
-      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet" className="polyline-map-svg">
-        <defs>
-          {/* B&W gradient: faint white → bright white along the route */}
-          <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.1)" />
-            <stop offset="100%" stopColor="rgba(255,255,255,0.5)" />
-          </linearGradient>
-          {variant === 'large' && (
-            <filter id="routeGlowFilter" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="2.5" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          )}
-          <pattern id={gridId} width="40" height="40" patternUnits="userSpaceOnUse">
-            <circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.06)" />
-          </pattern>
-        </defs>
-        <rect width={w} height={h} fill={`url(#${gridId})`} />
-        <path
-          d={d}
-          fill="none"
-          stroke={`url(#${gradId})`}
-          strokeWidth={variant === 'large' ? 3 : 2.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          filter={variant === 'large' ? 'url(#routeGlowFilter)' : undefined}
-        />
-        {/* White start/end markers */}
-        <circle cx={toX(start[1])} cy={toY(start[0])} r={variant === 'large' ? 6 : 5} fill="#ffffff" stroke="#0a0a0a" strokeWidth="2" />
-        <circle cx={toX(end[1])} cy={toY(end[0])} r={variant === 'large' ? 6 : 5} fill="#ffffff" stroke="#0a0a0a" strokeWidth="2" />
-      </svg>
+    <div className={`polyline-map-wrapper ${variant}`}>
+      <div ref={mapRef} />
+      {/* Layer switcher */}
+      <div className="polyline-map-toolbar">
+        {(Object.keys(TILE_LAYERS) as ViewMode[]).map((k) => (
+          <button
+            key={k}
+            type="button"
+            className={`polyline-map-btn${view === k ? ' active' : ''}`}
+            onClick={() => setView(k)}
+          >
+            {isEs ? TILE_LAYERS[k].labelEs : TILE_LAYERS[k].label}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

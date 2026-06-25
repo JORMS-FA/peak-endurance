@@ -1,6 +1,6 @@
 import { NavLink, Link } from 'react-router-dom'
 import {
-  Home, CalendarDays, Dumbbell, Sparkles,
+  Home, CalendarDays, Dumbbell, Star,
   LineChart, TrendingUp, Plug, Mountain, User,
   ChevronLeft,
 } from 'lucide-react'
@@ -11,7 +11,7 @@ import { APP_NAME } from '../../lib/constants'
 import { Logo } from '../ui/Logo'
 
 const iconMap: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
-  Home, CalendarDays, Dumbbell, Sparkles,
+  Home, CalendarDays, Dumbbell, Star,
   LineChart, TrendingUp, Plug, Mountain, User,
 }
 
@@ -63,7 +63,7 @@ export function Sidebar({ collapsed = false, onToggle }: { collapsed?: boolean; 
               className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
               title={collapsed ? label : undefined}
             >
-              <Icon size={18} strokeWidth={1.5} />
+              <Icon size={18} strokeWidth={2.5} />
               {!collapsed && <span>{label}</span>}
             </NavLink>
           )

@@ -14,18 +14,17 @@ a:hover svg,
   height: 44px;
   padding: 0 20px;
   border-radius: var(--radius-md);
-  background: var(--accent);
-  color: #fff;
+  background: #ffffff;
+  color: #000000;
   font-weight: 600;
   font-size: 0.9rem;
   border: 0;
-  box-shadow: 0 4px 14px var(--accent-glow);
-  transition: all var(--transition);
+  transition: opacity 0.15s, transform 0.1s;
 }
 
-.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+.btn-primary:hover { opacity: 0.85; }
 .btn-primary:active { transform: scale(0.98); }
-.btn-primary:disabled { opacity: 0.5; pointer-events: none; }
+.btn-primary:disabled { opacity: 0.4; pointer-events: none; }
 .btn-primary.btn-sm { height: 36px; padding: 0 14px; font-size: 0.82rem; }
 
 .btn-secondary {
@@ -36,15 +35,15 @@ a:hover svg,
   height: 44px;
   padding: 0 20px;
   border-radius: var(--radius-md);
-  background: var(--bg-2);
+  background: transparent;
   border: 1px solid var(--border-strong);
   color: var(--text);
   font-weight: 600;
   font-size: 0.9rem;
-  transition: all var(--transition);
+  transition: background-color 0.15s, border-color 0.15s;
 }
 
-.btn-secondary:hover { background: var(--bg-3); }
+.btn-secondary:hover { background: rgba(255,255,255,0.06); border-color: var(--border-strong); }
 
 .btn-danger {
   display: flex;
@@ -220,7 +219,8 @@ a:hover svg,
 
 .form-field input:focus,
 .form-field select:focus {
-  border-color: var(--accent);
+  border-color: rgba(255,255,255,0.4);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.3);
 }
 
 .form-field textarea {
@@ -242,7 +242,7 @@ a:hover svg,
   transition: border-color var(--transition);
 }
 
-.input-with-icon:focus-within { border-color: var(--accent); }
+.input-with-icon:focus-within { border-color: rgba(255,255,255,0.4); box-shadow: 0 0 0 1px rgba(255,255,255,0.3); }
 .input-with-icon svg { color: var(--text-muted); flex-shrink: 0; }
 .input-with-icon input {
   border: 0;
@@ -331,13 +331,50 @@ a:hover svg,
 .spinner {
   width: 24px;
   height: 24px;
-  border: 2px solid var(--border);
-  border-top-color: var(--accent);
+  border: 2px solid rgba(255,255,255,0.12);
+  border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Vercel-style skeleton loader ──────────────────────────── */
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 1000px 100%;
+  animation: skeleton-shimmer 2s linear infinite;
+  border-radius: 6px;
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+/* ─── Vercel-style loading screen ───────────────────────────── */
+
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 100vh;
+  background: var(--bg-0);
+}
+
+.loading-screen .spinner {
+  width: 20px;
+  height: 20px;
+}
+
+.loading-screen-label {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
 
 /* ─── Text Utils ────────────────────────────────────────────── */
 
