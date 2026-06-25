@@ -26,6 +26,7 @@ Thumbs.db
 
 # Misc
 *.log
+.tmp-patch.py
 
 # Legacy / excluded folders
 _openathlete_ref/
@@ -34,4 +35,6 @@ backup-old-app/
 secrets/
 pictures/
 .hermes/
+.agents/
 .opencode/
+.opencode-tasks/
