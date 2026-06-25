@@ -1,0 +1,273 @@
+/* ═══════════════════════════════════════════════════════════════
+   14-hero-gallery.css — HeroGallery auto-rotating B&W gallery
+   Self-contained styles using `hg-` prefix to avoid conflicts.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Gallery container ─────────────────────────────────────── */
+.hg-gallery {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+
+/* ── Each slide layer ──────────────────────────────────────── */
+.hg-slide {
+  position: absolute;
+  inset: 0;
+}
+
+.hg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: grayscale(1) contrast(1.05) brightness(0.92);
+}
+
+.hg-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.55) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Pagination dots ──────────────────────────────────────── */
+.hg-dots {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 4;
+  display: flex;
+  gap: 6px;
+}
+
+.hg-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.hg-dot:hover {
+  background: rgba(255, 255, 255, 0.55);
+  transform: scale(1.2);
+}
+
+.hg-dot.active {
+  background: #ffffff;
+}
+
+/* ── Floating glassmorphism card ───────────────────────────── */
+.hg-float-card {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: min(340px, 86%);
+  padding: 20px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+}
+
+/* ── Card head: greeting + status ──────────────────────────── */
+.hg-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hg-greeting {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.hg-greeting-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.hg-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-2);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.hg-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.hg-status-dot.green {
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+}
+
+.hg-status-dot.orange {
+  background: var(--accent);
+}
+
+.hg-status-dot.yellow {
+  background: #eab308;
+  box-shadow: 0 0 8px #eab308;
+}
+
+/* ── Metrics grid ──────────────────────────────────────────── */
+.hg-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.hg-metric {
+  padding: 10px 8px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.hg-metric-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.hg-metric-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hg-metric-change {
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.hg-metric-change.green {
+  color: #22c55e;
+}
+
+.hg-metric-change.orange {
+  color: var(--accent);
+}
+
+.hg-metric-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.hg-metric-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #22c55e;
+}
+
+.hg-metric-line {
+  width: 100%;
+  height: 18px;
+  display: block;
+}
+
+/* ── CTA button ────────────────────────────────────────────── */
+.hg-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.hg-cta:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+
+/* ── Fade in animation for the whole card on mount ────────── */
+@keyframes hg-card-enter {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hg-card-enter {
+  animation: hg-card-enter 0.5s ease-out;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .hg-float-card {
+    right: 8px;
+    bottom: 8px;
+    width: calc(100% - 16px);
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .hg-metrics {
+    gap: 5px;
+  }
+
+  .hg-metric {
+    padding: 8px 6px;
+  }
+
+  .hg-metric-value {
+    font-size: 1rem;
+  }
+
+  .hg-greeting {
+    font-size: 0.95rem;
+  }
+}
