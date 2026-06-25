@@ -17,8 +17,10 @@ const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="652.043 -633.5
   </defs>
   <rect x="652.043" y="-633.54" width="600" height="600" rx="90" fill="url(#bg)"/>
   <rect x="652.043" y="-633.54" width="600" height="600" rx="90" fill="none" stroke="#1e2026" stroke-width="10"/>
-  <path fill="#FFFFFF" d="${path1}"/>
-  <path fill="#FFFFFF" d="${path2}"/>
+  <g transform="translate(952.043, -363.54) scale(0.7) translate(-952.043, 363.54)">
+    <path fill="#FFFFFF" d="${path1}"/>
+    <path fill="#FFFFFF" d="${path2}"/>
+  </g>
 </svg>`;
 
 async function generate() {
