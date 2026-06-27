@@ -25,6 +25,9 @@ export default function App() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
 
+      {/* Public profile — accessible without auth */}
+      <Route path="/app/perfil" element={<Profile />} />
+
       <Route path="/app" element={<AuthGuard><AppLayout /></AuthGuard>}>
         <Route index element={<Dashboard />} />
         <Route path="ia-coach" element={<AiCoach />} />
@@ -37,7 +40,6 @@ export default function App() {
         <Route path="conexiones" element={<Connections />} />
         <Route path="segmentos" element={<Segments />} />
         <Route path="notificaciones" element={<Notifications />} />
-        <Route path="perfil" element={<Profile />} />
         <Route path="configuracion" element={<Settings />} />
         <Route path="ajustes" element={<Navigate to="/app/configuracion" replace />} />
       </Route>
