@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import {
   User, CreditCard, Bot, Palette, Globe, Activity as ActivityIcon,
   ShieldCheck, FileText, LogOut, Check, ExternalLink, Pencil, Trash2, Bell, BellOff,
+  Gift,
 } from 'lucide-react'
 import { useI18n } from '../hooks/useI18n'
 import { useTheme } from '../hooks/useTheme'
@@ -83,6 +84,11 @@ export function Settings() {
     return saved ? Number(saved) : 5
   })
 
+  const [promoCode, setPromoCode] = useState('')
+  const [redeeming, setRedeeming] = useState(false)
+  const [promoStatus, setPromoStatus] = useState<string | null>(null)
+  const [promoOk, setPromoOk] = useState(false)
+
   async function startEditName() {
     setNameInput(profile?.display_name ?? '')
     setEditingName(true)
@@ -137,6 +143,36 @@ export function Settings() {
   async function handleDeleteKey() {
     await deleteKey()
     setShowKeyInput(false)
+  }
+
+  async function handleRedeemPromo() {
+    const code = promoCode.trim()
+    if (!code || !profile?.id) return
+    setRedeeming(true)
+    setPromoStatus(null)
+    setPromoOk(false)
+    try {
+      const { data, error } = await supabase.rpc('validate_and_redeem_promo_code', {
+        p_code: code,
+        p_profile_id: profile.id,
+      })
+      if (error) throw error
+      const result = data as { success: boolean; message?: string; error?: string }
+      if (result.success) {
+        setPromoOk(true)
+        setPromoStatus(result.message ?? (isEs ? 'Código canjeado' : 'Code redeemed'))
+        await refresh()
+        await refetchSub()
+      } else {
+        setPromoOk(false)
+        setPromoStatus(result.error ?? (isEs ? 'Código inválido' : 'Invalid code'))
+      }
+    } catch {
+      setPromoOk(false)
+      setPromoStatus(isEs ? 'Error al canjear' : 'Redemption failed')
+    } finally {
+      setRedeeming(false)
+    }
   }
 
   const quotaPct = Math.min(100, ((usage?.usedQueries ?? 0) / (usage?.limit ?? 20)) * 100)
@@ -219,6 +255,12 @@ export function Settings() {
                   {isEs ? 'Se cancela al final del periodo' : 'Cancels at period end'}
                 </span>
               )}
+              {subscription?.currentPeriodEnd && (
+                <p className="text-muted" style={{ fontSize: '0.82rem', marginTop: 8 }}>
+                  {isEs ? 'Vence:' : 'Expires:'}{' '}
+                  {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                </p>
+              )}
             </div>
 
             {!isPro ? (
@@ -243,12 +285,6 @@ export function Settings() {
                 <button type="button" className="btn-outline" onClick={openPortal} disabled={stripeLoading}>
                   {isEs ? 'Gestionar suscripción' : 'Manage subscription'}
                 </button>
-                {subscription?.currentPeriodEnd && (
-                  <p className="text-muted" style={{ fontSize: '0.82rem', marginTop: 8 }}>
-                    {isEs ? 'Próximo cobro:' : 'Next billing:'}{' '}
-                    {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                  </p>
-                )}
               </div>
             )}
           </div>
@@ -320,7 +356,8 @@ export function Settings() {
                       : selectedProvider === 'openai' ? 'https://platform.openai.com/api-keys'
                         : 'https://console.anthropic.com/settings/keys'
                   }
-                  target="_blank" rel="noopener noreferrer"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="btn-outline btn-sm"
                   style={{ marginBottom: 10, display: 'inline-flex', alignItems: 'center', gap: 6 }}
                 >
@@ -355,6 +392,33 @@ export function Settings() {
               </div>
             )}
           </div>
+        )}
+      </Section>
+
+      {/* Promo Code */}
+      <Section icon={<Gift size={16} />} title={isEs ? 'Código promocional' : 'Promo code'}>
+        <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: 12 }}>
+          {isEs
+            ? 'Canjea tu código para acceder a planes premium por tiempo limitado.'
+            : 'Redeem your code to unlock premium plans for a limited time.'}
+        </p>
+        <div className="promo-row">
+          <input
+            type="text"
+            className="input-field"
+            placeholder={isEs ? 'Ej: PEAK-GIFT-3M' : 'Example: PEAK-GIFT-3M'}
+            value={promoCode}
+            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+            maxLength={40}
+          />
+          <button type="button" className="btn-primary btn-sm" onClick={handleRedeemPromo} disabled={redeeming || !promoCode.trim()}>
+            {redeeming ? '...' : (isEs ? 'Canjear' : 'Redeem')}
+          </button>
+        </div>
+        {promoStatus && (
+          <p className={`${promoOk ? 'success-text' : 'error-text'}`} style={{ fontSize: '0.82rem', marginTop: 8 }}>
+            {promoStatus}
+          </p>
         )}
       </Section>
 
