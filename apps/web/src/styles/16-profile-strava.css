@@ -15,7 +15,7 @@
   padding-right: 16px;
 }
 
-/* Avatar circular con degradado tipo Strava */
+/* Avatar circular con degradado tipo Strava (respeta theme accent) */
 .profile-avatar-circle {
   width: 96px;
   height: 96px;
@@ -27,7 +27,7 @@
   border: 2px solid rgba(255,255,255,0.18);
   background:
     radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), rgba(255,255,255,0) 60%),
-    linear-gradient(135deg, #ff7a59, #fc4c02, #e13a3a);
+    linear-gradient(135deg, var(--accent-hover, #fb923c), var(--accent, #f97316), var(--accent, #f97316));
 }
 
 .profile-avatar-gradient {
@@ -126,7 +126,7 @@
 .profile-strava-hex {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #ff7a59, #fc4c02, #e13a3a);
+  background: linear-gradient(135deg, var(--accent-hover, #fb923c), var(--accent, #f97316), var(--accent, #f97316));
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
 .profile-strava-hex-img {
@@ -246,8 +246,8 @@
   white-space: nowrap;
 }
 .profile-filter-chip.active {
-  border-color: #f97316;
-  background: rgba(249, 115, 22, 0.12);
+  border-color: var(--accent, #f97316);
+  background: var(--accent-soft, rgba(249, 115, 22, 0.12));
   color: #fff;
 }
 
@@ -395,8 +395,8 @@
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: rgba(249, 115, 22, 0.18);
-  color: #fdba74;
+  background: var(--accent-soft, rgba(249, 115, 22, 0.18));
+  color: var(--accent, #f97316);
 }
 
 /* Trophies */
@@ -552,7 +552,7 @@
   overflow: hidden;
   background:
     radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), rgba(255,255,255,0) 60%),
-    linear-gradient(135deg, #ff7a59, #fc4c02, #e13a3a);
+    linear-gradient(135deg, var(--accent-hover, #fb923c), var(--accent, #f97316), var(--accent, #f97316));
   display: inline-grid;
   place-items: center;
 }
@@ -632,7 +632,7 @@
   background: rgba(255, 255, 255, 0.12);
 }
 .profile-edit-save {
-  background: linear-gradient(135deg, #fc4c02, #f97316);
+  background: linear-gradient(135deg, var(--accent, #f97316), var(--accent-hover, #fb923c));
   border: 0;
   color: #fff;
 }
@@ -669,7 +669,7 @@
   opacity: 0.7;
 }
 .profile-strava-range-btn.active {
-  background: linear-gradient(135deg, #fc4c02, #f97316);
+  background: linear-gradient(135deg, var(--accent, #f97316), var(--accent-hover, #fb923c));
   color: #fff;
   opacity: 1;
 }
@@ -695,7 +695,7 @@
 }
 .profile-week-bar {
   width: 100%;
-  background: linear-gradient(180deg, #f97316, #fb923c);
+  background: linear-gradient(180deg, var(--accent, #f97316), var(--accent-hover, #fb923c));
   opacity: 0.9;
   border-radius: 6px 6px 0 0;
   min-height: 4px;
@@ -763,34 +763,35 @@
   font-size: 0.65rem;
 }
 
-/* Hide the previous topbar banner so the public profile is cleaner. */
+/* Hide the previous internal topbar banner so the global TopBar is the only one. */
 .profile-strava-header {
-  display: none;
+  display: none !important;
 }
 
-/* Discreet floating edit pencil in the top-right corner of the public profile. */
+/* Discreet floating edit pencil in the top-right corner of the public profile.
+   Sits below the global TopBar so it doesn't overlap the bell/avatar. */
 .profile-edit-fab {
   position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  top: calc(env(safe-area-inset-top, 0px) + 64px);
   right: 16px;
-  z-index: 60;
-  width: 34px;
-  height: 34px;
+  z-index: 40;
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(20, 22, 28, 0.55);
-  color: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(20, 22, 28, 0.4);
+  color: rgba(255, 255, 255, 0.4);
   padding: 0;
   cursor: pointer;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 .profile-edit-fab:hover {
-  background: rgba(20, 22, 28, 0.85);
+  background: rgba(20, 22, 28, 0.75);
   color: rgba(255, 255, 255, 0.95);
   transform: translateY(-1px);
 }

@@ -165,15 +165,15 @@ function LineChart({
       >
         <defs>
           <linearGradient id="profile-week-area" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#fc4c02" stopOpacity="0.45" />
-            <stop offset="100%" stopColor="#fc4c02" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--profile-line, #fc4c02)" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="var(--profile-line, #fc4c02)" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d={areaPath} fill="url(#profile-week-area)" />
-        <path d={path} fill="none" stroke="#fc4c02" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+        <path d={path} fill="none" stroke="var(--profile-line, #fc4c02)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
         {points.map((p, i) => (
           <g key={i}>
-            <circle cx={p.x} cy={p.y} r="3.5" fill="#fc4c02" stroke="#0a0a0a" strokeWidth="1.5" />
+            <circle cx={p.x} cy={p.y} r="3.5" fill="var(--profile-line, #fc4c02)" stroke="#0a0a0a" strokeWidth="1.5" />
           </g>
         ))}
       </svg>
