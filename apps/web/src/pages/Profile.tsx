@@ -112,6 +112,79 @@ function demoBuckets(range: RangeKey, sport: SportFilter): number[] {
   const vol = range === 'week' ? 1 : range === 'month' ? 1.4 : 1.8
   return buckets.map((_, i) => Math.round((base + Math.sin(i / 1.7) * base * 0.6 + rand(i) * base * 0.5) * vol))
 }
+
+type ChartDatum = { date: Date; minutes: number; km: number; elev: number; label: string }
+
+function LineChart({
+  data,
+  maxKm,
+  language,
+  isEs,
+}: {
+  data: ChartDatum[]
+  maxKm: number
+  language: string
+  isEs: boolean
+}) {
+  const width = 320
+  const height = 140
+  const padX = 14
+  const padY = 16
+  const innerW = width - padX * 2
+  const innerH = height - padY * 2
+
+  const points = data.map((d, i) => {
+    const x = data.length <= 1 ? padX + innerW / 2 : padX + (i / (data.length - 1)) * innerW
+    const yPct = maxKm > 0 ? d.km / maxKm : 0
+    const y = padY + innerH - Math.max(0.04, yPct) * innerH
+    return { x, y, d }
+  })
+
+  // Smooth path using simple bezier between consecutive points.
+  const path = points
+    .map((p, i, arr) => {
+      if (i === 0) return `M ${p.x.toFixed(2)} ${p.y.toFixed(2)}`
+      const prev = arr[i - 1]
+      const cx = (prev.x + p.x) / 2
+      return `C ${cx.toFixed(2)} ${prev.y.toFixed(2)}, ${cx.toFixed(2)} ${p.y.toFixed(2)}, ${p.x.toFixed(2)} ${p.y.toFixed(2)}`
+    })
+    .join(' ')
+
+  // Filled area under the line.
+  const areaPath = `${path} L ${points[points.length - 1]?.x.toFixed(2) ?? padX} ${(padY + innerH).toFixed(2)} L ${points[0]?.x.toFixed(2) ?? padX} ${(padY + innerH).toFixed(2)} Z`
+
+  return (
+    <div className="profile-week-chart" aria-label={isEs ? 'Volumen por periodo' : 'Volume per period'}>
+      <svg
+        className="profile-week-line"
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <linearGradient id="profile-week-area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#fc4c02" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#fc4c02" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={areaPath} fill="url(#profile-week-area)" />
+        <path d={path} fill="none" stroke="#fc4c02" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+        {points.map((p, i) => (
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r="3.5" fill="#fc4c02" stroke="#0a0a0a" strokeWidth="1.5" />
+          </g>
+        ))}
+      </svg>
+      <div className="profile-week-axis">
+        {points.map((p, i) => (
+          <span key={i} title={`${p.d.label}: ${formatKm(p.d.km, language)} km · ${formatDuration(p.d.minutes, isEs)}`}>
+            {p.d.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
 export function Profile() {
   const { language } = useI18n()
   const { profile } = useAuth()
@@ -120,7 +193,7 @@ export function Profile() {
   const isEs = language === 'es'
   const [showAllAchievements, setShowAllAchievements] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
-  const [sportFilter, setSportFilter] = useState<SportFilter>('bike')
+  const [sportFilter, setSportFilter] = useState<SportFilter>('all')
   const [range, setRange] = useState<RangeKey>('week')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const editAvatarRef = useRef<HTMLInputElement>(null)
@@ -262,51 +335,34 @@ export function Profile() {
         </div>
       </motion.section>
 
-      <motion.section className="profile-strava-actions" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
-        <button type="button" className="profile-strava-btn outline">
-          <QrCode size={16} /> {isEs ? 'Compartir mi código QR' : 'Share my QR code'}
-        </button>
-        <button type="button" className="profile-strava-btn outline">
-          <Camera size={16} /> {isEs ? 'Editar' : 'Edit'}
-        </button>
-      </motion.section>
-
-      <motion.section className="profile-strava-gallery" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }}>
-        <div className="profile-strava-gallery-row">
-          {['https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=400&q=80', 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=400&q=80', 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=80', 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&q=80'].map((src, idx) => (
-            <button type="button" key={idx} className="profile-strava-gallery-item" style={{ backgroundImage: `url(${src})` }} />
-          ))}
-        </div>
-      </motion.section>
-
       <motion.section className="profile-strava-filters" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}>
+        <button
+          type="button"
+          className={`profile-filter-chip ${sportFilter === 'all' ? 'active' : ''}`}
+          onClick={() => setSportFilter('all')}
+        >
+          <Activity size={12} /> {isEs ? 'Todos los deportes' : 'All sports'}
+        </button>
         <button
           type="button"
           className={`profile-filter-chip ${sportFilter === 'bike' ? 'active' : ''}`}
           onClick={() => setSportFilter('bike')}
         >
-          <Bike size={14} /> {isEs ? 'Vuelta ciclística' : 'Cycling ride'}
+          <Bike size={12} /> {isEs ? 'Ciclismo' : 'Cycling'}
         </button>
         <button
           type="button"
           className={`profile-filter-chip ${sportFilter === 'run' ? 'active' : ''}`}
           onClick={() => setSportFilter('run')}
         >
-          <Footprints size={14} /> {isEs ? 'Carrera' : 'Run'}
+          <Footprints size={12} /> {isEs ? 'Carrera' : 'Run'}
         </button>
         <button
           type="button"
           className={`profile-filter-chip ${sportFilter === 'gym' ? 'active' : ''}`}
           onClick={() => setSportFilter('gym')}
         >
-          <BarChart3 size={14} /> {isEs ? 'Entrenamiento' : 'Training'}
-        </button>
-        <button
-          type="button"
-          className={`profile-filter-chip ${sportFilter === 'all' ? 'active' : ''}`}
-          onClick={() => setSportFilter('all')}
-        >
-          <Activity size={14} /> {isEs ? 'Todos' : 'All'}
+          <BarChart3 size={12} /> {isEs ? 'Entrenamiento' : 'Training'}
         </button>
       </motion.section>
 
@@ -325,7 +381,7 @@ export function Profile() {
                 className={`profile-strava-range-btn ${range === r ? 'active' : ''}`}
                 onClick={() => setRange(r)}
               >
-                {r === 'week' ? (isEs ? 'Semana' : 'Week') : r === 'month' ? (isEs ? 'Mes' : 'Month') : (isEs ? 'Año' : 'Year')}
+                {r === 'week' ? (isEs ? 'Sem' : 'Wk') : r === 'month' ? (isEs ? 'Mes' : 'Mo') : (isEs ? 'Año' : 'Yr')}
               </button>
             ))}
           </div>
@@ -344,25 +400,7 @@ export function Profile() {
             <span className="profile-week-label">{isEs ? 'Desnivel positivo' : 'Elevation Gain'}</span>
           </div>
         </div>
-        <div className="profile-week-chart" aria-label={isEs ? 'Volumen por periodo' : 'Volume per period'}>
-          <div className="profile-week-chart-bars">
-            {chartData.map((b, i) => {
-              const heightPct = maxKm > 0 ? (b.km / maxKm) * 100 : 0
-              return (
-                <div key={i} className="profile-week-bar-wrap">
-                  <motion.div
-                    className="profile-week-bar"
-                    initial={{ height: 0 }}
-                    animate={{ height: `${Math.max(2, heightPct)}%` }}
-                    transition={{ duration: 0.5, ease: 'easeOut', delay: 0.04 * i }}
-                    title={`${b.label}: ${formatKm(b.km, language)} km · ${formatDuration(b.minutes, isEs)}`}
-                  />
-                  <span className="profile-week-bar-label">{b.label}</span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+        <LineChart data={chartData} maxKm={maxKm} language={language} isEs={isEs} />
       </motion.section>
 
       <motion.section className="profile-strava-menu" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
