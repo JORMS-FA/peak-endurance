@@ -25,10 +25,7 @@ export default function App() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
 
-      {/* Public profile — accessible without auth, by username or id */}
-            <Route path="/app/perfil/:handle" element={<Profile />} />
-            <Route path="/app/perfil" element={<Profile />} />
-
+      {/* Authenticated app shell — all /app/* routes share TopBar + Sidebar */}
       <Route path="/app" element={<AuthGuard><AppLayout /></AuthGuard>}>
         <Route index element={<Dashboard />} />
         <Route path="ia-coach" element={<AiCoach />} />
@@ -43,6 +40,10 @@ export default function App() {
         <Route path="notificaciones" element={<Notifications />} />
         <Route path="configuracion" element={<Settings />} />
         <Route path="ajustes" element={<Navigate to="/app/configuracion" replace />} />
+
+        {/* Public profile — accessible inside the shell (handle or own profile) */}
+        <Route path="perfil" element={<Profile />} />
+        <Route path="perfil/:handle" element={<Profile />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />
