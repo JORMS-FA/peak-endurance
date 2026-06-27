@@ -637,3 +637,77 @@
 .profile-edit-save:hover {
   filter: brightness(1.05);
 }
+
+/* Weekly / monthly / yearly chart */
+.profile-strava-week-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.profile-strava-range {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+.profile-strava-range-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  opacity: 0.7;
+}
+.profile-strava-range-btn.active {
+  background: linear-gradient(135deg, #fc4c02, #f97316);
+  color: #fff;
+  opacity: 1;
+}
+
+.profile-week-chart-bars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(28px, 1fr));
+  gap: 6px;
+  align-items: end;
+  height: 140px;
+}
+.profile-week-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  gap: 4px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  overflow: hidden;
+  padding: 0 0 4px;
+}
+.profile-week-bar {
+  width: 100%;
+  background: linear-gradient(180deg, #f97316, #fb923c);
+  opacity: 0.9;
+  border-radius: 6px 6px 0 0;
+  min-height: 4px;
+}
+.profile-week-bar-label {
+  text-align: center;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.04em;
+}
+
+/* Ensure the weekly chart matches the rest of the page width */
+.profile-week-chart {
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
+}
