@@ -8,6 +8,15 @@ import { SearchIcon } from '../ui/icons/SearchIcon'
 
 function GroupIcon({ type }: { type: string }) {
   switch (type) {
+    case 'user':
+      return (
+        <div className="search-group-icon">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </div>
+      )
     case 'activity':
       return (
         <div className="search-group-icon">
@@ -35,6 +44,15 @@ function GroupIcon({ type }: { type: string }) {
 
 function ResultIcon({ type }: { type: string }) {
   switch (type) {
+    case 'user':
+      return (
+        <div className="search-result-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </div>
+      )
     case 'activity':
       return (
         <div className="search-result-icon">
@@ -121,17 +139,23 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
   }
 
   const groups = useCallback((): { type: string; label: string; items: SearchResultItem[] }[] => {
+    const order = ['user', 'page', 'activity', 'session', 'connection']
+    const labels: Record<string, string> = {
+      user: isEs ? 'Usuarios' : 'Users',
+      page: isEs ? 'Páginas' : 'Pages',
+      activity: isEs ? 'Actividades' : 'Activities',
+      session: isEs ? 'Sesiones' : 'Sessions',
+      connection: isEs ? 'Conexiones' : 'Connections',
+    }
     const map: Record<string, SearchResultItem[]> = {}
     for (const item of searchResults) {
       if (!map[item.type]) map[item.type] = []
       map[item.type].push(item)
     }
-    return Object.entries(map).map(([type, items]) => ({
-      type,
-      label: type === 'page' ? 'Páginas' : type === 'activity' ? 'Actividades' : type === 'session' ? 'Sesiones' : 'Otros',
-      items,
-    }))
-  }, [searchResults])
+    return order
+      .filter((type) => map[type]?.length)
+      .map((type) => ({ type, label: labels[type] ?? type, items: map[type] }))
+  }, [searchResults, isEs])
 
   if (!open) return null
 
@@ -144,7 +168,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
             ref={inputRef}
             type="text"
             className="search-modal-input"
-            placeholder={isEs ? 'Buscar actividades, planes...' : 'Search activities, plans...'}
+            placeholder={isEs ? 'Buscar @usuario, actividades, planes...' : 'Search @user, activities, plans...'}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value)

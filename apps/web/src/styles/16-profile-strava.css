@@ -762,3 +762,44 @@
 .profile-week-label {
   font-size: 0.65rem;
 }
+
+/* Hide the previous topbar banner so the public profile is cleaner. */
+.profile-strava-header {
+  display: none;
+}
+
+/* Discreet floating edit pencil in the top-right corner of the public profile. */
+.profile-edit-fab {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  right: 16px;
+  z-index: 60;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(20, 22, 28, 0.55);
+  color: rgba(255, 255, 255, 0.55);
+  padding: 0;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.profile-edit-fab:hover {
+  background: rgba(20, 22, 28, 0.85);
+  color: rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px);
+}
+
+/* Public handle under the display name */
+.profile-strava-username {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}

@@ -25,8 +25,9 @@ export default function App() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
 
-      {/* Public profile — accessible without auth */}
-      <Route path="/app/perfil" element={<Profile />} />
+      {/* Public profile — accessible without auth, by username or id */}
+            <Route path="/app/perfil/:handle" element={<Profile />} />
+            <Route path="/app/perfil" element={<Profile />} />
 
       <Route path="/app" element={<AuthGuard><AppLayout /></AuthGuard>}>
         <Route index element={<Dashboard />} />

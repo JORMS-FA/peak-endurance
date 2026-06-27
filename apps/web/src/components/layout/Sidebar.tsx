@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import { ChevronLeft, Pencil } from 'lucide-react'
-import { Home, CalendarDays, Dumbbell, Star, LineChart, Mountain, Plug, User } from 'lucide-react'
+import { Home, CalendarDays, Dumbbell, Star, LineChart, Mountain, Plug, User, Settings as SettingsIcon } from 'lucide-react'
 import { sidebarNav } from '../../lib/navigation'
 import { useI18n } from '../../hooks/useI18n'
 
@@ -93,5 +93,5 @@ export function Sidebar({
 
 const iconMap: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
   Home, CalendarDays, Dumbbell, Star,
-  LineChart, Mountain, Plug, User,
+  LineChart, Mountain, Plug, User, Settings: SettingsIcon,
 }

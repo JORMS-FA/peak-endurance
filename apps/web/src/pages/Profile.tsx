@@ -1,9 +1,11 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useParams } from 'react-router-dom'
 import { useI18n } from '../hooks/useI18n'
 import { useAuth } from '../hooks/useAuth'
 import { useGamification } from '../hooks/useGamification'
 import { useActivities, type SportFilter } from '../hooks/useActivities'
+import { supabase } from '../lib/supabase'
 import { Trophy, Medal, Star, Lock, ChevronRight, QrCode, Share2, Camera, Settings2, UserPlus, Activity, BarChart3, Route, Gauge, Printer, Pencil, X, Check, Bike, Footprints } from 'lucide-react'
 import type { ReactNode } from 'react'
 import '../styles/04-profile-public.css'
@@ -187,8 +189,9 @@ function LineChart({
 }
 export function Profile() {
   const { language } = useI18n()
-  const { profile } = useAuth()
+  const { profile: myProfile, status: authStatus } = useAuth()
   const gamification = useGamification()
+  const { handle: routeHandle } = useParams<{ handle?: string }>()
 
   const isEs = language === 'es'
   const [showAllAchievements, setShowAllAchievements] = useState(false)
@@ -201,9 +204,55 @@ export function Profile() {
   const daysForRange = range === 'week' ? 7 : range === 'month' ? 35 : 365
   const { data: realActivities } = useActivities({ days: daysForRange, sport: sportFilter })
 
+  // Resolve the displayed profile: either the authenticated user, or the
+  // @handle / id from the route.
+  const [remoteProfile, setRemoteProfile] = useState<{
+    id: string
+    username: string | null
+    display_name: string | null
+    avatar_url: string | null
+    location: string | null
+    bio: string | null
+  } | null>(null)
+  const [remoteLoading, setRemoteLoading] = useState(false)
+
+  useEffect(() => {
+    // If we're on /app/perfil (no handle) and authenticated, use the
+    // logged-in user. Otherwise fetch the public row for that handle.
+    if (!routeHandle) {
+      setRemoteProfile(null)
+      return
+    }
+    if (!supabase) return
+    let cancelled = false
+    setRemoteLoading(true)
+    ;(async () => {
+      const isHandle = routeHandle.length <= 24 && !routeHandle.includes('-')
+      const q = supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url, location, bio')
+      const { data } = isHandle
+        ? await q.or(`username.eq.${routeHandle},username_lc.eq.${routeHandle.toLowerCase()}`).maybeSingle()
+        : await q.eq('id', routeHandle).maybeSingle()
+      if (!cancelled) {
+        setRemoteProfile(data ?? null)
+        setRemoteLoading(false)
+      }
+    })().catch(() => {
+      if (!cancelled) setRemoteLoading(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [routeHandle])
+
+  const profile = remoteProfile ?? myProfile
+  const isOwnProfile = !routeHandle || (myProfile?.id != null && remoteProfile?.id === myProfile.id)
+
   const displayName = profile?.display_name ?? (isEs ? 'Atleta' : 'Athlete')
-  const location = (profile as { location?: string })?.location ?? ''
-  const handle = (profile as { instagram_handle?: string })?.instagram_handle ?? ''
+  const location = profile?.location ?? ''
+  const handle = (profile as { instagram_handle?: string } | null)?.instagram_handle ?? ''
+  const username = (profile as { username?: string | null } | null)?.username ?? ''
 
   // Local state for the edit pop-up — initialised from the current profile.
   const [editName, setEditName] = useState(displayName)
@@ -285,19 +334,16 @@ export function Profile() {
 
   return (
     <div className="public-profile full-width">
-      <motion.section className="profile-strava-header" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <button type="button" className="profile-strava-back" aria-label={isEs ? 'Atrás' : 'Back'}>
-          <span className="sr-only">{isEs ? 'Atrás' : 'Back'}</span>
-        </button>
+      {isOwnProfile && (
         <button
           type="button"
-          className="profile-strava-edit"
+          className="profile-edit-fab"
           aria-label={isEs ? 'Editar perfil' : 'Edit profile'}
           onClick={() => setEditOpen(true)}
         >
-          <Pencil size={16} />
+          <Pencil size={14} />
         </button>
-      </motion.section>
+      )}
       <motion.section className="profile-strava-hero" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <div className="profile-strava-hero-avatar">
           <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} />
@@ -311,6 +357,7 @@ export function Profile() {
           </button>
         </div>
         <h1 className="profile-strava-name">{displayName}</h1>
+        {username && <p className="profile-strava-username">@{username}</p>}
         {location && <p className="profile-strava-location">{location}</p>}
         <p className="profile-strava-sub">{isEs ? 'CON SUSCRIPCIÓN DESDE 2023' : 'SUBSCRIBED SINCE 2023'}</p>
         {handle && <p className="profile-strava-handle">IG @{handle}</p>}

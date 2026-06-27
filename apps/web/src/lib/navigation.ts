@@ -9,6 +9,7 @@ export const sidebarNav: NavItem[] = [
   { id: 'segments', path: '/app/segmentos', icon: 'Mountain', label_es: 'Segmentos', label_en: 'Segments' },
   { id: 'connections', path: '/app/conexiones', icon: 'Plug', label_es: 'Conexiones', label_en: 'Connections' },
   { id: 'profile', path: '/app/perfil', icon: 'User', label_es: 'Perfil', label_en: 'Profile' },
+  { id: 'settings', path: '/app/configuracion', icon: 'Settings', label_es: 'Configuración', label_en: 'Settings' },
 ]
 
 export const mobileNav: NavItem[] = [
