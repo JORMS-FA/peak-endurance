@@ -216,6 +216,21 @@
   place-items: center;
 }
 
+/* Larger variant for icon buttons (search, notifications, avatar)
+   so all three share the same diameter and the icons feel centered. */
+.topbar-icon-btn {
+  width: 48px !important;
+  height: 48px !important;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  transition: all var(--transition);
+}
+.topbar-icon-btn:hover {
+  background: var(--bg-3);
+  color: var(--text);
+}
+
 .topbar-btn-round .topbar-kbd {
   display: none;
 }

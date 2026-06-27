@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Bell, X, Settings, LogOut, Menu, ArrowRight, CheckCheck } from 'lucide-react'
-import { SearchIcon } from '../ui/icons/SearchIcon'
+import { Bell, X, Settings, LogOut, Menu, ArrowRight, CheckCheck, Search } from 'lucide-react'
 import { useI18n } from '../../hooks/useI18n'
 import { useAuth } from '../../hooks/useAuth'
 import { signOut } from '../../lib/auth'
@@ -134,14 +133,15 @@ export function TopBar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
         </div>
 
         <div className="topbar-right">
-          {/* Search button */}
+          {/* Search button — Lucide Search with the same strokeWidth as
+              the bell so both icons share the same visual weight. */}
           <button
             type="button"
-            className="topbar-action topbar-search-btn topbar-btn-round"
+            className="topbar-action topbar-search-btn topbar-btn-round topbar-icon-btn"
             aria-label={t('search')}
             onClick={() => setSearchOpen(true)}
           >
-            <SearchIcon size={52} />
+            <Search size={22} strokeWidth={2.5} aria-hidden />
             <kbd className="topbar-kbd">{navigator.platform?.includes('Mac') ? '⌘K' : 'Ctrl+K'}</kbd>
           </button>
 
@@ -149,7 +149,7 @@ export function TopBar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
           <div className="avatar-menu-wrap" ref={notifRef}>
             <button
               type="button"
-              className="topbar-action topbar-notif-btn topbar-btn-round"
+              className="topbar-action topbar-notif-btn topbar-btn-round topbar-icon-btn"
               aria-label={t('notifications')}
               onClick={() => {
                 if (isMobile) {
@@ -159,7 +159,7 @@ export function TopBar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
                 }
               }}
             >
-              <Bell size={24} strokeWidth={2.5} />
+              <Bell size={22} strokeWidth={2.5} />
               {unreadCount > 0 && (
                 <span className="notif-badge">
                   {unreadCount}
