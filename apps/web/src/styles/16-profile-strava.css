@@ -804,3 +804,83 @@
   font-weight: 500;
   letter-spacing: 0.01em;
 }
+
+/* ─── Follow / unfollow CTA ──────────────────────────────────────── */
+.profile-strava-btn.primary {
+  background: linear-gradient(135deg, var(--accent, #f97316), var(--accent-hover, #fb923c));
+  color: #fff;
+  border: 0;
+}
+.profile-strava-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.profile-follow-error {
+  color: var(--danger, #f87171);
+  font-size: 0.8rem;
+  margin-left: auto;
+}
+
+/* ─── @username field in the edit modal ───────────────────────────── */
+.profile-edit-username {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 0 12px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.profile-edit-username:focus-within {
+  border-color: var(--accent, #f97316);
+  background: rgba(255, 255, 255, 0.06);
+}
+.profile-edit-username-prefix {
+  display: inline-flex;
+  color: rgba(255, 255, 255, 0.5);
+}
+.profile-edit-username input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: none;
+  padding: 10px 0;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: inherit;
+}
+.profile-edit-username-status {
+  flex: 0 0 auto;
+  color: rgba(255, 255, 255, 0.5);
+}
+.profile-edit-username-status.ok {
+  color: var(--success, #34d399);
+}
+.profile-edit-username-status.bad {
+  color: var(--danger, #f87171);
+}
+.profile-edit-hint {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.profile-edit-error {
+  margin-top: 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--danger-soft, rgba(248, 113, 113, 0.12));
+  color: var(--danger, #f87171);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+/* ─── Spinner ────────────────────────────────────────────────────── */
+.profile-spin {
+  animation: profile-spin 0.9s linear infinite;
+}
+@keyframes profile-spin {
+  to { transform: rotate(360deg); }
+}

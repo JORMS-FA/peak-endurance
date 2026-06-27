@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from 'react'
+import { useState, useRef, useMemo, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useParams } from 'react-router-dom'
 import { useI18n } from '../hooks/useI18n'
@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useGamification } from '../hooks/useGamification'
 import { useActivities, type SportFilter } from '../hooks/useActivities'
 import { supabase } from '../lib/supabase'
-import { Trophy, Medal, Star, Lock, ChevronRight, QrCode, Share2, Camera, Settings2, UserPlus, Activity, BarChart3, Route, Gauge, Printer, Pencil, X, Check, Bike, Footprints } from 'lucide-react'
+import { Trophy, Medal, Star, Lock, ChevronRight, QrCode, Share2, Camera, Settings2, UserPlus, UserCheck, Activity, BarChart3, Route, Gauge, Printer, Pencil, X, Check, Bike, Footprints, AtSign, Loader2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import '../styles/04-profile-public.css'
 import '../styles/15-profile-public.css'
@@ -257,15 +257,159 @@ export function Profile() {
   // Local state for the edit pop-up — initialised from the current profile.
   const [editName, setEditName] = useState(displayName)
   const [editLocation, setEditLocation] = useState(location)
+  const [editUsername, setEditUsername] = useState(username)
   const [editAvatarPreview, setEditAvatarPreview] = useState<string | null>(profile?.avatar_url ?? null)
+  const [editSaving, setEditSaving] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
+  const [editUsernameStatus, setEditUsernameStatus] = useState<'idle' | 'checking' | 'ok' | 'taken' | 'invalid'>('idle')
 
   useEffect(() => {
     if (editOpen) {
       setEditName(displayName)
       setEditLocation(location)
+      setEditUsername(username)
       setEditAvatarPreview(profile?.avatar_url ?? null)
+      setEditError(null)
+      setEditUsernameStatus('idle')
     }
-  }, [editOpen, displayName, location, profile?.avatar_url])
+  }, [editOpen, displayName, location, username, profile?.avatar_url])
+
+  // ─── Follow graph state ─────────────────────────────────────────────
+  const profileId = profile?.id ?? null
+  const [followersCount, setFollowersCount] = useState<number | null>(null)
+  const [followingCount, setFollowingCount] = useState<number | null>(null)
+  const [isFollowing, setIsFollowing] = useState<boolean | null>(null)
+  const [followBusy, setFollowBusy] = useState(false)
+  const [followError, setFollowError] = useState<string | null>(null)
+
+  const loadFollowCounts = useCallback(async (targetId: string) => {
+    if (!supabase) return
+    const [{ count: followers }, { count: following }] = await Promise.all([
+      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('followee_id', targetId),
+      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', targetId),
+    ])
+    setFollowersCount(followers ?? 0)
+    setFollowingCount(following ?? 0)
+  }, [])
+
+  const checkIsFollowing = useCallback(async (targetId: string) => {
+    if (!supabase || !myProfile?.id) {
+      setIsFollowing(false)
+      return
+    }
+    if (myProfile.id === targetId) {
+      setIsFollowing(false) // can't follow yourself
+      return
+    }
+    const { data } = await supabase
+      .from('follows')
+      .select('follower_id')
+      .eq('follower_id', myProfile.id)
+      .eq('followee_id', targetId)
+      .maybeSingle()
+    setIsFollowing(!!data)
+  }, [myProfile?.id])
+
+  useEffect(() => {
+    if (!profileId) {
+      setFollowersCount(null)
+      setFollowingCount(null)
+      setIsFollowing(null)
+      return
+    }
+    loadFollowCounts(profileId)
+    checkIsFollowing(profileId)
+  }, [profileId, loadFollowCounts, checkIsFollowing])
+
+  const handleToggleFollow = useCallback(async () => {
+    if (!supabase || !myProfile?.id || !profileId || profileId === myProfile.id || followBusy) return
+    setFollowBusy(true)
+    setFollowError(null)
+    const currentlyFollowing = isFollowing === true
+    try {
+      if (currentlyFollowing) {
+        const { error } = await supabase
+          .from('follows')
+          .delete()
+          .eq('follower_id', myProfile.id)
+          .eq('followee_id', profileId)
+        if (error) throw error
+        setIsFollowing(false)
+        setFollowersCount((c) => (c == null ? 0 : Math.max(0, c - 1)))
+      } else {
+        const { error } = await supabase
+          .from('follows')
+          .insert({ follower_id: myProfile.id, followee_id: profileId })
+        if (error) throw error
+        setIsFollowing(true)
+        setFollowersCount((c) => (c == null ? 1 : c + 1))
+      }
+    } catch (err: unknown) {
+      setFollowError(err instanceof Error ? err.message : (isEs ? 'No se pudo actualizar' : 'Could not update'))
+    } finally {
+      setFollowBusy(false)
+    }
+  }, [myProfile?.id, profileId, isFollowing, followBusy, isEs])
+
+  // Live username validation in the edit modal (debounced 350ms).
+  useEffect(() => {
+    if (!editOpen) return
+    const candidate = editUsername.trim().toLowerCase()
+    if (!candidate) {
+      setEditUsernameStatus('idle')
+      return
+    }
+    if (!/^[a-z][a-z0-9_]{2,19}$/.test(candidate)) {
+      setEditUsernameStatus('invalid')
+      return
+    }
+    if (candidate === (username || '').toLowerCase()) {
+      setEditUsernameStatus('ok')
+      return
+    }
+    setEditUsernameStatus('checking')
+    const handle = setTimeout(async () => {
+      if (!supabase) {
+        setEditUsernameStatus('idle')
+        return
+      }
+      const { data } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username_lc', candidate)
+        .maybeSingle()
+      setEditUsernameStatus(data ? 'taken' : 'ok')
+    }, 350)
+    return () => clearTimeout(handle)
+  }, [editUsername, editOpen, username])
+
+  const handleSaveProfile = useCallback(async () => {
+    if (!supabase || !myProfile?.id || editSaving) return
+    setEditSaving(true)
+    setEditError(null)
+    try {
+      const candidate = editUsername.trim().toLowerCase()
+      const updates: Record<string, unknown> = {
+        display_name: editName.trim() || null,
+        location: editLocation.trim() || null,
+      }
+      if (candidate) {
+        updates.username = candidate
+      }
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', myProfile.id)
+      if (error) throw error
+      // Reflect locally for the next render.
+      setEditOpen(false)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setEditError(msg)
+    } finally {
+      setEditSaving(false)
+    }
+  }, [myProfile?.id, editName, editLocation, editUsername, editSaving])
 
   const shownAchievements = useMemo(() => {
     const list = gamification.achievements
@@ -365,22 +509,55 @@ export function Profile() {
 
       <motion.section className="profile-strava-stats" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <div className="profile-strava-stat">
-          <span className="profile-strava-stat-value">99</span>
+          <span className="profile-strava-stat-value">{followingCount ?? '—'}</span>
           <span className="profile-strava-stat-label">{isEs ? 'Siguiendo' : 'Following'}</span>
         </div>
         <div className="profile-strava-stat">
-          <span className="profile-strava-stat-value">54</span>
+          <span className="profile-strava-stat-value">{followersCount ?? '—'}</span>
           <span className="profile-strava-stat-label">{isEs ? 'Seguidores' : 'Followers'}</span>
         </div>
         <div className="profile-strava-stat">
-          <span className="profile-strava-stat-value">1,272</span>
-          <span className="profile-strava-stat-label">{isEs ? 'Actividades' : 'Activities'}</span>
+          <span className="profile-strava-stat-value">{gamification.achievements.length}</span>
+          <span className="profile-strava-stat-label">{isEs ? 'Logros' : 'Achievements'}</span>
         </div>
         <div className="profile-strava-stat">
-          <span className="profile-strava-stat-value">108</span>
-          <span className="profile-strava-stat-label">{isEs ? 'Serie semanal' : 'Weekly streak'}</span>
+          <span className="profile-strava-stat-value">{gamification.level}</span>
+          <span className="profile-strava-stat-label">{isEs ? 'Nivel' : 'Level'}</span>
         </div>
       </motion.section>
+
+      {/* Follow / Unfollow CTA — only when viewing another user's profile. */}
+      <AnimatePresence>
+        {!isOwnProfile && profileId && (
+          <motion.section
+            className="profile-strava-actions"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: 0.12 }}
+          >
+            <button
+              type="button"
+              className={`profile-strava-btn ${isFollowing ? 'outline' : 'primary'}`}
+              onClick={handleToggleFollow}
+              disabled={followBusy}
+              aria-pressed={!!isFollowing}
+            >
+              {followBusy ? (
+                <Loader2 size={14} className="profile-spin" />
+              ) : isFollowing ? (
+                <UserCheck size={14} />
+              ) : (
+                <UserPlus size={14} />
+              )}
+              {isFollowing ? (isEs ? 'Siguiendo' : 'Following') : (isEs ? 'Seguir' : 'Follow')}
+            </button>
+            {followError && (
+              <span className="profile-follow-error" role="alert">{followError}</span>
+            )}
+          </motion.section>
+        )}
+      </AnimatePresence>
 
       <motion.section className="profile-strava-filters" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}>
         <button
@@ -581,7 +758,34 @@ export function Profile() {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     placeholder={isEs ? 'Tu nombre' : 'Your name'}
+                    maxLength={60}
                   />
+                </label>
+                <label className="profile-edit-field">
+                  <span>{isEs ? '@usuario' : '@username'}</span>
+                  <div className="profile-edit-username">
+                    <span className="profile-edit-username-prefix"><AtSign size={14} /></span>
+                    <input
+                      type="text"
+                      value={editUsername}
+                      onChange={(e) => setEditUsername(e.target.value.replace(/[^A-Za-z0-9_]/g, '').toLowerCase().slice(0, 20))}
+                      placeholder="jorman_fagua"
+                      maxLength={20}
+                      spellCheck={false}
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                    />
+                    {editUsernameStatus === 'checking' && <Loader2 size={14} className="profile-spin profile-edit-username-status" />}
+                    {editUsernameStatus === 'ok' && <Check size={14} className="profile-edit-username-status ok" />}
+                    {editUsernameStatus === 'taken' && <X size={14} className="profile-edit-username-status bad" />}
+                  </div>
+                  <span className="profile-edit-hint">
+                    {editUsernameStatus === 'taken' && (isEs ? 'Este @usuario ya está en uso.' : 'This @username is already taken.')}
+                    {editUsernameStatus === 'invalid' && (isEs ? 'Solo letras, números y guion bajo. Mínimo 3 caracteres.' : 'Letters, numbers and underscore only. Min 3 chars.')}
+                    {editUsernameStatus === 'ok' && (isEs ? 'Disponible.' : 'Available.')}
+                    {editUsernameStatus === 'checking' && (isEs ? 'Verificando…' : 'Checking…')}
+                    {editUsernameStatus === 'idle' && (isEs ? 'Tu @usuario único para tu perfil público.' : 'Your unique @username for your public profile.')}
+                  </span>
                 </label>
                 <label className="profile-edit-field">
                   <span>{isEs ? 'Descripción / Ubicación' : 'Description / Location'}</span>
@@ -590,18 +794,28 @@ export function Profile() {
                     onChange={(e) => setEditLocation(e.target.value)}
                     placeholder={isEs ? 'La Macarena, META' : 'La Macarena, META'}
                     rows={3}
+                    maxLength={160}
                   />
                 </label>
               </div>
 
               <footer className="profile-edit-footer">
-                <button type="button" className="profile-edit-cancel" onClick={() => setEditOpen(false)}>
+                <button type="button" className="profile-edit-cancel" onClick={() => setEditOpen(false)} disabled={editSaving}>
                   {isEs ? 'Cancelar' : 'Cancel'}
                 </button>
-                <button type="button" className="profile-edit-save" onClick={() => setEditOpen(false)}>
-                  <Check size={14} /> {isEs ? 'Guardar' : 'Save'}
+                <button
+                  type="button"
+                  className="profile-edit-save"
+                  onClick={handleSaveProfile}
+                  disabled={editSaving || editUsernameStatus === 'taken' || editUsernameStatus === 'invalid' || editUsernameStatus === 'checking'}
+                >
+                  {editSaving ? <Loader2 size={14} className="profile-spin" /> : <Check size={14} />}
+                  {isEs ? 'Guardar' : 'Save'}
                 </button>
               </footer>
+              {editError && (
+                <div className="profile-edit-error" role="alert">{editError}</div>
+              )}
             </motion.div>
           </motion.div>
         )}
