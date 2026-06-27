@@ -153,13 +153,14 @@
   align-items: center;
   justify-content: space-between;
   height: var(--topbar-height);
-  padding: 0 20px;
+  padding: 0 14px;
   border-bottom: 1px solid var(--border);
   background: var(--surface-overlay);
   backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 30;
+  gap: 12px;
 }
 
 .topbar-left {
@@ -391,7 +392,7 @@
 
 .brand-name {
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   color: var(--text);
   letter-spacing: -0.02em;
   display: inline-block;

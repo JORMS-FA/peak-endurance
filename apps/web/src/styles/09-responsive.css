@@ -105,7 +105,7 @@
   /* Brand name: keep on one line, never wrap */
   .brand-name {
     white-space: nowrap;
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     letter-spacing: -0.03em;
     overflow: hidden;
     text-overflow: ellipsis;

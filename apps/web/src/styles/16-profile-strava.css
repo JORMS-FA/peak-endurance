@@ -1,5 +1,14 @@
 /* Public profile – Strava-inspired, dark glassmorphism, full-bleed mobile */
 
+/* Force full-bleed on the public profile by overriding the shell's
+   .app-content max-width and centering margins. */
+.app-shell .app-main .app-content:has(.public-profile),
+.app-main .app-content > .public-profile {
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 .profile-strava-header,
 .profile-strava-hero,
 .profile-strava-stats,
