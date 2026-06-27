@@ -10,42 +10,38 @@ import { Plan } from './pages/Plan'
 import { AiCoach } from './pages/AiCoach'
 import { Analysis } from './pages/Analysis'
 import { Connections } from './pages/Connections'
+import { Segments } from './pages/Segments'
 import Notifications from './pages/Notifications'
 import { Profile } from './pages/Profile'
-import { Segments } from './pages/Segments'
+import { Settings } from './pages/Settings'
 import { Privacy } from './pages/Privacy'
 import { Terms } from './pages/Terms'
 
 export default function App() {
   return (
     <Routes>
-      {/* Public routes */}
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<AuthScreen />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
 
-      {/* Protected app routes */}
       <Route path="/app" element={<AuthGuard><AppLayout /></AuthGuard>}>
         <Route index element={<Dashboard />} />
         <Route path="ia-coach" element={<AiCoach />} />
         <Route path="entrenamientos" element={<Training />} />
         <Route path="entrenamientos/:id" element={<ActivityDetail />} />
         <Route path="plan" element={<Plan />} />
-        {/* Calendar is now a view inside Plan */}
         <Route path="calendario" element={<Plan initialTab="calendar" />} />
         <Route path="analisis" element={<Analysis />} />
-        {/* Progress merged into Analysis */}
         <Route path="progreso" element={<Navigate to="/app/analisis" replace />} />
         <Route path="conexiones" element={<Connections />} />
         <Route path="segmentos" element={<Segments />} />
         <Route path="notificaciones" element={<Notifications />} />
         <Route path="perfil" element={<Profile />} />
-        {/* Settings merged into Profile */}
-        <Route path="ajustes" element={<Navigate to="/app/perfil" replace />} />
+        <Route path="configuracion" element={<Settings />} />
+        <Route path="ajustes" element={<Navigate to="/app/configuracion" replace />} />
       </Route>
 
-      {/* Catch-all redirect */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
