@@ -141,7 +141,7 @@ export function TopBar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
             aria-label={t('search')}
             onClick={() => setSearchOpen(true)}
           >
-            <SearchIcon size={40} />
+            <SearchIcon size={52} />
             <kbd className="topbar-kbd">{navigator.platform?.includes('Mac') ? '⌘K' : 'Ctrl+K'}</kbd>
           </button>
 
