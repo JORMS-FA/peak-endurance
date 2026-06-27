@@ -11,6 +11,9 @@ export type AuthProfile = {
   email: string | null
   display_name: string | null
   avatar_url: string | null
+  username: string | null
+  location: string | null
+  bio: string | null
   created_at: string | null
   onboarding_completed: boolean
   subscription_tier: string | null

@@ -877,10 +877,41 @@
   font-weight: 500;
 }
 
-/* ─── Spinner ────────────────────────────────────────────────────── */
+/* ─── Spinloader ────────────────────────────────────────────────── */
 .profile-spin {
   animation: profile-spin 0.9s linear infinite;
 }
 @keyframes profile-spin {
   to { transform: rotate(360deg); }
+}
+
+/* ─── Bio shown on the public profile ───────────────────────────── */
+.profile-strava-bio {
+  margin: 6px 16px 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.92rem;
+  line-height: 1.4;
+  max-width: 480px;
+  text-align: center;
+  padding: 0 8px;
+}
+
+/* ─── Stats symmetry ────────────────────────────────────────────── */
+.profile-strava-stats {
+  align-items: center;
+  gap: 14px;
+}
+.profile-strava-stat {
+  align-items: center;
+  text-align: center;
+}
+.profile-strava-stat-value {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.profile-strava-stat-label {
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 600;
 }

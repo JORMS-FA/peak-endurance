@@ -223,7 +223,7 @@ export async function ensureProfile(user: User): Promise<AuthProfile | null> {
   // First, try to read the existing profile
   const { data: existing } = await supabase
     .from(PROFILES_TABLE)
-    .select('id, email, display_name, avatar_url, created_at, onboarding_completed, subscription_tier, subscription_expires_at, subscription_status')
+    .select('id, email, display_name, avatar_url, username, location, bio, created_at, onboarding_completed, subscription_tier, subscription_expires_at, subscription_status')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -243,6 +243,9 @@ export async function ensureProfile(user: User): Promise<AuthProfile | null> {
       email: existing.email ?? email,
       display_name: existing.display_name ?? displayName,
       avatar_url: existing.avatar_url ?? avatarUrl,
+      username: existing.username ?? null,
+      location: existing.location ?? null,
+      bio: existing.bio ?? null,
       created_at: existing.created_at,
       onboarding_completed: existing.onboarding_completed ?? false,
       subscription_tier: existing.subscription_tier ?? null,
@@ -263,33 +266,39 @@ export async function ensureProfile(user: User): Promise<AuthProfile | null> {
       subscription_tier: 'free',
       subscription_status: 'active',
     })
-    .select('id, email, display_name, avatar_url, created_at, onboarding_completed, subscription_tier, subscription_expires_at, subscription_status')
+    .select('id, email, display_name, avatar_url, username, location, bio, created_at, onboarding_completed, subscription_tier, subscription_expires_at, subscription_status')
     .maybeSingle()
 
   if (error) {
-    console.warn('[auth] ensureProfile insert error:', error.message)
+      console.warn('[auth] ensureProfile insert error:', error.message)
+      return {
+        id: user.id,
+        email,
+        display_name: displayName,
+        avatar_url: avatarUrl,
+        username: null,
+        location: null,
+        bio: null,
+        created_at: null,
+        onboarding_completed: false,
+        subscription_tier: 'free',
+        subscription_expires_at: null,
+        subscription_status: 'active',
+      }
+    }
+
     return {
-      id: user.id,
-      email,
-      display_name: displayName,
-      avatar_url: avatarUrl,
-      created_at: null,
-      onboarding_completed: false,
-      subscription_tier: 'free',
-      subscription_expires_at: null,
-      subscription_status: 'active',
+      id: created?.id ?? user.id,
+      email: created?.email ?? email,
+      display_name: created?.display_name ?? displayName,
+      avatar_url: created?.avatar_url ?? avatarUrl,
+      username: created?.username ?? null,
+      location: created?.location ?? null,
+      bio: created?.bio ?? null,
+      created_at: created?.created_at ?? null,
+      onboarding_completed: created?.onboarding_completed ?? false,
+      subscription_tier: created?.subscription_tier ?? null,
+      subscription_expires_at: created?.subscription_expires_at ?? null,
+      subscription_status: created?.subscription_status ?? null,
     }
   }
-
-  return {
-    id: created?.id ?? user.id,
-    email: created?.email ?? email,
-    display_name: created?.display_name ?? displayName,
-    avatar_url: created?.avatar_url ?? avatarUrl,
-    created_at: created?.created_at ?? null,
-    onboarding_completed: created?.onboarding_completed ?? false,
-    subscription_tier: created?.subscription_tier ?? null,
-    subscription_expires_at: created?.subscription_expires_at ?? null,
-    subscription_status: created?.subscription_status ?? null,
-  }
-}

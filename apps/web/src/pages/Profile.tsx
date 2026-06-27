@@ -257,6 +257,7 @@ export function Profile() {
   // Local state for the edit pop-up — initialised from the current profile.
   const [editName, setEditName] = useState(displayName)
   const [editLocation, setEditLocation] = useState(location)
+  const [editBio, setEditBio] = useState(profile?.bio ?? '')
   const [editUsername, setEditUsername] = useState(username)
   const [editAvatarPreview, setEditAvatarPreview] = useState<string | null>(profile?.avatar_url ?? null)
   const [editSaving, setEditSaving] = useState(false)
@@ -267,12 +268,13 @@ export function Profile() {
     if (editOpen) {
       setEditName(displayName)
       setEditLocation(location)
+      setEditBio(profile?.bio ?? '')
       setEditUsername(username)
       setEditAvatarPreview(profile?.avatar_url ?? null)
       setEditError(null)
       setEditUsernameStatus('idle')
     }
-  }, [editOpen, displayName, location, username, profile?.avatar_url])
+  }, [editOpen, displayName, location, username, profile?.avatar_url, profile?.bio])
 
   // ─── Follow graph state ─────────────────────────────────────────────
   const profileId = profile?.id ?? null
@@ -392,6 +394,7 @@ export function Profile() {
       const updates: Record<string, unknown> = {
         display_name: editName.trim() || null,
         location: editLocation.trim() || null,
+        bio: editBio.trim() || null,
       }
       if (candidate) {
         updates.username = candidate
@@ -409,7 +412,7 @@ export function Profile() {
     } finally {
       setEditSaving(false)
     }
-  }, [myProfile?.id, editName, editLocation, editUsername, editSaving])
+  }, [myProfile?.id, editName, editLocation, editBio, editUsername, editSaving])
 
   const shownAchievements = useMemo(() => {
     const list = gamification.achievements
@@ -503,11 +506,14 @@ export function Profile() {
         <h1 className="profile-strava-name">{displayName}</h1>
         {username && <p className="profile-strava-username">@{username}</p>}
         {location && <p className="profile-strava-location">{location}</p>}
-        <p className="profile-strava-sub">{isEs ? 'CON SUSCRIPCIÓN DESDE 2023' : 'SUBSCRIBED SINCE 2023'}</p>
-        {handle && <p className="profile-strava-handle">IG @{handle}</p>}
+        {profile?.bio && <p className="profile-strava-bio">{profile.bio}</p>}
       </motion.section>
 
       <motion.section className="profile-strava-stats" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <div className="profile-strava-stat">
+          <span className="profile-strava-stat-value">{gamification.level}</span>
+          <span className="profile-strava-stat-label">{isEs ? 'Nivel' : 'Level'}</span>
+        </div>
         <div className="profile-strava-stat">
           <span className="profile-strava-stat-value">{followingCount ?? '—'}</span>
           <span className="profile-strava-stat-label">{isEs ? 'Siguiendo' : 'Following'}</span>
@@ -519,10 +525,6 @@ export function Profile() {
         <div className="profile-strava-stat">
           <span className="profile-strava-stat-value">{gamification.achievements.length}</span>
           <span className="profile-strava-stat-label">{isEs ? 'Logros' : 'Achievements'}</span>
-        </div>
-        <div className="profile-strava-stat">
-          <span className="profile-strava-stat-value">{gamification.level}</span>
-          <span className="profile-strava-stat-label">{isEs ? 'Nivel' : 'Level'}</span>
         </div>
       </motion.section>
 
@@ -788,13 +790,23 @@ export function Profile() {
                   </span>
                 </label>
                 <label className="profile-edit-field">
-                  <span>{isEs ? 'Descripción / Ubicación' : 'Description / Location'}</span>
+                  <span>{isEs ? 'Descripción' : 'Bio'}</span>
                   <textarea
+                    value={editBio}
+                    onChange={(e) => setEditBio(e.target.value)}
+                    placeholder={isEs ? 'Ciclista de montaña, busco subir el Galeras este año.' : 'Mountain biker, aiming for the Galeras summit this year.'}
+                    rows={2}
+                    maxLength={140}
+                  />
+                </label>
+                <label className="profile-edit-field">
+                  <span>{isEs ? 'Ubicación' : 'Location'}</span>
+                  <input
+                    type="text"
                     value={editLocation}
                     onChange={(e) => setEditLocation(e.target.value)}
                     placeholder={isEs ? 'La Macarena, META' : 'La Macarena, META'}
-                    rows={3}
-                    maxLength={160}
+                    maxLength={80}
                   />
                 </label>
               </div>
