@@ -14,17 +14,17 @@ export default defineConfig({
     port: 4173,
   },
   build: {
-    target: 'es2022',
-    outDir: 'dist',
-    sourcemap: false,
-    // Manual chunk strategy — splits heavy third-party libs out of the
-    // main bundle so the initial route downloads only what it needs.
-    rolldownOptions: {
-      output: {
-        // Keep the warning threshold where Vite recommends it (500 kB);
-        // we want loud feedback if a chunk grows unexpectedly.
-        chunkSizeWarningLimit: 500,
-        manualChunks: (id) => {
+      target: 'es2022',
+      outDir: 'dist',
+      sourcemap: false,
+      // Keep the warning threshold where Vite recommends it (500 kB);
+      // we want loud feedback if a chunk grows unexpectedly.
+      chunkSizeWarningLimit: 500,
+      // Manual chunk strategy — splits heavy third-party libs out of the
+      // main bundle so the initial route downloads only what it needs.
+      rolldownOptions: {
+        output: {
+          manualChunks: (id) => {
           if (!id.includes('node_modules')) return undefined
           // Recharts — only used by a couple of pages (Dashboard, Analysis)
           if (id.includes('recharts')) return 'vendor-recharts'
