@@ -7,9 +7,6 @@ import { Trophy, Medal, Star, Lock, ChevronRight, QrCode, Share2, Camera, Settin
 import type { ReactNode } from 'react'
 import '../styles/04-profile-public.css'
 import '../styles/15-profile-public.css'
-import '../styles/16-profile-strava.css'
-import { ProfileTemplates } from '../styles/04-profile-public.css'
-import { ProfileTemplates as _ } from '../styles/15-profile-public.css'
 export function Profile() {
   const { language } = useI18n()
   const { profile } = useAuth()
