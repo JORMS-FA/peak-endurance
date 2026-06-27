@@ -9,7 +9,7 @@ export const STORAGE_KEYS = {
 
 export const THEMES = ['dark', 'light', 'midnight', 'forest']
 
-export const ACCENT_COLORS: readonly string[] = ['rgb', 'green', 'orange', 'yellow', 'blue', 'purple', 'red', 'pink', 'cyan']
+export const ACCENT_COLORS: readonly string[] = ['white', 'rgb', 'green', 'orange', 'yellow', 'blue', 'purple', 'red', 'pink', 'cyan']
 
 export const LANGUAGES = [
   { value: 'es', label: 'Espanol' },

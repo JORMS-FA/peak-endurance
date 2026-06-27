@@ -1,6 +1,6 @@
 import { useMemo, useState, useRef, useCallback } from 'react'
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useOutletContext } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Activity,
@@ -10,7 +10,6 @@ import {
   TrendingUp,
   Zap,
   Lock,
-  Pencil,
 } from 'lucide-react'
 import {
   ResponsiveContainer,
@@ -120,6 +119,7 @@ export function Dashboard() {
   const { hasSources } = useHealthSources()
   const { today: healthToday, hasToday } = useHealthMetrics()
   const layout = useDashboardLayout()
+  const { customizeMode } = useOutletContext<{ customizeMode: boolean }>()
 
   const stravaConnected = Boolean(stravaStatus?.connected)
   const showEmpty = !loading && !hasData
@@ -660,7 +660,7 @@ export function Dashboard() {
         key={w.widget_key}
         widgetKey={w.widget_key}
         label={t(WIDGET_LABEL_KEYS[w.widget_key])}
-        customizeMode={layout.customizeMode}
+        customizeMode={customizeMode}
         visible={w.visible}
         canUp={idx > 0}
         canDown={idx < total - 1}
@@ -674,7 +674,7 @@ export function Dashboard() {
     )
   }
 
-  const visibleWidgets = layout.widgets.filter((w) => layout.customizeMode || w.visible)
+  const visibleWidgets = layout.widgets.filter((w) => customizeMode || w.visible)
 
   // Push "unavailable" widgets (health-source locked) to the bottom
   const unavailableKeys = new Set<WidgetKey>(
@@ -744,20 +744,12 @@ export function Dashboard() {
           >
             <div className="dashboard-greeting-left">
               <h2 className="dashboard-greeting-text">
-                👋 {language === 'es' ? (new Date().getHours() < 12 ? 'Buenos días' : new Date().getHours() < 19 ? 'Buenas tardes' : 'Buenas noches') : 'Good morning'}, {firstName}
+                {language === 'es' ? (new Date().getHours() < 12 ? 'Buenos días' : new Date().getHours() < 19 ? 'Buenas tardes' : 'Buenas noches') : 'Good morning'}, {firstName}
               </h2>
               <span className="dashboard-greeting-sub">
                 {showEmpty ? '' : `Última actividad: ${metrics.recent[0]?.sport === 'run' ? 'corriendo' : metrics.recent[0]?.sport === 'bike' ? 'bicicleta' : metrics.recent[0]?.sport} · ${(metrics.recent[0]?.distance_km ?? 0).toFixed(1)}km`}
               </span>
             </div>
-            <button
-              className="dashboard-customize-btn"
-              onClick={() => layout.setCustomizeMode(!layout.customizeMode)}
-              aria-label={language === 'es' ? 'Personalizar' : 'Customize'}
-            >
-              <Pencil size={14} strokeWidth={2} />
-              <span>{language === 'es' ? 'Personalizar' : 'Customize'}</span>
-            </button>
           </motion.div>
           {/* Scrollable snapshot panels — full-width carousel */}
           <div className="snapshot-section">

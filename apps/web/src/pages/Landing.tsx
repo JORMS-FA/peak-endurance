@@ -127,7 +127,7 @@ export function Landing() {
             className="btn-ghost-cta"
             onClick={() => navigate('/login')}
           >
-            {language === 'es' ? 'Comenzar ahora' : 'Get started'}
+            {language === 'es' ? 'Iniciar sesión' : 'Sign in'}
           </button>
         </div>
       </header>

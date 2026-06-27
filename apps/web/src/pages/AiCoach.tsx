@@ -1,53 +1,47 @@
 import { useRef, useState } from 'react'
-import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bot, Lock, Shield, Sparkles, Zap, CheckCircle, AlertTriangle, X, Send, CalendarPlus } from 'lucide-react'
+import { Bot, Lock, Sparkles, Send, CalendarPlus, Check, KeyRound, X, Mic, Plus, Image, Camera, Paperclip } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useI18n } from '../hooks/useI18n'
 import { useStravaConnection } from '../hooks/useStrava'
 import { useDashboardMetrics } from '../hooks/useDashboardMetrics'
 import { useSubscription } from '../hooks/useSubscription'
 import { useApiKey } from '../hooks/useApiKey'
-import { useAiCoach, useAiChat } from '../hooks/useAiCoach'
-import type { AiAction } from '../hooks/useAiCoach'
+import { useAiChat } from '../hooks/useAiCoach'
+import { useStripe } from '../hooks/useStripe'
 import { SportIcon } from '../components/ui/SportIcon'
 import { useAuth } from '../hooks/useAuth'
 import { CoachOrb } from '../components/ui/CoachOrb'
 import type { OrbMood } from '../components/ui/CoachOrb'
-import { Paywall } from '../components/ui/Paywall'
-
-type ActionKey = 'analyzeWeek' | 'adjustPlan' | 'detectFatigue'
-
-const ACTION_MAP: Record<ActionKey, AiAction> = {
-  analyzeWeek: 'analyze_week',
-  adjustPlan: 'adjust_plan',
-  detectFatigue: 'detect_fatigue',
-}
 
 export function AiCoach() {
   const { t, language } = useI18n()
   const { profile } = useAuth()
   const { status: strava, loading: stravaLoading } = useStravaConnection()
   const { metrics, hasData } = useDashboardMetrics()
-  const { usage, isPro } = useSubscription()
+  const { isPro } = useSubscription()
   const { hasKey } = useApiKey()
-  const { execute, loading: aiLoading, result: aiResult, error: aiError, reset } = useAiCoach()
+  const { checkout, loading: stripeLoading } = useStripe()
   const { messages, send, loading: chatLoading, error: chatError } = useAiChat()
-  const [pickedAction, setPickedAction] = useState<ActionKey | null>(null)
   const [chatInput, setChatInput] = useState('')
+  const [showPaywall, setShowPaywall] = useState(false)
+  const [paywallInterval, setPaywallInterval] = useState<'monthly' | 'yearly'>('monthly')
+  const [attachOpen, setAttachOpen] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const chatBoxRef = useRef<HTMLDivElement>(null)
 
   const stravaConnected = Boolean(strava?.connected)
   const canUseAi = hasKey || isPro
-  const blockedReason = !stravaLoading && !stravaConnected
+
+  // Only block if Strava or activities missing (show inline). Key/sub is handled via paywall popup.
+  const blockedBanner = !stravaLoading && !stravaConnected
     ? 'aiBlockedNoStrava'
     : !hasData
       ? 'aiBlockedNoActivities'
-      : !canUseAi
-        ? 'aiBlockedNoKey'
-        : null
+      : null
 
-  const orbMood: OrbMood = aiError ? 'tired' : aiResult ? 'happy' : (aiLoading || chatLoading) ? 'thinking' : 'idle'
+  const orbMood: OrbMood = chatError ? 'tired' : chatLoading ? 'thinking' : 'idle'
 
   function buildContext() {
     return {
@@ -68,7 +62,17 @@ export function AiCoach() {
 
   async function handleSendChat(e?: React.FormEvent) {
     e?.preventDefault()
-    if (!chatInput.trim() || chatLoading || blockedReason) return
+    if (!chatInput.trim() || chatLoading) return
+
+    // If blocked by Strava/activities, don't send
+    if (blockedBanner) return
+
+    // If no access (not pro, no key), show paywall instead of sending
+    if (!canUseAi) {
+      setShowPaywall(true)
+      return
+    }
+
     const msg = chatInput
     setChatInput('')
     await send(msg, buildContext())
@@ -77,25 +81,29 @@ export function AiCoach() {
     })
   }
 
-  const actions: { key: ActionKey; icon: ReactNode; descKey: string }[] = [
-    { key: 'analyzeWeek', icon: <Sparkles size={20} />, descKey: 'aiAnalyzeDesc' },
-    { key: 'adjustPlan', icon: <Zap size={20} />, descKey: 'aiAdjustDesc' },
-    { key: 'detectFatigue', icon: <Shield size={20} />, descKey: 'aiFatigueDesc' },
-  ]
-
-  async function handleExecute() {
-    if (!pickedAction || blockedReason) return
-    await execute(ACTION_MAP[pickedAction], buildContext())
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    // Stub: will process file + send to AI
+    setChatInput((prev) => prev + ` [📎 ${file.name}]`)
+    setAttachOpen(false)
   }
+
+  function handleVoiceToggle() {
+    // Stub: will integrate STT
+    setIsRecording((prev) => !prev)
+  }
+
+  const isEs = language === 'es'
+  const price = paywallInterval === 'monthly' ? 'COP$30.000' : 'COP$300.000'
+  const per = paywallInterval === 'monthly' ? (isEs ? '/mes' : '/mo') : (isEs ? '/año' : '/yr')
+  const features = isEs
+    ? ['500 consultas de IA al mes', 'Chat ilimitado con el coach', 'Planes generados por IA', 'Sin anuncios', 'Soporte prioritario']
+    : ['500 AI queries / month', 'Unlimited coach chat', 'AI-generated plans', 'No ads', 'Priority support']
 
   return (
     <div className="page-ai">
-      <div className="page-header">
-        <h2>{t('aiCoach')}</h2>
-        <span className="badge">Beta</span>
-      </div>
-
-      {/* Hero — animated orb + modern greeting */}
+      {/* Hero — compact orb + greeting */}
       <motion.section
         className="ai-hero ai-hero-bot orb-hero"
         initial={{ opacity: 0, y: 12 }}
@@ -103,26 +111,23 @@ export function AiCoach() {
         transition={{ duration: 0.45 }}
       >
         <div className="orb-hero-rgb-wash" aria-hidden />
-        <CoachOrb size={104} mood={orbMood} thinking={chatLoading} />
+        <CoachOrb size={72} mood={orbMood} thinking={chatLoading} />
         <div className="ai-hero-text orb-hero-body">
           <span className="ai-hero-eyebrow"><Sparkles size={12} /> PEAK IA COACH</span>
           <h3>
-            {language === 'es' ? 'Hola' : 'Hi'}
+            {isEs ? 'Hola' : 'Hi'}
             {profile?.display_name ? `, ${profile.display_name.split(' ')[0]}` : ''} 👋
           </h3>
           <p>
-            {language === 'es'
+            {isEs
               ? 'Soy tu coach. Pregúntame, analizo tu carga y te creo entrenamientos al instante.'
               : "I'm your coach. Ask me, I analyze your load and build workouts instantly."}
           </p>
         </div>
       </motion.section>
 
-      {/* Paywall when locked by subscription / missing key */}
-      {blockedReason === 'aiBlockedNoKey' && <Paywall />}
-
       {/* Blocked banner (Strava / activities) */}
-      {blockedReason && blockedReason !== 'aiBlockedNoKey' && (
+      {blockedBanner && (
         <motion.div
           className="card ai-blocked"
           initial={{ opacity: 0, y: 8 }}
@@ -131,39 +136,41 @@ export function AiCoach() {
           <Lock size={16} />
           <div className="ai-blocked-body">
             <strong>{t('aiBlockedTitle')}</strong>
-            <small>
-              {t(blockedReason as 'aiBlockedNoStrava')}
-            </small>
+            <small>{t(blockedBanner as 'aiBlockedNoStrava')}</small>
           </div>
-          {blockedReason === 'aiBlockedNoStrava' && (
-            <Link to="/app/conexiones" className="btn-primary btn-sm">
-              {t('connectStrava')}
-            </Link>
-          )}
         </motion.div>
       )}
 
-      {/* ── Chat con el coach ──────────────────────────────────────────── */}
+      {/* ── Chat (fills remaining height) ──────────────────────────── */}
       <motion.section
-        className="card ai-chat"
+        className="ai-chat-panel"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.05 }}
       >
-        <div className="card-header">
-          <Bot size={16} />
-          <span>{language === 'es' ? 'Chatea con tu coach' : 'Chat with your coach'}</span>
-        </div>
-
+        {/* Messages */}
         <div className="ai-chat-box" ref={chatBoxRef}>
           {messages.length === 0 ? (
             <div className="ai-chat-empty">
-              <Sparkles size={20} />
+              <div className="ai-chat-empty-icon">
+                <Sparkles size={28} strokeWidth={1.5} />
+              </div>
               <p>
-                {language === 'es'
-                  ? 'Pregúntame lo que quieras o pídeme crear un entrenamiento. Ej: "Prográmame un rodaje suave de 40 min mañana" o "Crea series 5x1000 el sábado".'
-                  : 'Ask me anything or tell me to create a workout. E.g. "Schedule an easy 40-min run tomorrow".'}
+                {isEs
+                  ? 'Pregúntame lo que quieras o pídeme crear un entrenamiento.'
+                  : 'Ask me anything or ask me to create a workout.'}
               </p>
+              <div className="ai-chat-suggestions">
+                <button type="button" className="ai-suggestion-chip" onClick={() => { setChatInput(isEs ? 'Prográmame un rodaje suave de 40 min mañana' : 'Schedule an easy 40-min run tomorrow') }}>
+                  {isEs ? '🟢 Rodaje suave 40 min' : '🟢 Easy 40-min run'}
+                </button>
+                <button type="button" className="ai-suggestion-chip" onClick={() => { setChatInput(isEs ? 'Crea series 5x1000 el sábado' : 'Create 5x1000 intervals Saturday') }}>
+                  {isEs ? '🔴 Series 5x1000' : '🔴 5x1000 intervals'}
+                </button>
+                <button type="button" className="ai-suggestion-chip" onClick={() => { setChatInput(isEs ? '¿Cómo está mi fatiga esta semana?' : 'How is my fatigue this week?') }}>
+                  {isEs ? '📊 Mi fatiga esta semana' : '📊 My fatigue this week'}
+                </button>
+              </div>
             </div>
           ) : (
             messages.map((m, i) => (
@@ -186,7 +193,7 @@ export function AiCoach() {
                         {m.createdSession.tss ? ` · ${m.createdSession.tss} TSS` : ''}
                       </small>
                     </div>
-                    <span className="status-badge success">{language === 'es' ? 'Programado' : 'Scheduled'}</span>
+                    <span className="status-badge success">{isEs ? 'Programado' : 'Scheduled'}</span>
                   </div>
                 )}
               </div>
@@ -199,268 +206,161 @@ export function AiCoach() {
               </div>
             </div>
           )}
+          {chatError && (
+            <div className="form-error" style={{ margin: '8px 0' }}>{chatError}</div>
+          )}
         </div>
 
-        {chatError && (
-          <div className="form-error" style={{ marginTop: 8 }}>{chatError}</div>
-        )}
-
+        {/* Input — WhatsApp/Telegram style */}
         <form className="ai-chat-input" onSubmit={handleSendChat}>
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,.pdf,.doc,.docx,.txt"
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
+          />
+
+          {/* Attach button (+ icon) */}
+          <div className="ai-attach-wrap">
+            <button
+              type="button"
+              className="ai-input-btn ai-attach-btn"
+              onClick={() => setAttachOpen((o) => !o)}
+              disabled={Boolean(blockedBanner) || chatLoading}
+              aria-label={isEs ? 'Adjuntar archivo' : 'Attach file'}
+            >
+              <Plus size={22} strokeWidth={1.5} />
+            </button>
+
+            {/* Attachment menu dropdown */}
+            <AnimatePresence>
+              {attachOpen && (
+                <motion.div
+                  className="ai-attach-menu"
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                  transition={{ duration: 0.18, ease: 'easeOut' }}
+                >
+                  <button type="button" onClick={() => { fileInputRef.current?.click(); setAttachOpen(false) }}>
+                    <Image size={18} />
+                    <span>{isEs ? 'Foto o video' : 'Photo & video'}</span>
+                  </button>
+                  <button type="button" onClick={() => { fileInputRef.current?.click(); setAttachOpen(false) }}>
+                    <Camera size={18} />
+                    <span>{isEs ? 'Cámara' : 'Camera'}</span>
+                  </button>
+                  <button type="button" onClick={() => { fileInputRef.current?.click(); setAttachOpen(false) }}>
+                    <Paperclip size={18} />
+                    <span>{isEs ? 'Archivo' : 'Document'}</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Text input */}
           <input
             type="text"
+            className="ai-text-input"
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             placeholder={
-              blockedReason
-                ? (language === 'es' ? 'Conecta Strava y configura la IA para chatear' : 'Connect Strava and set up AI to chat')
-                : (language === 'es' ? 'Escribe un mensaje o un comando...' : 'Type a message or command...')
+              blockedBanner
+                ? (isEs ? 'Conecta Strava para chatear...' : 'Connect Strava to chat...')
+                : (isEs ? 'Escribe un mensaje...' : 'Type a message...')
             }
-            disabled={Boolean(blockedReason) || chatLoading}
+            disabled={Boolean(blockedBanner) || chatLoading}
           />
-          <button type="submit" className="btn-primary" disabled={Boolean(blockedReason) || chatLoading || !chatInput.trim()}>
-            <Send size={16} />
-          </button>
+
+          {/* Voice / Send toggle */}
+          {chatInput.trim() ? (
+            <button
+              type="submit"
+              className="ai-input-btn ai-send-btn"
+              disabled={Boolean(blockedBanner) || chatLoading}
+              aria-label={isEs ? 'Enviar' : 'Send'}
+            >
+              <Send size={18} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={`ai-input-btn ai-mic-btn${isRecording ? ' recording' : ''}`}
+              onClick={handleVoiceToggle}
+              disabled={Boolean(blockedBanner) || chatLoading}
+              aria-label={isEs ? 'Grabar audio' : 'Record audio'}
+            >
+              <Mic size={20} />
+            </button>
+          )}
         </form>
       </motion.section>
 
-      {/* Action cards */}
-      <div className="ai-actions-grid">
-        {actions.map((a, i) => {
-          const disabled = blockedReason !== null || aiLoading
-          return (
-            <motion.button
-              key={a.key}
-              type="button"
-              className={`ai-action-card${pickedAction === a.key ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
-              onClick={() => !disabled && setPickedAction(a.key)}
-              disabled={disabled}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: i * 0.06 }}
-              whileHover={disabled ? undefined : { y: -2 }}
-              whileTap={disabled ? undefined : { scale: 0.98 }}
-            >
-              {a.icon}
-              <strong>{t(a.key)}</strong>
-              <small>{t(a.descKey as 'aiAnalyzeDesc')}</small>
-              {disabled && !aiLoading && <span className="ai-locked-badge"><Lock size={10} /> {t('locked')}</span>}
-            </motion.button>
-          )
-        })}
-      </div>
-
-      {/* Execute button */}
-      {pickedAction && !blockedReason && !aiResult && (
-        <motion.div
-          className="ai-execute-section"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <button
-            type="button"
-            className="btn-primary btn-lg"
-            onClick={handleExecute}
-            disabled={aiLoading}
-          >
-            {aiLoading
-              ? (language === 'es' ? 'Analizando...' : 'Analyzing...')
-              : (language === 'es' ? 'Ejecutar analisis' : 'Run analysis')}
-          </button>
-        </motion.div>
-      )}
-
-      {/* AI Error */}
+      {/* ── Paywall Popup Overlay ──────────────────────────────────── */}
       <AnimatePresence>
-        {aiError && (
+        {showPaywall && (
           <motion.div
-            className="card ai-error"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
+            className="paywall-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            onClick={() => setShowPaywall(false)}
           >
-            <AlertTriangle size={16} />
-            <div>
-              <strong>{aiError.error === 'quota_exceeded'
-                ? (language === 'es' ? 'Cuota agotada' : 'Quota exceeded')
-                : (language === 'es' ? 'Error' : 'Error')}</strong>
-              <p style={{ fontSize: '0.82rem' }}>{aiError.message ?? aiError.error}</p>
-            </div>
-            <button type="button" className="btn-ghost btn-sm" onClick={reset}>
-              <X size={14} />
-            </button>
+            <motion.div
+              className="paywall-popup"
+              initial={{ opacity: 0, y: 40, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 40, scale: 0.95 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button type="button" className="paywall-popup-close" onClick={() => setShowPaywall(false)}>
+                <X size={18} />
+              </button>
+
+              <div className="paywall-popup-header">
+                <span className="paywall2-badge">PRO</span>
+                <strong>{isEs ? 'Desbloquea tu coach de IA' : 'Unlock your AI coach'}</strong>
+              </div>
+
+              <div className="paywall-popup-toggle">
+                <button type="button" className={paywallInterval === 'monthly' ? 'active' : ''} onClick={() => setPaywallInterval('monthly')}>
+                  {isEs ? 'Mensual' : 'Monthly'}
+                </button>
+                <button type="button" className={paywallInterval === 'yearly' ? 'active' : ''} onClick={() => setPaywallInterval('yearly')}>
+                  {isEs ? 'Anual' : 'Annual'}
+                  <span className="paywall2-save">−17%</span>
+                </button>
+              </div>
+
+              <div className="paywall-popup-price">
+                <strong>{price}</strong><span>{per}</span>
+              </div>
+
+              <ul className="paywall-popup-features">
+                {features.map((f) => (<li key={f}><Check size={14} /> {f}</li>))}
+              </ul>
+
+              <button
+                type="button"
+                className="paywall2-cta paywall-popup-cta"
+                onClick={() => checkout(paywallInterval)}
+                disabled={stripeLoading}
+              >
+                <Sparkles size={15} />
+                {stripeLoading ? '...' : isEs ? 'Empezar con Pro' : 'Start with Pro'}
+              </button>
+
+              <Link to="/app/perfil" className="paywall2-byok" onClick={() => setShowPaywall(false)}>
+                <KeyRound size={13} /> {isEs ? 'o usa tu API key gratis' : 'or use your API key free'}
+              </Link>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* AI Result */}
-      <AnimatePresence>
-        {aiResult && (
-          <motion.section
-            className="card ai-result"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="card-header">
-              <CheckCircle size={14} />
-              <span>{t(pickedAction ?? 'analyzeWeek')}</span>
-              <button type="button" className="btn-ghost btn-sm" onClick={reset} style={{ marginLeft: 'auto' }}>
-                <X size={14} />
-              </button>
-            </div>
-            <AiResultDisplay data={aiResult.result} language={language} />
-          </motion.section>
-        )}
-      </AnimatePresence>
-
-      {/* Live context */}
-      {hasData && !aiResult && (
-        <motion.section
-          className="card"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="card-header">
-            <Bot size={14} />
-            <span>{t('aiContext')}</span>
-          </div>
-          <div className="ai-context-grid">
-            <div>
-              <small>CTL</small>
-              <strong>{metrics.ctl}</strong>
-            </div>
-            <div>
-              <small>ATL</small>
-              <strong>{metrics.atl}</strong>
-            </div>
-            <div>
-              <small>TSB</small>
-              <strong>{metrics.tsb}</strong>
-            </div>
-            <div>
-              <small>{t('weeklyHours')}</small>
-              <strong>{metrics.weeklyHours.toFixed(1)}</strong>
-            </div>
-          </div>
-          <p className="text-muted" style={{ fontSize: '0.78rem', marginTop: 8 }}>
-            {t('aiContextHint')}
-          </p>
-        </motion.section>
-      )}
-
-      {/* Usage / quota */}
-      <section className="card">
-        <div className="card-header">
-          <Bot size={14} />
-          <span>{t('aiUsage')}</span>
-        </div>
-        <div className="ai-usage">
-          <div className="ai-usage-bar">
-            <div
-              className="ai-usage-fill"
-              style={{ width: `${Math.min(100, ((usage?.usedQueries ?? 0) / (usage?.limit ?? 20)) * 100)}%` }}
-            />
-          </div>
-          <span className="ai-usage-text">
-            {usage?.usedQueries ?? 0} / {usage?.limit ?? 20} {t('remainingQueries')}
-          </span>
-        </div>
-        <p className="text-muted" style={{ fontSize: '0.82rem' }}>
-          {isPro
-            ? (language === 'es' ? 'Plan Pro: 200 consultas/mes incluidas.' : 'Pro plan: 200 queries/month included.')
-            : t('aiQuotaNote')}
-        </p>
-      </section>
-    </div>
-  )
-}
-
-// ─── Result Display Component ─────────────────────────────────────────────────
-
-function AiResultDisplay({ data, language }: { data: Record<string, unknown>; language: string }) {
-  const isEs = language === 'es'
-
-  // Try to extract common fields
-  const summary = (data.summary as string) ?? (data.general_advice as string) ?? ''
-  const riskLevel = data.risk_level as string | undefined
-  const status = data.status as string | undefined
-  const recommendations = (data.recommendations as string[]) ?? []
-  const signals = (data.signals as string[]) ?? []
-  const deviations = (data.deviations as string[]) ?? []
-  const adjustments = (data.adjustments as Array<Record<string, string>>) ?? []
-  const restNeeded = data.rest_day_needed as boolean | undefined
-
-  return (
-    <div className="ai-result-content">
-      {/* Summary */}
-      {summary && (
-        <p className="ai-result-summary">{summary}</p>
-      )}
-
-      {/* Status / Risk */}
-      {(riskLevel || status) && (
-        <div className="ai-result-badges">
-          {riskLevel && (
-            <span className={`ai-risk-badge ${riskLevel}`}>
-              {isEs ? 'Riesgo' : 'Risk'}: {riskLevel}
-            </span>
-          )}
-          {status && (
-            <span className={`ai-status-badge ${status}`}>
-              {status.replace(/_/g, ' ')}
-            </span>
-          )}
-          {restNeeded && (
-            <span className="ai-rest-badge">
-              {isEs ? 'Dia de descanso recomendado' : 'Rest day recommended'}
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Deviations */}
-      {deviations.length > 0 && (
-        <div className="ai-result-list">
-          <strong>{isEs ? 'Desviaciones' : 'Deviations'}</strong>
-          <ul>
-            {deviations.map((d, i) => <li key={i}>{d}</li>)}
-          </ul>
-        </div>
-      )}
-
-      {/* Signals */}
-      {signals.length > 0 && (
-        <div className="ai-result-list">
-          <strong>{isEs ? 'Senales detectadas' : 'Signals detected'}</strong>
-          <ul>
-            {signals.map((s, i) => <li key={i}>{s}</li>)}
-          </ul>
-        </div>
-      )}
-
-      {/* Adjustments */}
-      {adjustments.length > 0 && (
-        <div className="ai-result-list">
-          <strong>{isEs ? 'Ajustes propuestos' : 'Proposed adjustments'}</strong>
-          {adjustments.map((adj, i) => (
-            <div key={i} className="ai-adjustment-card">
-              <span className="text-muted">{adj.session_date}</span>
-              <p><strong>{adj.proposed_change}</strong></p>
-              <small className="text-muted">{adj.reason}</small>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Recommendations */}
-      {recommendations.length > 0 && (
-        <div className="ai-result-list">
-          <strong>{isEs ? 'Recomendaciones' : 'Recommendations'}</strong>
-          <ul>
-            {recommendations.map((r, i) => <li key={i}>{r}</li>)}
-          </ul>
-        </div>
-      )}
     </div>
   )
 }

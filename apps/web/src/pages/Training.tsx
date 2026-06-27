@@ -121,12 +121,12 @@ export function Training() {
   const totalDist = data.reduce((s, a) => s + (a.distance_km ?? 0), 0)
 
   /* ── Filters ─────────────────────────────────────────────────── */
-  const filters: { value: SportFilter; label: string; icon: ReactNode }[] = [
-    { value: 'all', label: t('all'), icon: <Activity size={14} /> },
-    { value: 'run', label: t('sportRun'), icon: <SportIcon sport="run" size={14} /> },
-    { value: 'bike', label: t('sportBike'), icon: <SportIcon sport="bike" size={14} /> },
-    { value: 'swim', label: t('sportSwim'), icon: <SportIcon sport="swim" size={14} /> },
-    { value: 'gym', label: t('sportGym'), icon: <SportIcon sport="gym" size={14} /> },
+  const filters: { value: SportFilter; label: string; icon: ReactNode; color: string }[] = [
+    { value: 'all', label: t('all'), icon: <Activity size={12} strokeWidth={1.5} />, color: 'purple' },
+    { value: 'run', label: t('sportRun'), icon: <SportIcon sport="run" size={12} />, color: 'green' },
+    { value: 'bike', label: t('sportBike'), icon: <SportIcon sport="bike" size={12} />, color: 'amber' },
+    { value: 'swim', label: t('sportSwim'), icon: <SportIcon sport="swim" size={12} />, color: 'cyan' },
+    { value: 'gym', label: t('sportGym'), icon: <SportIcon sport="gym" size={12} />, color: 'orange' },
   ]
 
   return (
@@ -203,7 +203,8 @@ export function Training() {
       <div className="training-filters">
         {filters.map((f) => (
           <button key={f.value} type="button" className={`chip${filter === f.value ? ' active' : ''}`} onClick={() => setFilter(f.value)}>
-            {f.icon}<span>{f.label}</span>
+            <span className={`chip-icon chip-${f.color}`}>{f.icon}</span>
+            <span>{f.label}</span>
           </button>
         ))}
       </div>
@@ -229,28 +230,28 @@ export function Training() {
           {/* ── Summary bar ──────────────────────────────────────── */}
           <div className="training-summary-bar">
             <div className="summary-pill">
-              <div className="summary-pill-icon is-count"><Activity size={15} /></div>
+              <div className="summary-pill-icon is-count"><Activity size={18} strokeWidth={1.5} /></div>
               <div className="summary-pill-body">
                 <span className="summary-pill-value">{data.length}</span>
                 <span className="summary-pill-label">{isEs ? 'Actividades' : 'Activities'}</span>
               </div>
             </div>
             <div className="summary-pill">
-              <div className="summary-pill-icon is-bike"><Flame size={15} /></div>
+              <div className="summary-pill-icon is-gym"><Flame size={18} strokeWidth={1.5} /></div>
               <div className="summary-pill-body">
                 <span className="summary-pill-value">{totalTss}</span>
                 <span className="summary-pill-label">TSS</span>
               </div>
             </div>
             <div className="summary-pill">
-              <div className="summary-pill-icon is-run"><Clock size={15} /></div>
+              <div className="summary-pill-icon is-run"><Clock size={18} strokeWidth={1.5} /></div>
               <div className="summary-pill-body">
                 <span className="summary-pill-value">{(totalMinutes / 60).toFixed(1)}</span>
                 <span className="summary-pill-label">{isEs ? 'Horas' : 'Hours'}</span>
               </div>
             </div>
             <div className="summary-pill">
-              <div className="summary-pill-icon is-swim"><Route size={15} /></div>
+              <div className="summary-pill-icon is-swim"><Route size={18} strokeWidth={1.5} /></div>
               <div className="summary-pill-body">
                 <span className="summary-pill-value">{totalDist.toFixed(0)}</span>
                 <span className="summary-pill-label">km</span>

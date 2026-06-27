@@ -102,6 +102,15 @@
    MOBILE (< 640px) — Connections & Training full-width cards
    ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
+  /* Brand name: keep on one line, never wrap */
+  .brand-name {
+    white-space: nowrap;
+    font-size: 0.85rem;
+    letter-spacing: -0.03em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   /* Connection cards: fill the viewport, no excess padding */
   .page-connections .connection-card,
   .page-connections .connection-card-primary {
@@ -109,9 +118,23 @@
     max-width: 100%;
     padding: 12px;
     gap: 10px;
+    flex-wrap: wrap;
   }
-  .page-connections .connection-info { min-width: 0; }
-  .page-connections .connection-actions { flex-wrap: wrap; }
+  .page-connections .connection-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .page-connections .connection-actions {
+    flex: 1 1 100%;
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+  }
+  .page-connections .connection-actions .btn-primary,
+  .page-connections .connection-actions .btn-secondary {
+    flex: 1;
+    justify-content: center;
+  }
 
   /* Training activity cards: full width, consistent padding */
   .page-training .activity-card {
@@ -137,8 +160,8 @@
     padding-right: 4px;
   }
   .training-filters .chip { flex-shrink: 0; }
-}
 
+}
 /* ═══════════════════════════════════════════════════════════════
    MOBILE (< 768px) — Landing header compact for small screens
    ═══════════════════════════════════════════════════════════════ */
@@ -158,12 +181,41 @@
   }
   .landing-nav-v3 { display: none; }
   .btn-ghost-cta {
-    height: 30px;
-    padding: 0 10px;
-    font-size: 0.7rem;
+    height: 34px;
+    padding: 0 14px;
+    font-size: 0.78rem;
     border-radius: 8px;
   }
   .landing-header-actions {
     gap: 4px;
+  }
+
+  /* Notifications: full-width edge-to-edge */
+  .page-notifications {
+    margin-left: -20px;
+    margin-right: -20px;
+    width: calc(100% + 40px);
+    max-width: none;
+    padding: 0;
+  }
+  .notif-page-header {
+    padding: 0 20px 12px;
+  }
+  .notif-page-header-text h1 {
+    font-size: 1.1rem;
+  }
+  .notif-page-item {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    padding: 14px 20px;
+  }
+  .notif-page-list {
+    gap: 1px;
+    padding-bottom: 96px;
+  }
+  .notif-page-empty {
+    padding: 48px 20px 0;
   }
 }

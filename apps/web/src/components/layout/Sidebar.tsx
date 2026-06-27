@@ -1,87 +1,97 @@
-import { NavLink, Link } from 'react-router-dom'
-import {
-  Home, CalendarDays, Dumbbell, Star,
-  LineChart, TrendingUp, Plug, Mountain, User,
-  ChevronLeft,
-} from 'lucide-react'
+import { useEffect, useRef } from 'react'
+import { NavLink } from 'react-router-dom'
+import { ChevronLeft, Pencil } from 'lucide-react'
+import { Home, CalendarDays, Dumbbell, Star, LineChart, Plug, User } from 'lucide-react'
 import { sidebarNav } from '../../lib/navigation'
 import { useI18n } from '../../hooks/useI18n'
-import { useAuth } from '../../hooks/useAuth'
-import { APP_NAME } from '../../lib/constants'
-import { Logo } from '../ui/Logo'
 
-const iconMap: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
-  Home, CalendarDays, Dumbbell, Star,
-  LineChart, TrendingUp, Plug, Mountain, User,
-}
-
-export function Sidebar({ collapsed = false, onToggle }: { collapsed?: boolean; onToggle?: () => void }) {
+export function Sidebar({
+  open,
+  collapsed,
+  onClose,
+  onToggleCollapse,
+  onCustomize,
+}: {
+  open: boolean
+  collapsed: boolean
+  onClose: () => void
+  onToggleCollapse: () => void
+  onCustomize: () => void
+}) {
   const { language } = useI18n()
-  const { profile } = useAuth()
-  const displayName = profile?.display_name ?? 'Atleta'
+  const drawerRef = useRef<HTMLDivElement>(null)
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
+  }, [open, onClose])
 
   return (
-    <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
-      {/* Avatar flush to top — click opens profile */}
-      <div className="sidebar-avatar-flush">
-        <Link
-          to="/app/perfil"
-          className="sidebar-avatar-flush-btn"
-          title={displayName}
-        >
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="sidebar-avatar-flush-img" />
-          ) : (
-            <div className="sidebar-avatar-flush-letter">
-              {displayName.charAt(0).toUpperCase()}
-            </div>
-          )}
-          {!collapsed && (
-            <div className="sidebar-avatar-flush-info">
-              <span className="sidebar-avatar-flush-name">{displayName}</span>
-            </div>
-          )}
-        </Link>
-      </div>
-
-      {/* Logo + Brand */}
-      <div className="sidebar-brand">
-        <Logo size={34} />
-        {!collapsed && <span className="brand-name">{APP_NAME}</span>}
-      </div>
-
-      {/* Navigation */}
-      <nav className="sidebar-nav">
+    <aside
+      ref={drawerRef}
+      className={`drawer${open ? ' drawer-open' : ''}${collapsed ? ' drawer-collapsed' : ''}`}
+      role="dialog"
+      aria-modal={open}
+      aria-label={language === 'es' ? 'Menú de navegación' : 'Navigation menu'}
+    >
+      <nav className="drawer-nav">
         {sidebarNav.map((item) => {
-          const Icon = iconMap[item.icon] ?? Home
+          const Icon = iconMap[item.icon]
           const label = language === 'es' ? item.label_es : item.label_en
           return (
             <NavLink
               key={item.id}
               to={item.path}
               end={item.path === '/app'}
-              className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
+              className={({ isActive }) => `drawer-link${isActive ? ' active' : ''}`}
               title={collapsed ? label : undefined}
+              onClick={onClose}
             >
-              <Icon size={18} strokeWidth={2.5} />
+              <Icon size={22} strokeWidth={2.5} />
               {!collapsed && <span>{label}</span>}
             </NavLink>
           )
         })}
       </nav>
 
+      {/* Customize button */}
+      <div className="drawer-section-divider" />
+      <button
+        type="button"
+        className="drawer-link"
+        onClick={onCustomize}
+        title={collapsed ? (language === 'es' ? 'Personalizar' : 'Customize') : undefined}
+      >
+        <Pencil size={22} strokeWidth={2.5} />
+        {!collapsed && <span>{language === 'es' ? 'Personalizar' : 'Customize'}</span>}
+      </button>
+
       {/* Collapse toggle at bottom */}
-      <div className="sidebar-collapse-wrap">
+      <div className="drawer-footer">
         <button
           type="button"
-          className="sidebar-collapse-btn"
-          onClick={onToggle}
-          aria-label={collapsed ? (language === 'es' ? 'Abrir menú' : 'Open menu') : (language === 'es' ? 'Cerrar menú' : 'Close menu')}
+          className="drawer-collapse-btn"
+          onClick={onToggleCollapse}
+          aria-label={
+            collapsed
+              ? language === 'es' ? 'Expandir menú' : 'Expand menu'
+              : language === 'es' ? 'Colapsar menú' : 'Collapse menu'
+          }
         >
-          <ChevronLeft size={16} strokeWidth={1.5} className={`sidebar-collapse-icon${collapsed ? ' rotated' : ''}`} />
+          <ChevronLeft size={16} strokeWidth={1.5} className={`drawer-collapse-icon${collapsed ? ' rotated' : ''}`} />
           {!collapsed && <span>{language === 'es' ? 'Colapsar' : 'Collapse'}</span>}
         </button>
       </div>
     </aside>
   )
+}
+
+const iconMap: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
+  Home, CalendarDays, Dumbbell, Star,
+  LineChart, Plug, User,
 }

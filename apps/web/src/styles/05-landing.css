@@ -1258,7 +1258,6 @@
 
 /* Tablet */
 @media (min-width: 768px) {
-  .sidebar { display: flex; }
   .mobile-nav { display: none; }
   .app-main { padding-bottom: 0; }
 
@@ -1602,13 +1601,13 @@
 .btn-ghost-cta {
   display: inline-flex;
   align-items: center;
-  height: 36px;
-  padding: 0 18px;
+  height: 42px;
+  padding: 0 22px;
   border-radius: var(--radius-md);
   background: transparent;
   color: #ffffff;
   font-weight: 600;
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   border: 1px solid rgba(255, 255, 255, 0.15);
   transition: all 0.18s ease;
   cursor: pointer;

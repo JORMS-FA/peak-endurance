@@ -1,17 +1,44 @@
-import { useState, useRef, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Bell, Search, X, Settings, LogOut, Menu } from 'lucide-react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Bell, X, Settings, LogOut, Menu, ArrowRight, CheckCheck } from 'lucide-react'
+import { SearchIcon } from '../ui/icons/SearchIcon'
 import { useI18n } from '../../hooks/useI18n'
 import { useAuth } from '../../hooks/useAuth'
 import { signOut } from '../../lib/auth'
 import { Logo } from '../ui/Logo'
+import { mockNotifications } from '../../lib/notificationsMock'
 
-export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?: () => void; sidebarCollapsed?: boolean }) {
+const NOTIF_STORAGE_KEY = 'peak_notifications_read'
+const NOTIF_CHANGE_EVENT = 'peak:notifications-changed'
+
+function getUnreadCount(): number {
+  try {
+    const raw = localStorage.getItem(NOTIF_STORAGE_KEY)
+    const readIds: string[] = raw ? JSON.parse(raw) : []
+    const readSet = new Set(readIds)
+    return mockNotifications.filter((n) => !n.read && !readSet.has(n.id)).length
+  } catch {
+    return mockNotifications.filter((n) => !n.read).length
+  }
+}
+
+export function TopBar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
   const { t, language } = useI18n()
   const { profile, refresh } = useAuth()
+  const navigate = useNavigate()
   const fullName = profile?.display_name ?? 'Atleta'
   const firstName = fullName.split(' ')[0] ?? fullName
   const isEs = language === 'es'
+
+  // Responsive detection
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640)
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth < 640)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   // Search modal state
   const [searchOpen, setSearchOpen] = useState(false)
@@ -77,21 +104,40 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
     await refresh()
   }
 
+  // Subscriber check (placeholder — expand when subscription system is built)
+  const isSubscriber = false // TODO: check profile?.subscription_tier
+
+  // Unread notifications count — synced with localStorage
+  const [unreadCount, setUnreadCount] = useState(getUnreadCount)
+  const refreshUnread = useCallback(() => setUnreadCount(getUnreadCount()), [])
+  useEffect(() => {
+    window.addEventListener(NOTIF_CHANGE_EVENT, refreshUnread)
+    return () => window.removeEventListener(NOTIF_CHANGE_EVENT, refreshUnread)
+  }, [refreshUnread])
+
   return (
     <>
       <header className="topbar">
         <div className="topbar-left">
-          {onToggleSidebar && (
-            <button
-              type="button"
-              className="topbar-collapse-btn"
-              onClick={onToggleSidebar}
-              aria-label={language === 'es' ? 'Menú' : 'Menu'}
-            >
-              <Menu size={20} strokeWidth={1.5} />
-            </button>
-          )}
-          <Logo size={36} />
+          <button
+            type="button"
+            className="topbar-collapse-btn"
+            onClick={onToggleSidebar}
+            aria-label={language === 'es' ? 'Menú' : 'Menu'}
+          >
+            <Menu size={20} strokeWidth={1.5} />
+          </button>
+
+          <button
+            type="button"
+            className="topbar-logo-btn"
+            onClick={onToggleSidebar}
+            aria-label={language === 'es' ? 'Abrir menú' : 'Open menu'}
+          >
+            <Logo size={36} />
+          </button>
+
+          <span className="brand-name">PEAK ENDURANCE</span>
         </div>
 
         <div className="topbar-right">
@@ -102,20 +148,79 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
             aria-label={t('search')}
             onClick={() => setSearchOpen(true)}
           >
-            <Search size={22} strokeWidth={2.5} />
+            <SearchIcon size={40} />
             <kbd className="topbar-kbd">{navigator.platform?.includes('Mac') ? '⌘K' : 'Ctrl+K'}</kbd>
           </button>
 
           {/* Notifications button */}
-          <button
-            type="button"
-            className="topbar-action topbar-notif-btn topbar-btn-round"
-            aria-label={t('notifications')}
-            onClick={() => setNotifOpen((o) => !o)}
-          >
-            <Bell size={24} strokeWidth={2.5} />
-            <span className="topbar-dot" />
-          </button>
+          <div className="avatar-menu-wrap" ref={notifRef}>
+            <button
+              type="button"
+              className="topbar-action topbar-notif-btn topbar-btn-round"
+              aria-label={t('notifications')}
+              onClick={() => {
+                if (isMobile) {
+                  navigate('/app/notificaciones')
+                } else {
+                  setNotifOpen((o) => !o)
+                }
+              }}
+            >
+              <Bell size={24} strokeWidth={2.5} />
+              {unreadCount > 0 && (
+                <span className="notif-badge">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Desktop dropdown */}
+            {!isMobile && notifOpen && (
+              <div className="notif-dropdown">
+                <div className="notif-dropdown-header">
+                  <h3>{t('notifications')}</h3>
+                  <Link
+                    to="/app/notificaciones"
+                    className="notif-dropdown-view-all"
+                    onClick={() => setNotifOpen(false)}
+                  >
+                    {isEs ? 'Ver todas' : 'View all'}
+                    <ArrowRight size={14} strokeWidth={1.5} />
+                  </Link>
+                </div>
+                <div className="notif-dropdown-list">
+                  {mockNotifications.length === 0 ? (
+                    <div className="notif-dropdown-empty">
+                      <Bell size={24} strokeWidth={1.5} />
+                      <span>{isEs ? 'Sin notificaciones' : 'No notifications'}</span>
+                    </div>
+                  ) : (
+                    mockNotifications.slice(0, 5).map((notif) => (
+                      <div
+                        key={notif.id}
+                        className={`notif-dropdown-item${notif.read ? '' : ' unread'}`}
+                      >
+                        <div className="notif-dropdown-item-icon">
+                          {notif.read ? (
+                            <CheckCheck size={12} strokeWidth={1.5} className="notif-read-icon" />
+                          ) : (
+                            <span className="notif-unread-dot" />
+                          )}
+                        </div>
+                        <div className="notif-dropdown-item-body">
+                          <div className="notif-dropdown-item-top">
+                            <span className="notif-item-title">{notif.title}</span>
+                            <span className="notif-item-time">{notif.time}</span>
+                          </div>
+                          <p className="notif-item-desc">{notif.description}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Avatar with dropdown menu */}
           <div className="avatar-menu-wrap" ref={avatarRef}>
@@ -126,9 +231,15 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
               aria-label={t('settings')}
             >
               {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="" className="topbar-avatar topbar-avatar-img" />
+                <img
+                  src={profile.avatar_url}
+                  alt=""
+                  className={`topbar-avatar topbar-avatar-img${isSubscriber ? ' subscriber' : ''}`}
+                />
               ) : (
-                <div className="topbar-avatar">{firstName.charAt(0).toUpperCase()}</div>
+                <div className={`topbar-avatar${isSubscriber ? ' subscriber' : ''}`}>
+                  {firstName.charAt(0).toUpperCase()}
+                </div>
               )}
             </button>
 
@@ -165,7 +276,7 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
         <div className="search-overlay" onClick={() => setSearchOpen(false)}>
           <div className="search-modal" onClick={(e) => e.stopPropagation()}>
             <div className="search-modal-header">
-              <Search size={18} strokeWidth={2.5} className="search-modal-icon" />
+              <SearchIcon size={18} className="search-modal-icon" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -201,27 +312,6 @@ export function TopBar({ onToggleSidebar, sidebarCollapsed }: { onToggleSidebar?
         </div>
       )}
 
-      {/* ── Notifications Panel ──────────────────────────────────── */}
-      {notifOpen && (
-        <div className="notif-backdrop" onClick={() => setNotifOpen(false)}>
-          <div className="notif-panel" ref={notifRef} onClick={(e) => e.stopPropagation()}>
-            <div className="notif-panel-header">
-              <h3>{t('notifications')}</h3>
-            </div>
-            <div className="notif-panel-body">
-              <div className="empty-state">
-                <Bell size={32} strokeWidth={1.5} className="empty-icon-svg" />
-                <p>{language === 'es' ? 'Sin notificaciones' : 'No notifications'}</p>
-                <small className="text-muted">
-                  {language === 'es'
-                    ? 'Aquí aparecerán tus notificaciones cuando tengas alguna.'
-                    : 'Your notifications will appear here when you have any.'}
-                </small>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }

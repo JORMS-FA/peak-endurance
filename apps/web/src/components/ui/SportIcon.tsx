@@ -29,7 +29,7 @@ export function SportIcon({ sport, size = 16 }: { sport: string; size?: number }
 
 export const SPORT_COLORS: Record<string, string> = {
   run: '#22c55e',
-  bike: '#3b82f6',
+  bike: '#f59e0b',
   swim: '#06b6d4',
   gym: '#f97316',
   rest: '#64748b',

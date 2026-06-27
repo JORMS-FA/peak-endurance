@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronRight, ChevronLeft, Mountain, Heart, Ruler, Weight, Timer, SkipForward } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Heart, Ruler, Weight, Timer, SkipForward } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
 import { LavaBackground } from '../components/ui/LavaBackground'
+import { Logo } from '../components/ui/Logo'
 
 type OnboardingData = {
   display_name: string
+  gender: 'male' | 'female' | ''
   weight_kg: string
   height_cm: string
   age: string
@@ -16,6 +18,8 @@ type OnboardingData = {
   pace_10k: string // min/km format like "5:30"
   sports: string[] // multi-select: which sports the athlete practises
   running_bests: Record<string, string> // { '5k': '22:30', '10k': '47:10', ... }
+  best_distance: string // selected distance for the dropdown
+  best_time: string // time for selected distance
   experience_level: 'beginner' | 'intermediate' | 'advanced' | 'elite'
   weekly_hours: string
   hr_zone_method: 'auto' | 'custom'
@@ -24,6 +28,7 @@ type OnboardingData = {
 
 const defaultData: OnboardingData = {
   display_name: '',
+  gender: '',
   weight_kg: '',
   height_cm: '',
   age: '',
@@ -32,6 +37,8 @@ const defaultData: OnboardingData = {
   pace_10k: '',
   sports: [],
   running_bests: {},
+  best_distance: '',
+  best_time: '',
   experience_level: 'intermediate',
   weekly_hours: '5',
   hr_zone_method: 'auto',
@@ -93,6 +100,7 @@ export function Onboarding() {
     if (data.weight_kg) payload.weight_kg = parseFloat(data.weight_kg)
     if (data.height_cm) payload.height_cm = parseFloat(data.height_cm)
     if (data.age) payload.age = parseInt(data.age)
+    if (data.gender) payload.gender = data.gender
     if (data.resting_hr) payload.resting_hr = parseInt(data.resting_hr)
     if (data.max_hr) payload.max_hr = parseInt(data.max_hr)
     if (data.sports.length > 0) {
@@ -106,6 +114,10 @@ export function Onboarding() {
       )
       payload.running_bests = bests
       if (bests['10k']) payload.pace_10k = data.pace_10k || ''
+    }
+    if (data.best_distance && data.best_time) {
+      payload.best_distance = data.best_distance
+      payload.best_time = data.best_time
     }
     if (data.experience_level) payload.experience_level = data.experience_level
     if (data.weekly_hours) payload.weekly_hours = parseFloat(data.weekly_hours)
@@ -171,44 +183,42 @@ export function Onboarding() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation */}
+        {/* Navigation — symmetric 3-button bar */}
         <div className="onboarding-nav">
           {step > 0 ? (
-            <button type="button" className="btn-ghost" onClick={prev}>
+            <button type="button" className="onboarding-nav-btn btn-secondary" onClick={prev}>
               <ChevronLeft size={16} /> {isEs ? 'Atras' : 'Back'}
             </button>
           ) : (
-            <div />
+            <div className="onboarding-nav-spacer" />
           )}
 
-          <div className="onboarding-nav-right">
+          <button
+            type="button"
+            className="onboarding-nav-btn btn-ghost"
+            onClick={handleSkip}
+            disabled={saving}
+          >
+            <SkipForward size={14} />
+            {isEs ? 'Omitir' : 'Skip'}
+          </button>
+
+          {step < totalSteps - 1 ? (
+            <button type="button" className="onboarding-nav-btn btn-primary" onClick={next}>
+              {isEs ? 'Siguiente' : 'Next'} <ChevronRight size={16} />
+            </button>
+          ) : (
             <button
               type="button"
-              className="btn-ghost btn-skip"
-              onClick={handleSkip}
+              className="onboarding-nav-btn btn-primary"
+              onClick={handleComplete}
               disabled={saving}
             >
-              <SkipForward size={14} />
-              {isEs ? 'Omitir' : 'Skip'}
+              {saving
+                ? (isEs ? 'Guardando...' : 'Saving...')
+                : (isEs ? 'Empezar' : 'Get started')}
             </button>
-
-            {step < totalSteps - 1 ? (
-              <button type="button" className="btn-primary" onClick={next}>
-                {isEs ? 'Siguiente' : 'Next'} <ChevronRight size={16} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn-primary"
-                onClick={handleComplete}
-                disabled={saving}
-              >
-                {saving
-                  ? (isEs ? 'Guardando...' : 'Saving...')
-                  : (isEs ? 'Empezar' : 'Get started')}
-              </button>
-            )}
-          </div>
+          )}
         </div>
       </motion.div>
     </div>
@@ -229,7 +239,7 @@ function StepWelcome({ data, update, isEs, avatarUrl }: {
         {avatarUrl ? (
           <img src={avatarUrl} alt="" className="onboarding-avatar" />
         ) : (
-          <Mountain size={40} />
+          <Logo size={56} />
         )}
       </div>
       <h2>{isEs ? 'Bienvenido a Peak Endurance' : 'Welcome to Peak Endurance'}</h2>
@@ -300,6 +310,17 @@ function StepBody({ data, update, isEs }: {
             max="99"
           />
         </label>
+        <label className="onboarding-field">
+          <span>{isEs ? 'Sexo' : 'Sex'}</span>
+          <select
+            value={data.gender}
+            onChange={(e) => update('gender', e.target.value)}
+          >
+            <option value="">{isEs ? 'Seleccionar' : 'Select'}</option>
+            <option value="male">{isEs ? 'Masculino' : 'Male'}</option>
+            <option value="female">{isEs ? 'Femenino' : 'Female'}</option>
+          </select>
+        </label>
       </div>
     </div>
   )
@@ -317,6 +338,7 @@ function StepTraining({ data, update, patch, isEs }: {
     { value: 'swim', label: isEs ? 'Natación' : 'Swimming', icon: '🏊' },
     { value: 'triathlon', label: isEs ? 'Triatlón' : 'Triathlon', icon: '🏅' },
     { value: 'gym', label: isEs ? 'Gimnasio' : 'Gym', icon: '🏋️' },
+    { value: 'walk', label: isEs ? 'Caminata' : 'Walking', icon: '🚶' },
   ]
 
   const levels = [
@@ -326,11 +348,11 @@ function StepTraining({ data, update, patch, isEs }: {
     { value: 'elite', label: isEs ? 'Elite' : 'Elite' },
   ]
 
-  const bestFields = [
-    { key: '5k', label: '5K', placeholder: '22:30' },
-    { key: '10k', label: '10K', placeholder: '47:10' },
-    { key: 'half', label: isEs ? 'Media maratón' : 'Half marathon', placeholder: '1:45:00' },
-    { key: 'marathon', label: isEs ? 'Maratón' : 'Marathon', placeholder: '3:50:00' },
+  const distanceOptions = [
+    { value: '5k', label: '5K', placeholder: '22:30' },
+    { value: '10k', label: '10K', placeholder: '47:10' },
+    { value: 'half', label: isEs ? 'Media maratón' : 'Half marathon', placeholder: '1:45:00' },
+    { value: 'marathon', label: isEs ? 'Maratón' : 'Marathon', placeholder: '3:50:00' },
   ]
 
   function toggleSport(value: string) {
@@ -342,6 +364,9 @@ function StepTraining({ data, update, patch, isEs }: {
   function setBest(key: string, value: string) {
     patch({ running_bests: { ...data.running_bests, [key]: value } })
   }
+
+  const selectedDistance = distanceOptions.find((d) => d.value === data.best_distance)
+  const timePlaceholder = selectedDistance?.placeholder ?? '00:00'
 
   const runSelected = data.sports.includes('run') || data.sports.includes('triathlon')
 
@@ -388,19 +413,29 @@ function StepTraining({ data, update, patch, isEs }: {
                   ? 'Tu mejor esfuerzo reciente por distancia. El coach IA lo usa como contexto.'
                   : 'Your recent best effort per distance. The AI coach uses it as context.'}
               </p>
-              <div className="onboarding-grid">
-                {bestFields.map((f) => (
-                  <label key={f.key} className="onboarding-field">
-                    <span>{f.label}</span>
-                    <input
-                      type="text"
-                      value={data.running_bests[f.key] ?? ''}
-                      onChange={(e) => setBest(f.key, e.target.value)}
-                      placeholder={f.placeholder}
-                      inputMode="numeric"
-                    />
-                  </label>
-                ))}
+              <div className="onboarding-best-row">
+                <label className="onboarding-field">
+                  <span>{isEs ? 'Distancia' : 'Distance'}</span>
+                  <select
+                    value={data.best_distance}
+                    onChange={(e) => update('best_distance', e.target.value)}
+                  >
+                    <option value="">{isEs ? 'Elegir distancia' : 'Choose distance'}</option>
+                    {distanceOptions.map((d) => (
+                      <option key={d.value} value={d.value}>{d.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="onboarding-field">
+                  <span>{isEs ? 'Tiempo' : 'Time'}</span>
+                  <input
+                    type="text"
+                    value={data.best_time}
+                    onChange={(e) => update('best_time', e.target.value)}
+                    placeholder={timePlaceholder}
+                    inputMode="numeric"
+                  />
+                </label>
               </div>
             </div>
           </motion.div>

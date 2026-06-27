@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import {
   User, CreditCard, Bot, Palette, Globe, Activity as ActivityIcon,
-  ShieldCheck, FileText, LogOut, Check, ExternalLink, Pencil, Trash2,
+  ShieldCheck, FileText, LogOut, Check, ExternalLink, Pencil, Trash2, Bell, BellOff,
 } from 'lucide-react'
 import { useI18n } from '../hooks/useI18n'
 import { useTheme } from '../hooks/useTheme'
@@ -19,12 +19,14 @@ import type { AccentColor, AppLanguage, ThemeMode } from '../lib/types'
 import type { I18nKey } from '../lib/i18n'
 
 const ACCENT_HEX: Record<string, string> = {
+  white: '#ffffff',
   rgb: 'conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #8b5cf6, #ec4899, #ef4444)',
   green: '#22c55e', orange: '#f97316', yellow: '#eab308', blue: '#3b82f6',
   purple: '#8b5cf6', red: '#ef4444', pink: '#ec4899', cyan: '#06b6d4',
 }
 
 const ACCENT_I18N_KEYS: Record<string, I18nKey> = {
+  white: 'white',
   green: 'green', orange: 'orange', yellow: 'yellow', blue: 'blue',
   purple: 'purple', red: 'red', pink: 'pink', cyan: 'cyan',
 }
@@ -437,6 +439,44 @@ export function Settings() {
               {hasKey || isPro ? (isEs ? 'Activo' : 'Active') : (isEs ? 'Sin configurar' : 'Not configured')}
             </span>
           </div>
+        </div>
+      </Section>
+
+      {/* Notifications preferences */}
+      <Section icon={<Bell size={16} />} title={isEs ? 'Notificaciones' : 'Notifications'}>
+        <div className="settings-toggles">
+          <label className="settings-toggle-row">
+            <div className="settings-toggle-label">
+              <Bell size={15} />
+              <span>{isEs ? 'Notificaciones push' : 'Push notifications'}</span>
+              <small className="text-muted">{isEs ? 'Recibe alertas en tiempo real' : 'Receive real-time alerts'}</small>
+            </div>
+            <input type="checkbox" defaultChecked className="settings-toggle" />
+          </label>
+          <label className="settings-toggle-row">
+            <div className="settings-toggle-label">
+              <BellOff size={15} />
+              <span>{isEs ? 'Notificaciones de entrenamiento' : 'Training notifications'}</span>
+              <small className="text-muted">{isEs ? 'Recordatorios de sesiones programadas' : 'Scheduled session reminders'}</small>
+            </div>
+            <input type="checkbox" defaultChecked className="settings-toggle" />
+          </label>
+          <label className="settings-toggle-row">
+            <div className="settings-toggle-label">
+              <BellOff size={15} />
+              <span>{isEs ? 'Logros y rachas' : 'Achievements & streaks'}</span>
+              <small className="text-muted">{isEs ? 'Cuando desbloquees logros o mantengas rachas' : 'When you unlock achievements or maintain streaks'}</small>
+            </div>
+            <input type="checkbox" defaultChecked className="settings-toggle" />
+          </label>
+          <label className="settings-toggle-row">
+            <div className="settings-toggle-label">
+              <BellOff size={15} />
+              <span>{isEs ? 'Notificaciones sociales' : 'Social notifications'}</span>
+              <small className="text-muted">{isEs ? 'Nuevos seguidores y actividad de conexiones' : 'New followers and connection activity'}</small>
+            </div>
+            <input type="checkbox" defaultChecked className="settings-toggle" />
+          </label>
         </div>
       </Section>
 

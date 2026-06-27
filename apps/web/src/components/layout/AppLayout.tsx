@@ -5,26 +5,24 @@ import { MobileNav } from './MobileNav'
 import { TopBar } from './TopBar'
 
 export function AppLayout() {
-  const [collapsed, setCollapsed] = useState<boolean>(
-    () => localStorage.getItem('peak_sidebar_collapsed') === '1',
-  )
-
-  function toggle() {
-    setCollapsed((c) => {
-      const next = !c
-      localStorage.setItem('peak_sidebar_collapsed', next ? '1' : '0')
-      return next
-    })
-  }
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerCollapsed, setDrawerCollapsed] = useState(false)
+  const [customizeMode, setCustomizeMode] = useState(false)
 
   return (
-    <div className={`app-shell${collapsed ? ' sidebar-collapsed' : ''}`}>
+    <div className="app-shell">
       <div className="app-rgb-bg" aria-hidden />
-      <Sidebar collapsed={collapsed} onToggle={toggle} />
+      <TopBar onToggleSidebar={() => setDrawerOpen((o) => !o)} />
+      <Sidebar
+        open={drawerOpen}
+        collapsed={drawerCollapsed}
+        onClose={() => setDrawerOpen(false)}
+        onToggleCollapse={() => setDrawerCollapsed((c) => !c)}
+        onCustomize={() => setCustomizeMode((c) => !c)}
+      />
       <div className="app-main">
-        <TopBar onToggleSidebar={toggle} sidebarCollapsed={collapsed} />
         <main className="app-content">
-          <Outlet />
+          <Outlet context={{ customizeMode, setCustomizeMode }} />
         </main>
       </div>
       <MobileNav />

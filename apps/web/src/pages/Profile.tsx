@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import {
   User, CreditCard, Bot, Palette, Globe, Activity as ActivityIcon,
   ShieldCheck, FileText, LogOut, Check, ExternalLink, Pencil, Trash2,
-  Trophy, Lock, Sparkles, Camera,
+  Trophy, Lock, Sparkles, Camera, Bell, BellOff, RefreshCw,
 } from 'lucide-react'
 import { useI18n } from '../hooks/useI18n'
 import { useTheme } from '../hooks/useTheme'
@@ -23,12 +23,14 @@ import { CoachOrb } from '../components/ui/CoachOrb'
 import type { OrbMood } from '../components/ui/CoachOrb'
 
 const ACCENT_HEX: Record<string, string> = {
+  white: '#ffffff',
   rgb: 'conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #8b5cf6, #ec4899, #ef4444)',
   green: '#22c55e', orange: '#f97316', yellow: '#eab308', blue: '#3b82f6',
   purple: '#8b5cf6', red: '#ef4444', pink: '#ec4899', cyan: '#06b6d4',
 }
 
 const ACCENT_I18N_KEYS: Record<string, I18nKey> = {
+  white: 'white',
   green: 'green', orange: 'orange', yellow: 'yellow', blue: 'blue',
   purple: 'purple', red: 'red', pink: 'pink', cyan: 'cyan',
 }
@@ -179,38 +181,98 @@ export function Profile() {
         <h2>{isEs ? 'Perfil' : 'Profile'}</h2>
       </div>
 
-      {/* ── Orb hero — mascot + identity + quick stats ─────────────────────── */}
+      {/* ── Profile hero — photo + name + quick stats ─────────────────────── */}
       <motion.section
-        className="orb-hero"
+        className="profile-hero"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
       >
-        <div className="orb-hero-rgb-wash" aria-hidden />
-        <CoachOrb size={120} mood={orbMood} />
-        <div className="orb-hero-body">
-          <span className="orb-hero-eyebrow"><Sparkles size={12} /> PEAK ENDURANCE</span>
-          <h3 className="orb-hero-name">
-            {profile?.display_name ?? (isEs ? 'Atleta' : 'Athlete')}
-          </h3>
-          <p className="orb-hero-tagline">
-            {isEs
-              ? `Nivel ${gamification.level} · ${gamification.levelTitle} · ${gamification.xp} XP`
-              : `Level ${gamification.level} · ${gamification.levelTitle} · ${gamification.xp} XP`}
-          </p>
-          <div className="orb-hero-stats">
-            <div className="orb-hero-stat">
-              <small>{isEs ? 'Logros' : 'Achievements'}</small>
-              <strong>{gamification.unlockedCount}/{gamification.achievements.length}</strong>
+        <div className="profile-hero-bg" aria-hidden />
+
+        {/* Photo — centered, clickable to upload */}
+        <div className="profile-photo-wrap">
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleAvatarUpload}
+            style={{ display: 'none' }}
+          />
+          <button
+            type="button"
+            className="profile-photo-btn"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadingAvatar}
+            aria-label={isEs ? 'Cambiar foto de perfil' : 'Change profile photo'}
+          >
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="" className="profile-photo-img" />
+            ) : (
+              <div className="profile-photo-placeholder">
+                {(profile?.display_name ?? 'A').charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="profile-photo-overlay">
+              {uploadingAvatar ? (
+                <span className="avatar-upload-spinner" />
+              ) : (
+                <Camera size={22} />
+              )}
             </div>
-            <div className="orb-hero-stat">
-              <small>{isEs ? 'Plan' : 'Plan'}</small>
-              <strong>{isPro ? 'Pro' : 'Free'}</strong>
+          </button>
+        </div>
+
+        {/* Name — clickable to edit inline */}
+        <div className="profile-name-row">
+          {editingName ? (
+            <div className="profile-name-edit">
+              <input
+                type="text"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                className="profile-name-input"
+                autoFocus
+                maxLength={60}
+                onKeyDown={(e) => { if (e.key === 'Enter') saveName() }}
+              />
+              <button type="button" className="btn-primary btn-sm" onClick={saveName} disabled={savingName || !nameInput.trim()}>
+                {savingName ? '...' : (isEs ? 'Guardar' : 'Save')}
+              </button>
+              <button type="button" className="btn-ghost btn-sm" onClick={() => setEditingName(false)}>
+                {isEs ? 'Cancelar' : 'Cancel'}
+              </button>
             </div>
-            <div className="orb-hero-stat">
-              <small>{isEs ? 'Consultas IA' : 'AI queries'}</small>
-              <strong>{usage?.usedQueries ?? 0}/{usage?.limit ?? 20}</strong>
-            </div>
+          ) : (
+            <button type="button" className="profile-name-btn" onClick={startEditName} title={isEs ? 'Editar nombre' : 'Edit name'}>
+              <h3 className="profile-name-text">
+                {profile?.display_name ?? (isEs ? 'Atleta' : 'Athlete')}
+              </h3>
+              <Pencil size={14} className="profile-name-pencil" />
+            </button>
+          )}
+        </div>
+
+        {/* Tagline */}
+        <p className="profile-tagline">
+          {isEs
+            ? `Nivel ${gamification.level} · ${gamification.levelTitle} · ${gamification.xp} XP`
+            : `Level ${gamification.level} · ${gamification.levelTitle} · ${gamification.xp} XP`}
+        </p>
+
+        {/* Quick stats */}
+        <div className="profile-hero-stats">
+          <div className="profile-hero-stat">
+            <small>{isEs ? 'Logros' : 'Achievements'}</small>
+            <strong>{gamification.unlockedCount}/{gamification.achievements.length}</strong>
+          </div>
+          <div className="profile-hero-stat">
+            <small>{isEs ? 'Plan' : 'Plan'}</small>
+            <strong>{isPro ? 'Pro' : 'Free'}</strong>
+          </div>
+          <div className="profile-hero-stat">
+            <small>{isEs ? 'Consultas IA' : 'AI queries'}</small>
+            <strong>{usage?.usedQueries ?? 0}/{usage?.limit ?? 20}</strong>
           </div>
         </div>
       </motion.section>
@@ -585,6 +647,44 @@ export function Profile() {
         </div>
       </Section>
 
+      {/* ── Notifications preferences ────────────────────────────────────────── */}
+      <Section icon={<Bell size={16} />} title={isEs ? 'Notificaciones' : 'Notifications'}>
+        <div className="settings-toggles">
+          <label className="settings-toggle-row">
+            <div className="settings-toggle-label">
+              <Bell size={15} />
+              <span>{isEs ? 'Notificaciones push' : 'Push notifications'}</span>
+              <small className="text-muted">{isEs ? 'Recibe alertas en tiempo real' : 'Receive real-time alerts'}</small>
+            </div>
+            <input type="checkbox" defaultChecked className="settings-toggle" />
+          </label>
+          <label className="settings-toggle-row">
+            <div className="settings-toggle-label">
+              <BellOff size={15} />
+              <span>{isEs ? 'Notificaciones de entrenamiento' : 'Training notifications'}</span>
+              <small className="text-muted">{isEs ? 'Recordatorios de sesiones programadas' : 'Scheduled session reminders'}</small>
+            </div>
+            <input type="checkbox" defaultChecked className="settings-toggle" />
+          </label>
+          <label className="settings-toggle-row">
+            <div className="settings-toggle-label">
+              <BellOff size={15} />
+              <span>{isEs ? 'Logros y rachas' : 'Achievements & streaks'}</span>
+              <small className="text-muted">{isEs ? 'Cuando desbloquees logros o mantengas rachas' : 'When you unlock achievements or maintain streaks'}</small>
+            </div>
+            <input type="checkbox" defaultChecked className="settings-toggle" />
+          </label>
+          <label className="settings-toggle-row">
+            <div className="settings-toggle-label">
+              <BellOff size={15} />
+              <span>{isEs ? 'Notificaciones sociales' : 'Social notifications'}</span>
+              <small className="text-muted">{isEs ? 'Nuevos seguidores y actividad de conexiones' : 'New followers and connection activity'}</small>
+            </div>
+            <input type="checkbox" defaultChecked className="settings-toggle" />
+          </label>
+        </div>
+      </Section>
+
       {/* ── Legal ──────────────────────────────────────────────────────────── */}
       <Section icon={<FileText size={16} />} title="Legal">
         <div className="settings-legal-links">
@@ -597,6 +697,29 @@ export function Profile() {
             {isEs ? 'Términos de servicio' : 'Terms of Service'}
           </a>
         </div>
+      </Section>
+
+      {/* ── Reset onboarding ───────────────────────────────────────────────── */}
+      <Section icon={<RefreshCw size={16} />} title={isEs ? 'Reiniciar onboarding' : 'Reset onboarding'}>
+        <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: 12 }}>
+          {isEs
+            ? '¿Quieres volver a configurar tu perfil desde cero? Esto no borra tus datos, solo te permite repetir el cuestionario inicial.'
+            : 'Want to reconfigure your profile from scratch? This doesn\'t delete your data, it just lets you redo the initial questionnaire.'}
+        </p>
+        <button
+          type="button"
+          className="btn-secondary"
+          style={{ width: '100%' }}
+          onClick={() => {
+            if (profile?.id) {
+              localStorage.removeItem(`peak_onboarding_done_${profile.id}`)
+            }
+            window.location.href = '/app'
+          }}
+        >
+          <RefreshCw size={14} />
+          {isEs ? 'Reiniciar cuestionario inicial' : 'Restart initial questionnaire'}
+        </button>
       </Section>
     </div>
   )

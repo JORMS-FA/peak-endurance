@@ -16,7 +16,7 @@ export const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 const VALID_THEMES: ThemeMode[] = ['dark', 'light', 'midnight', 'forest']
 const VALID_LANGS: AppLanguage[] = ['es', 'en']
-const VALID_ACCENTS: AccentColor[] = ['rgb', 'green', 'orange', 'yellow', 'blue', 'purple', 'red', 'pink', 'cyan']
+const VALID_ACCENTS: AccentColor[] = ['rgb', 'green', 'orange', 'yellow', 'blue', 'purple', 'red', 'pink', 'cyan', 'white']
 
 function loadTheme(): ThemeMode {
   try {
@@ -45,24 +45,24 @@ function loadLanguage(): AppLanguage {
 function loadAccentColor(): AccentColor {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.accent)
-    if (!raw) return 'rgb'
+    if (!raw) return 'white'
     const parsed = JSON.parse(raw)
     if (VALID_ACCENTS.includes(parsed)) return parsed
-    return 'rgb'
+    return 'white'
   } catch {
-    return 'rgb'
+    return 'white'
   }
 }
 
 // One-time migration: if the user had "green" (old default) and never
-// actively picked it, switch them to "rgb" so they see the new default.
+// actively picked it, switch them to "white" so they see the new default.
 function migrateAccent() {
   const migKey = 'peak_accent_migrated_rgb'
   if (localStorage.getItem(migKey)) return
   localStorage.setItem(migKey, '1')
   const raw = localStorage.getItem(STORAGE_KEYS.accent)
   if (!raw || JSON.parse(raw) === 'green') {
-    localStorage.setItem(STORAGE_KEYS.accent, JSON.stringify('rgb'))
+    localStorage.setItem(STORAGE_KEYS.accent, JSON.stringify('white'))
   }
 }
 migrateAccent()

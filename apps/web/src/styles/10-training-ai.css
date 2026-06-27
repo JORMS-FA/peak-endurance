@@ -36,11 +36,13 @@
 .training-filters .chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 7px 12px;
+  gap: 6px;
+  padding: 8px 16px;
   border-radius: var(--radius-full);
-  background: var(--bg-2);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-2);
@@ -48,12 +50,28 @@
   transition: all var(--transition);
   flex-shrink: 0;
 }
-.training-filters .chip:hover { border-color: var(--border-strong); }
+.training-filters .chip:hover { border-color: rgba(255, 255, 255, 0.18); }
 .training-filters .chip.active {
   background: var(--accent-soft);
   border-color: var(--accent);
   color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-soft);
 }
+
+/* ── Filter chip icon (dashboard-style neon) ────────────────── */
+.training-filters .chip-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.chip-icon.chip-green { background: rgba(34, 197, 94, 0.12); color: #22c55e; }
+.chip-icon.chip-amber { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+.chip-icon.chip-purple { background: rgba(139, 92, 246, 0.12); color: #8b5cf6; }
+.chip-icon.chip-orange { background: rgba(249, 115, 22, 0.12); color: #f97316; }
+.chip-icon.chip-cyan { background: rgba(6, 182, 212, 0.12); color: #06b6d4; }
 
 .activities-list {
   display: flex;
@@ -85,28 +103,32 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  color: #fff;
   position: relative;
 }
 .activity-icon[data-sport="run"] {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  box-shadow: 0 2px 12px rgba(34, 197, 94, 0.25);
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.15);
 }
 .activity-icon[data-sport="bike"] {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.25);
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.15);
 }
 .activity-icon[data-sport="swim"] {
-  background: linear-gradient(135deg, #06b6d4, #0891b2);
-  box-shadow: 0 2px 12px rgba(6, 182, 212, 0.25);
+  background: rgba(6, 182, 212, 0.12);
+  color: #06b6d4;
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.15);
 }
 .activity-icon[data-sport="gym"] {
-  background: linear-gradient(135deg, #f97316, #ea580c);
-  box-shadow: 0 2px 12px rgba(249, 115, 22, 0.25);
+  background: rgba(249, 115, 22, 0.12);
+  color: #f97316;
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.15);
 }
 .activity-icon[data-sport="other"] {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  box-shadow: 0 2px 12px rgba(139, 92, 246, 0.25);
+  background: rgba(139, 92, 246, 0.12);
+  color: #8b5cf6;
+  box-shadow: 0 0 16px rgba(139, 92, 246, 0.15);
 }
 
 .activity-body {
@@ -198,19 +220,18 @@
 }
 
 .summary-pill-icon {
-  width: 32px;
-  height: 32px;
+  width: 42px;
+  height: 42px;
   border-radius: var(--radius-md);
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  color: #fff;
 }
-.summary-pill-icon.is-run { background: linear-gradient(135deg, #22c55e, #16a34a); }
-.summary-pill-icon.is-bike { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-.summary-pill-icon.is-swim { background: linear-gradient(135deg, #06b6d4, #0891b2); }
-.summary-pill-icon.is-gym { background: linear-gradient(135deg, #f97316, #ea580c); }
-.summary-pill-icon.is-count { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.summary-pill-icon.is-run { background: rgba(34, 197, 94, 0.12); color: #22c55e; }
+.summary-pill-icon.is-bike { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+.summary-pill-icon.is-swim { background: rgba(6, 182, 212, 0.12); color: #06b6d4; }
+.summary-pill-icon.is-gym { background: rgba(249, 115, 22, 0.12); color: #f97316; }
+.summary-pill-icon.is-count { background: rgba(139, 92, 246, 0.12); color: #8b5cf6; }
 
 .summary-pill-body {
   display: flex;
@@ -584,6 +605,74 @@
 
 .settings-legal-links a:hover {
   text-decoration: underline;
+}
+
+/* Settings toggle rows (notification preferences) */
+.settings-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.settings-toggle-row:last-child {
+  border-bottom: none;
+}
+.settings-toggle-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.settings-toggle-label span {
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.settings-toggle-label small {
+  font-size: 0.78rem;
+  padding-left: 23px;
+}
+.settings-toggle {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 44px;
+  height: 26px;
+  border-radius: 13px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  flex-shrink: 0;
+}
+.settings-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.settings-toggle:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.settings-toggle:checked::after {
+  transform: translateX(18px);
+  background: #fff;
 }
 
 .status-row {
@@ -964,6 +1053,12 @@
   gap: 12px;
 }
 
+.onboarding-best-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
 .onboarding-sport-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
@@ -1045,8 +1140,30 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 8px;
+  gap: 10px;
+  padding-top: 12px;
   border-top: 1px solid var(--border);
+}
+
+.onboarding-nav-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+
+.onboarding-nav-spacer {
+  flex: 1;
+  min-width: 0;
 }
 
 .onboarding-nav-right {
