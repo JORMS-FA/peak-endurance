@@ -1913,3 +1913,326 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 
 /* ── Not found / error ──────────────────────────────────────────────────── */
+
+/* ── Search Modal ──────────────────────────────────────────────────────────── */
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 16px;
+}
+
+.search-modal {
+  width: 100%;
+  max-width: 580px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  animation: avatarMenuIn 0.12s ease;
+}
+
+.search-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.search-modal-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.search-modal-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 1rem;
+  outline: none;
+}
+.search-modal-input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+}
+.search-modal-close:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.search-modal-results {
+  max-height: 400px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.search-modal-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.search-modal-hints {
+  padding: 16px;
+}
+
+.search-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+}
+
+.search-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.search-group-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.1s ease;
+}
+.search-result-item:hover,
+.search-result-item.selected {
+  background: var(--bg-2);
+}
+
+.search-result-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-3);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.search-result-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.search-result-title {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-result-desc {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Segments page ──────────────────────────────────────────────────────────── */
+.page-segments {
+  max-width: 760px;
+}
+
+.segment-card {
+  margin-bottom: 12px;
+}
+
+.segment-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.segment-card-name-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.segment-sport-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.segment-sport-run {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+}
+.segment-sport-ride {
+  background: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+}
+
+.segment-card-name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.segment-card-name strong {
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.segment-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.segment-starred-icon {
+  color: #fbbf24;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.segment-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.segment-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.segment-stat-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.segment-stat strong {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.segments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ── Promo code ──────────────────────────────────────────────────────────────── */
+.promo-code-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.promo-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.promo-input {
+  flex: 1;
+  min-width: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+/* ── Premium badge in plan section ───────────────────────────────────────────── */
+.plan-premium-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.12), rgba(245, 158, 11, 0.12));
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  color: #fbbf24;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.plan-premium-expiry {
+  font-size: 0.74rem;
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+/* ── Plan badge colors ────────────────────────────────────────────────────────── */
+.plan-badge.premium {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.15), rgba(245, 158, 11, 0.15));
+  color: #fbbf24;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+/* ── Spin animation for loading ──────────────────────────────────────────────── */
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

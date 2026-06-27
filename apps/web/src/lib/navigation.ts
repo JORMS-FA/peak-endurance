@@ -6,6 +6,7 @@ export const sidebarNav: NavItem[] = [
   { id: 'training', path: '/app/entrenamientos', icon: 'Dumbbell', label_es: 'Entrenamientos', label_en: 'Training' },
   { id: 'plan', path: '/app/plan', icon: 'CalendarDays', label_es: 'Plan', label_en: 'Plan' },
   { id: 'analysis', path: '/app/analisis', icon: 'LineChart', label_es: 'Análisis', label_en: 'Analysis' },
+  { id: 'segments', path: '/app/segmentos', icon: 'Mountain', label_es: 'Segmentos', label_en: 'Segments' },
   { id: 'connections', path: '/app/conexiones', icon: 'Plug', label_es: 'Conexiones', label_en: 'Connections' },
   { id: 'profile', path: '/app/perfil', icon: 'User', label_es: 'Perfil', label_en: 'Profile' },
 ]

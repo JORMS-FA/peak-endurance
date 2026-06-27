@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './useAuth'
 
-export type SubscriptionTier = 'free' | 'pro'
+export type SubscriptionTier = 'free' | 'pro' | 'premium'
 
 export type SubscriptionData = {
   tier: SubscriptionTier
@@ -34,22 +34,41 @@ export function useSubscription() {
 
     setLoading(true)
     try {
-      // Fetch subscription
+      // Fetch subscription from subscriptions table
       const { data: sub } = await supabase
         .from('subscriptions')
         .select('*')
         .eq('profile_id', profile.id)
         .maybeSingle()
 
+      // Use profile's subscription_tier as fallback
+      const profileTier = (profile as { subscription_tier?: string | null })?.subscription_tier ?? null
+
+      const tier: SubscriptionTier = sub?.tier
+        ? (sub.tier as SubscriptionTier)
+        : profileTier && ['free', 'pro', 'premium'].includes(profileTier)
+          ? (profileTier as SubscriptionTier)
+          : 'free'
+
       if (sub) {
         setSubscription({
-          tier: (sub.tier ?? 'free') as SubscriptionTier,
+          tier,
           status: sub.status ?? 'active',
-          aiQuotaLimit: sub.ai_quota_limit ?? 20,
+          aiQuotaLimit: sub.ai_quota_limit ?? (tier === 'premium' ? 10000 : tier === 'pro' ? 500 : 20),
           stripeCustomerId: sub.stripe_customer_id ?? null,
           stripeSubscriptionId: sub.stripe_subscription_id ?? null,
           currentPeriodEnd: sub.current_period_end ?? null,
           cancelAtPeriodEnd: sub.cancel_at_period_end ?? false,
+        })
+      } else if (profileTier && profileTier !== 'free') {
+        setSubscription({
+          tier,
+          status: 'active',
+          aiQuotaLimit: tier === 'premium' ? 10000 : 500,
+          stripeCustomerId: null,
+          stripeSubscriptionId: null,
+          currentPeriodEnd: (profile as { subscription_expires_at?: string | null })?.subscription_expires_at ?? null,
+          cancelAtPeriodEnd: false,
         })
       } else {
         setSubscription({
@@ -70,7 +89,7 @@ export function useSubscription() {
         .eq('profile_id', profile.id)
         .maybeSingle()
 
-      const limit = sub?.ai_quota_limit ?? 20
+      const limit = sub?.ai_quota_limit ?? (tier === 'premium' ? 10000 : tier === 'pro' ? 500 : 20)
       setUsage({
         usedQueries: usageRow?.used_queries ?? 0,
         limit,
@@ -87,7 +106,9 @@ export function useSubscription() {
     void fetch()
   }, [fetch])
 
-  const isPro = subscription?.tier === 'pro'
+  const isPro = subscription?.tier === 'pro' || subscription?.tier === 'premium'
+  const isPremium = subscription?.tier === 'premium'
+  const isSubscriber = subscription?.tier !== 'free' && subscription?.tier !== null
   const isActive = subscription?.status === 'active'
 
   return {
@@ -95,6 +116,8 @@ export function useSubscription() {
     usage,
     loading,
     isPro,
+    isPremium,
+    isSubscriber,
     isActive,
     refetch: fetch,
   }

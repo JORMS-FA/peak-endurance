@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import {
   User, CreditCard, Bot, Palette, Globe, Activity as ActivityIcon,
   ShieldCheck, FileText, LogOut, Check, ExternalLink, Pencil, Trash2,
-  Trophy, Lock, Sparkles, Camera, Bell, BellOff, RefreshCw,
+  Trophy, Lock, Sparkles, Camera, Bell, BellOff, RefreshCw, Gift, Zap,
 } from 'lucide-react'
 import { useI18n } from '../hooks/useI18n'
 import { useTheme } from '../hooks/useTheme'
@@ -62,11 +62,78 @@ function Section({ icon, title, children }: { icon: ReactNode; title: string; ch
   )
 }
 
+function PromoCodeBox({ onSuccess, isEs }: { onSuccess: () => void; isEs: boolean }) {
+  const [code, setCode] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+
+  async function handleRedeem() {
+    const normalized = code.trim().toUpperCase()
+    if (!normalized) return
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+    try {
+      if (!supabase) throw new Error('Supabase no configurado')
+      const { data, error: fnErr } = await supabase.rpc('validate_and_redeem_promo_code', {
+        p_code: normalized,
+        p_profile_id: (await supabase.auth.getUser()).data.user?.id ?? '',
+      })
+      if (fnErr) throw fnErr
+      const result = data as { success: boolean; error?: string; message?: string; tier?: string }
+      if (result.success) {
+        setSuccess(result.message ?? (isEs ? '¡Código canjeado con éxito!' : 'Code redeemed successfully!'))
+        setCode('')
+        onSuccess()
+      } else {
+        setError(result.error ?? (isEs ? 'Código inválido' : 'Invalid code'))
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : (isEs ? 'Error al canjear código' : 'Error redeeming code'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="promo-code-box">
+      <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: 12 }}>
+        {isEs
+          ? 'Si tienes un código de regalo, ingrésalo aquí para activar Premium.'
+          : 'If you have a gift code, enter it here to activate Premium.'}
+      </p>
+      <div className="promo-input-row">
+        <input
+          type="text"
+          className="input-field promo-input"
+          placeholder={isEs ? 'Ej: PEAK-GIFT-3M' : 'E.g. PEAK-GIFT-3M'}
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          maxLength={30}
+          disabled={loading}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleRedeem() }}
+        />
+        <button
+          type="button"
+          className="btn-primary btn-sm"
+          onClick={handleRedeem}
+          disabled={loading || !code.trim()}
+        >
+          {loading ? '...' : (isEs ? 'Canjear' : 'Redeem')}
+        </button>
+      </div>
+      {error && <p className="error-text" style={{ fontSize: '0.82rem', marginTop: 6 }}>{error}</p>}
+      {success && <p className="success-text" style={{ fontSize: '0.82rem', marginTop: 6 }}>{success}</p>}
+    </div>
+  )
+}
+
 export function Profile() {
   const { t } = useI18n()
   const { theme, setTheme, language: lang, setLanguage, accentColor, setAccentColor } = useTheme()
   const { profile, configured, refresh } = useAuth()
-  const { subscription, usage, isPro, loading: subLoading, refetch: refetchSub } = useSubscription()
+  const { subscription, usage, isPro, isPremium, isSubscriber, loading: subLoading, refetch: refetchSub } = useSubscription()
   const { keyData, hasKey, saving, validating, error: keyError, saveKey, deleteKey } = useApiKey()
   const { checkout, openPortal, loading: stripeLoading, error: stripeError } = useStripe()
   const { status: strava, loading: stravaLoading } = useStravaConnection()
@@ -268,7 +335,7 @@ export function Profile() {
           </div>
           <div className="profile-hero-stat">
             <small>{isEs ? 'Plan' : 'Plan'}</small>
-            <strong>{isPro ? 'Pro' : 'Free'}</strong>
+            <strong>{isPremium ? 'Premium' : isPro ? 'Pro' : 'Free'}</strong>
           </div>
           <div className="profile-hero-stat">
             <small>{isEs ? 'Consultas IA' : 'AI queries'}</small>
@@ -389,8 +456,8 @@ export function Profile() {
               )}
               <small className="text-muted">{profile.email}</small>
             </div>
-            <span className={`plan-badge ${isPro ? 'pro' : 'free'}`}>
-              {isPro ? t('proPlan') : t('freePlan')}
+            <span className={`plan-badge ${isPremium ? 'premium' : isPro ? 'pro' : 'free'}`}>
+              {isPremium ? 'Premium' : isPro ? t('proPlan') : t('freePlan')}
             </span>
           </div>
 
@@ -426,7 +493,7 @@ export function Profile() {
               )}
             </div>
 
-            {!isPro ? (
+            {!isSubscriber ? (
               <div className="plan-upgrade-cta">
                 <p className="text-muted" style={{ fontSize: '0.85rem' }}>
                   {isEs
@@ -445,9 +512,22 @@ export function Profile() {
               </div>
             ) : (
               <div className="plan-manage">
-                <button type="button" className="btn-outline" onClick={openPortal} disabled={stripeLoading}>
-                  {isEs ? 'Gestionar suscripción' : 'Manage subscription'}
-                </button>
+                {isPremium && (
+                  <div className="plan-premium-badge">
+                    <Sparkles size={14} />
+                    <span>{isEs ? 'Premium activo' : 'Premium active'}</span>
+                    {subscription?.currentPeriodEnd && (
+                      <span className="plan-premium-expiry">
+                        {isEs ? 'hasta' : 'until'} {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: isPremium ? 8 : 0 }}>
+                  <button type="button" className="btn-outline" onClick={openPortal} disabled={stripeLoading}>
+                    {isEs ? 'Gestionar suscripción' : 'Manage subscription'}
+                  </button>
+                </div>
                 {subscription?.currentPeriodEnd && (
                   <p className="text-muted" style={{ fontSize: '0.82rem', marginTop: 8 }}>
                     {isEs ? 'Próximo cobro:' : 'Next billing:'}{' '}
@@ -458,6 +538,11 @@ export function Profile() {
             )}
           </div>
         )}
+      </Section>
+
+      {/* ── Promo code ──────────────────────────────────────────────────────── */}
+      <Section icon={<Gift size={16} />} title={isEs ? 'Canjear código' : 'Redeem code'}>
+        <PromoCodeBox onSuccess={refetchSub} isEs={isEs} />
       </Section>
 
       {/* ── AI Coach config ────────────────────────────────────────────────── */}

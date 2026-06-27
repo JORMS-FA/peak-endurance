@@ -12,6 +12,7 @@ import { Analysis } from './pages/Analysis'
 import { Connections } from './pages/Connections'
 import Notifications from './pages/Notifications'
 import { Profile } from './pages/Profile'
+import { Segments } from './pages/Segments'
 import { Privacy } from './pages/Privacy'
 import { Terms } from './pages/Terms'
 
@@ -37,8 +38,7 @@ export default function App() {
         {/* Progress merged into Analysis */}
         <Route path="progreso" element={<Navigate to="/app/analisis" replace />} />
         <Route path="conexiones" element={<Connections />} />
-        {/* Segments hidden until implemented */}
-        <Route path="segmentos" element={<Navigate to="/app/plan" replace />} />
+        <Route path="segmentos" element={<Segments />} />
         <Route path="notificaciones" element={<Notifications />} />
         <Route path="perfil" element={<Profile />} />
         {/* Settings merged into Profile */}

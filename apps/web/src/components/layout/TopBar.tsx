@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Bell, X, Settings, LogOut, Menu, ArrowRight, CheckCheck } from 'lucide-react'
+import { Bell, X, Settings, LogOut, Menu, ArrowRight, CheckCheck, Activity, Calendar, Dumbbell } from 'lucide-react'
 import { SearchIcon } from '../ui/icons/SearchIcon'
 import { useI18n } from '../../hooks/useI18n'
 import { useAuth } from '../../hooks/useAuth'
+import { useSearch } from '../../hooks/useSearch'
+import type { SearchResultItem } from '../../hooks/useSearch'
 import { signOut } from '../../lib/auth'
 import { Logo } from '../ui/Logo'
 import { mockNotifications } from '../../lib/notificationsMock'
@@ -20,6 +22,37 @@ function getUnreadCount(): number {
   } catch {
     return mockNotifications.filter((n) => !n.read).length
   }
+}
+
+function GroupIcon({ type }: { type: string }) {
+  switch (type) {
+    case 'page': return <SearchIcon size={12} />
+    case 'activity': return <Activity size={12} />
+    case 'session': return <Calendar size={12} />
+    default: return <SearchIcon size={12} />
+  }
+}
+
+function ResultIcon({ type }: { type: string }) {
+  switch (type) {
+    case 'page': return <SearchIcon size={14} />
+    case 'activity': return <Dumbbell size={14} />
+    case 'session': return <Calendar size={14} />
+    default: return <SearchIcon size={14} />
+  }
+}
+
+function groupResults(items: SearchResultItem[]): { type: string; label: string; items: SearchResultItem[] }[] {
+  const groups: Record<string, SearchResultItem[]> = {}
+  for (const item of items) {
+    if (!groups[item.type]) groups[item.type] = []
+    groups[item.type].push(item)
+  }
+  return Object.entries(groups).map(([type, typeItems]) => ({
+    type,
+    label: type === 'page' ? 'Páginas' : type === 'activity' ? 'Actividades' : 'Sesiones',
+    items: typeItems,
+  }))
 }
 
 export function TopBar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
@@ -44,6 +77,9 @@ export function TopBar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const searchListRef = useRef<HTMLDivElement>(null)
+  const { results: searchResults, loading: searchLoading } = useSearch(searchQuery)
+  const [selectedIdx, setSelectedIdx] = useState(-1)
 
   // Notifications panel state
   const [notifOpen, setNotifOpen] = useState(false)
@@ -104,8 +140,9 @@ export function TopBar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
     await refresh()
   }
 
-  // Subscriber check (placeholder — expand when subscription system is built)
-  const isSubscriber = false // TODO: check profile?.subscription_tier
+  // Subscriber check from real profile data
+  const tier = profile?.subscription_tier ?? null
+  const isSubscriber = tier === 'pro' || tier === 'premium'
 
   // Unread notifications count — synced with localStorage
   const [unreadCount, setUnreadCount] = useState(getUnreadCount)
@@ -283,7 +320,25 @@ export function TopBar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
                 className="search-modal-input"
                 placeholder={language === 'es' ? 'Buscar actividades, planes...' : 'Search activities, plans...'}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  setSelectedIdx(-1)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault()
+                    setSelectedIdx((prev) => Math.min(prev + 1, searchResults.length - 1))
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault()
+                    setSelectedIdx((prev) => Math.max(prev - 1, 0))
+                  } else if (e.key === 'Enter' && selectedIdx >= 0 && searchResults[selectedIdx]) {
+                    e.preventDefault()
+                    setSearchOpen(false)
+                    navigate(searchResults[selectedIdx].path)
+                  } else if (e.key === 'Escape') {
+                    setSearchOpen(false)
+                  }
+                }}
               />
               <button
                 type="button"
@@ -294,10 +349,52 @@ export function TopBar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
               </button>
             </div>
             {searchQuery.trim() ? (
-              <div className="search-modal-results">
-                <p className="search-modal-empty">
-                  {language === 'es' ? 'Buscando...' : 'Searching...'}
-                </p>
+              <div className="search-modal-results" ref={searchListRef}>
+                {searchLoading ? (
+                  <p className="search-modal-empty">
+                    {language === 'es' ? 'Buscando...' : 'Searching...'}
+                  </p>
+                ) : searchResults.length === 0 ? (
+                  <p className="search-modal-empty">
+                    {language === 'es' ? 'Sin resultados' : 'No results'}
+                  </p>
+                ) : (
+                  <div className="search-results-list">
+                    {groupResults(searchResults).map((group) => (
+                      <div key={group.label} className="search-group">
+                        <div className="search-group-label">
+                          <GroupIcon type={group.type} />
+                          <span>{group.label}</span>
+                        </div>
+                        {group.items.map((item, idx) => {
+                          const globalIdx = searchResults.indexOf(item)
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              className={`search-result-item${globalIdx === selectedIdx ? ' selected' : ''}`}
+                              onClick={() => {
+                                setSearchOpen(false)
+                                navigate(item.path)
+                              }}
+                              onMouseEnter={() => setSelectedIdx(globalIdx)}
+                            >
+                              <div className="search-result-icon">
+                                <ResultIcon type={item.type} />
+                              </div>
+                              <div className="search-result-text">
+                                <span className="search-result-title">{item.label}</span>
+                                {item.description && (
+                                  <span className="search-result-desc">{item.description}</span>
+                                )}
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="search-modal-hints">

@@ -61,3 +61,36 @@ export async function syncStravaActivities(days = 60): Promise<StravaSyncResult>
   }
   return data as StravaSyncResult
 }
+
+export type StravaSegmentData = {
+  id: string
+  name: string
+  distance_km: number
+  elevation_gain: number
+  average_grade: number | null
+  effort: string | null
+  starred: boolean
+  sport: 'running' | 'riding'
+  pr_time: string | null
+  kom: string | null
+  city: string | null
+  state: string | null
+  country: string | null
+}
+
+export type StravaSegmentsResponse = {
+  segments: StravaSegmentData[]
+  total: number
+}
+
+export async function fetchStravaSegments(sport?: string): Promise<StravaSegmentsResponse> {
+  if (!supabase) throw new Error('Supabase not configured')
+  const { data, error } = await supabase.functions.invoke('strava-segments', {
+    body: { sport },
+  })
+  if (error) throw error
+  if (data && typeof data === 'object' && 'error' in data && data.error) {
+    throw new Error(String(data.error))
+  }
+  return data as StravaSegmentsResponse
+}
