@@ -1,4 +1,4 @@
-/* Public profile – Strava-inspired, dark glassmorphism */
+/* Public profile – Strava-inspired, dark glassmorphism, full-bleed mobile */
 
 .profile-strava-header,
 .profile-strava-hero,
@@ -13,6 +13,41 @@
 .profile-strava-clubs {
   padding-left: 16px;
   padding-right: 16px;
+}
+
+/* Avatar circular con degradado tipo Strava */
+.profile-avatar-circle {
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  padding: 0;
+  overflow: hidden;
+  display: inline-grid;
+  place-items: center;
+  border: 2px solid rgba(255,255,255,0.18);
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), rgba(255,255,255,0) 60%),
+    linear-gradient(135deg, #ff7a59, #fc4c02, #e13a3a);
+}
+
+.profile-avatar-gradient {
+  display: none;
+}
+
+.profile-avatar-img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 999px;
+  display: block;
+}
+.profile-avatar-placeholder {
+  position: relative;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: #fff;
 }
 
 /* Sticky header */

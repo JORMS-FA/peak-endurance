@@ -55,16 +55,15 @@ export function Profile() {
           <Settings2 size={18} />
         </button>
       </motion.section>
-
       <motion.section className="profile-strava-hero" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <div className="profile-strava-hero-avatar">
           <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} />
-          <button type="button" className="profile-strava-hero-avatar-btn" onClick={() => fileInputRef.current?.click()}>
-            <span className="profile-strava-hex" aria-hidden />
+          <button type="button" className="profile-strava-hero-avatar-btn profile-avatar-circle" onClick={() => fileInputRef.current?.click()}>
+            <span className="profile-avatar-gradient" aria-hidden />
             {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt={displayName} className="profile-strava-hex-img" />
+              <img src={profile.avatar_url} alt={displayName} className="profile-avatar-img" />
             ) : (
-              <span className="profile-strava-hero-placeholder">{displayName.charAt(0).toUpperCase()}</span>
+              <span className="profile-avatar-placeholder">{displayName.charAt(0).toUpperCase()}</span>
             )}
           </button>
         </div>
