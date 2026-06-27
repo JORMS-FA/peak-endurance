@@ -42,7 +42,7 @@ export default function App() {
         <Route path="ajustes" element={<Navigate to="/app/configuracion" replace />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
 }
