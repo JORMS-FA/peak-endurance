@@ -1671,25 +1671,24 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   overflow: hidden;
 }
 
-/* ── Notifications: full page (mobile) ──────────────────────────────────────── */
+/* ── Notifications: full page (Strava-like) ──────────────────────────────────── */
 .page-notifications {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 16px;
+  padding: 0 16px 24px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .notif-page-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 0 16px;
+  padding: 12px 0 16px;
   position: sticky;
   top: 0;
   z-index: 10;
   background: var(--bg-0);
+  border-bottom: 1px solid var(--border);
 }
 
 .notif-page-back {
