@@ -1,9 +1,9 @@
-import { useState, useRef, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useRef, useMemo, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useI18n } from '../hooks/useI18n'
 import { useAuth } from '../hooks/useAuth'
 import { useGamification } from '../hooks/useGamification'
-import { Trophy, Medal, Star, Lock, ChevronRight, QrCode, Share2, Camera, Settings2, UserPlus, Activity, BarChart3, Route, Gauge, Printer } from 'lucide-react'
+import { Trophy, Medal, Star, Lock, ChevronRight, QrCode, Share2, Camera, Settings2, UserPlus, Activity, BarChart3, Route, Gauge, Printer, Pencil, X, Check } from 'lucide-react'
 import type { ReactNode } from 'react'
 import '../styles/04-profile-public.css'
 import '../styles/15-profile-public.css'
@@ -14,11 +14,26 @@ export function Profile() {
 
   const isEs = language === 'es'
   const [showAllAchievements, setShowAllAchievements] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const editAvatarRef = useRef<HTMLInputElement>(null)
 
   const displayName = profile?.display_name ?? (isEs ? 'Atleta' : 'Athlete')
   const location = (profile as { location?: string })?.location ?? ''
   const handle = (profile as { instagram_handle?: string })?.instagram_handle ?? ''
+
+  // Local state for the edit pop-up — initialised from the current profile.
+  const [editName, setEditName] = useState(displayName)
+  const [editLocation, setEditLocation] = useState(location)
+  const [editAvatarPreview, setEditAvatarPreview] = useState<string | null>(profile?.avatar_url ?? null)
+
+  useEffect(() => {
+    if (editOpen) {
+      setEditName(displayName)
+      setEditLocation(location)
+      setEditAvatarPreview(profile?.avatar_url ?? null)
+    }
+  }, [editOpen, displayName, location, profile?.avatar_url])
 
   const shownAchievements = useMemo(() => {
     const list = gamification.achievements
@@ -45,14 +60,13 @@ export function Profile() {
         <button type="button" className="profile-strava-back" aria-label={isEs ? 'Atrás' : 'Back'}>
           <span className="sr-only">{isEs ? 'Atrás' : 'Back'}</span>
         </button>
-        <button type="button" className="profile-strava-action" aria-label={isEs ? 'Buscar' : 'Search'}>
-          <Star size={18} />
-        </button>
-        <button type="button" className="profile-strava-action" aria-label={isEs ? 'Compartir' : 'Share'}>
-          <QrCode size={18} />
-        </button>
-        <button type="button" className="profile-strava-action" aria-label={isEs ? 'Ajustes' : 'Settings'}>
-          <Settings2 size={18} />
+        <button
+          type="button"
+          className="profile-strava-edit"
+          aria-label={isEs ? 'Editar perfil' : 'Edit profile'}
+          onClick={() => setEditOpen(true)}
+        >
+          <Pencil size={16} />
         </button>
       </motion.section>
       <motion.section className="profile-strava-hero" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
@@ -209,6 +223,106 @@ export function Profile() {
         </div>
         <button type="button" className="profile-show-more">{isEs ? 'Todos los clubes' : 'All clubs'}</button>
       </motion.section>
+
+      <AnimatePresence>
+        {editOpen && (
+          <motion.div
+            className="profile-edit-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setEditOpen(false)}
+          >
+            <motion.div
+              className="profile-edit-popup"
+              role="dialog"
+              aria-modal="true"
+              aria-label={isEs ? 'Editar perfil' : 'Edit profile'}
+              initial={{ opacity: 0, y: 20, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.96 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <header className="profile-edit-header">
+                <h3>{isEs ? 'Editar perfil' : 'Edit profile'}</h3>
+                <button
+                  type="button"
+                  className="profile-edit-close"
+                  aria-label={isEs ? 'Cerrar' : 'Close'}
+                  onClick={() => setEditOpen(false)}
+                >
+                  <X size={16} />
+                </button>
+              </header>
+
+              <div className="profile-edit-avatar">
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={editAvatarRef}
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const reader = new FileReader()
+                    reader.onload = () => setEditAvatarPreview(String(reader.result))
+                    reader.readAsDataURL(file)
+                  }}
+                />
+                <button
+                  type="button"
+                  className="profile-edit-avatar-btn"
+                  onClick={() => editAvatarRef.current?.click()}
+                >
+                  <span className="profile-avatar-gradient" aria-hidden />
+                  {editAvatarPreview ? (
+                    <img src={editAvatarPreview} alt="" className="profile-avatar-img" />
+                  ) : (
+                    <span className="profile-avatar-placeholder">{editName.charAt(0).toUpperCase()}</span>
+                  )}
+                  <span className="profile-edit-avatar-camera">
+                    <Camera size={14} />
+                  </span>
+                </button>
+                <span className="profile-edit-avatar-hint">
+                  {isEs ? 'Toca la foto para cambiarla' : 'Tap the photo to change it'}
+                </span>
+              </div>
+
+              <div className="profile-edit-fields">
+                <label className="profile-edit-field">
+                  <span>{isEs ? 'Nombre' : 'Name'}</span>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder={isEs ? 'Tu nombre' : 'Your name'}
+                  />
+                </label>
+                <label className="profile-edit-field">
+                  <span>{isEs ? 'Descripción / Ubicación' : 'Description / Location'}</span>
+                  <textarea
+                    value={editLocation}
+                    onChange={(e) => setEditLocation(e.target.value)}
+                    placeholder={isEs ? 'La Macarena, META' : 'La Macarena, META'}
+                    rows={3}
+                  />
+                </label>
+              </div>
+
+              <footer className="profile-edit-footer">
+                <button type="button" className="profile-edit-cancel" onClick={() => setEditOpen(false)}>
+                  {isEs ? 'Cancelar' : 'Cancel'}
+                </button>
+                <button type="button" className="profile-edit-save" onClick={() => setEditOpen(false)}>
+                  <Check size={14} /> {isEs ? 'Guardar' : 'Save'}
+                </button>
+              </footer>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
