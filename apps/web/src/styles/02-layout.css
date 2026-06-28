@@ -361,6 +361,10 @@
   border-radius: var(--radius-full);
   background: var(--bg-2);
   border: 1px solid var(--border);
+  /* Match the same base color family used by .topbar-icon-btn so the
+     search affordance sits in the same icon language as the bell —
+     but force the glyph to full-text white so it reads as the
+     primary action of the right cluster. */
   color: var(--text-muted);
   transition: background var(--transition), border-color var(--transition),
     color var(--transition), transform var(--transition);
@@ -368,11 +372,14 @@
   flex-shrink: 0;
 }
 
-/* The Search icon lives inside an absolutely-sized inner span so
-   we can scale it up without fighting flexbox line-height. */
+/* Force the SVG glyph itself to full white regardless of inherited
+   muted color — this is the single visual lift that keeps the icon
+   from looking lost next to the bell. */
 .topbar-search-btn > svg {
   flex-shrink: 0;
   display: block;
+  color: var(--text);
+  stroke-width: 3;
 }
 
 .topbar-search-btn:hover {

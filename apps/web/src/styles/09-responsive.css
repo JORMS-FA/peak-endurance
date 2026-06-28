@@ -101,7 +101,7 @@
   .topbar-search-btn > svg {
     width: 22px;
     height: 22px;
-    stroke-width: 3;
+    /* stroke-width inherited from base rule (3) */
   }
   .topbar-search-btn .topbar-kbd { display: none; }
 }
