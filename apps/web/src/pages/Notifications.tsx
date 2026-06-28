@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Bell, ArrowLeft, Dot, CheckCheck, X } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Bell, ArrowLeft, Dot, CheckCheck, X, Trophy, Dumbbell, Users, Settings2 } from 'lucide-react'
 import { useI18n } from '../hooks/useI18n'
 import { mockNotifications, type NotificationMock } from '../lib/notificationsMock'
 
@@ -25,8 +25,24 @@ function notifyChange() {
   window.dispatchEvent(new CustomEvent(CHANGE_EVENT))
 }
 
+function pathForNotification(n: NotificationMock): string | null {
+  switch (n.type) {
+    case 'achievement':
+      return '/app/logros'
+    case 'training':
+      return '/app/entrena'
+    case 'social':
+      return '/app/conexiones'
+    default:
+      return '/app'
+  }
+}
+
+const chevron = { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
+
 export default function Notifications() {
   const { t, language } = useI18n()
+  const navigate = useNavigate()
   const [readIds, setReadIds] = useState<Set<string>>(() => loadIdSet(STORAGE_KEY))
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => loadIdSet(DISMISSED_KEY))
   const [notifications, setNotifications] = useState<NotificationMock[]>(() =>
@@ -48,15 +64,14 @@ export default function Notifications() {
     saveIdSet(DISMISSED_KEY, dismissedIds)
   }, [dismissedIds])
 
-  function toggleRead(id: string) {
+  function markAsRead(id: string) {
     setReadIds((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+      next.add(id)
       return next
     })
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n))
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     )
   }
 
@@ -66,13 +81,25 @@ export default function Notifications() {
     setNotifications((prev) => prev.filter((n) => n.id !== id))
   }
 
+  function handleItemClick(notif: NotificationMock) {
+    const target = pathForNotification(notif)
+    if (!notif.read) markAsRead(notif.id)
+    if (target) navigate(target)
+  }
+
   return (
     <div className="page-notifications">
       {/* Header */}
       <div className="notif-page-header">
-        <Link to="/app" className="notif-page-back" aria-label={isEs ? 'Volver' : 'Back'}>
+        <button
+          type="button"
+          className="notif-page-back"
+          aria-label={isEs ? 'Volver' : 'Back'}
+          onClick={() => navigate('/app')}
+        >
           <ArrowLeft size={22} strokeWidth={2} />
-        </Link>
+          <span className="notif-page-back-label">{isEs ? 'Atrás' : 'Back'}</span>
+        </button>
         <div className="notif-page-header-text">
           <h1>{t('notifications')}</h1>
           {unreadCount > 0 && (
@@ -96,39 +123,62 @@ export default function Notifications() {
         </div>
       ) : (
         <div className="notif-page-list">
-          {notifications.map((notif) => (
-            <div
-              key={notif.id}
-              className={`notif-page-item${notif.read ? '' : ' unread'}`}
-              onClick={() => toggleRead(notif.id)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleRead(notif.id) }}
-            >
-              <div className="notif-page-item-indicator">
-                {notif.read ? (
-                  <CheckCheck size={14} strokeWidth={1.5} className="notif-page-read-icon" />
-                ) : (
-                  <Dot size={20} strokeWidth={2} className="notif-page-dot-icon" />
-                )}
-              </div>
-              <div className="notif-page-item-body">
-                <div className="notif-page-item-top">
-                  <strong className="notif-page-title">{notif.title}</strong>
-                  <span className="notif-page-time">{notif.time}</span>
-                </div>
-                <p className="notif-page-desc">{notif.description}</p>
-              </div>
-              <button
-                type="button"
-                className="notif-page-dismiss"
-                onClick={(e) => dismissNotification(notif.id, e)}
-                aria-label={isEs ? 'Eliminar notificación' : 'Dismiss notification'}
+          {notifications.map((notif) => {
+            const href = pathForNotification(notif)
+            const isSocial = notif.type === 'social'
+            const isAchievement = notif.type === 'achievement'
+            const isTraining = notif.type === 'training'
+            const isSystem = notif.type === 'system'
+
+            return (
+              <div
+                key={notif.id}
+                className={`notif-page-item${notif.read ? '' : ' unread'}`}
+                onClick={() => handleItemClick(notif)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleItemClick(notif) }}
               >
-                <X size={14} strokeWidth={1.5} />
-              </button>
-            </div>
-          ))}
+                <div className="notif-page-item-indicator">
+                  {notif.read ? (
+                    <CheckCheck size={14} strokeWidth={1.5} className="notif-page-read-icon" />
+                  ) : isAchievement ? (
+                    <Trophy size={18} strokeWidth={2} className="notif-page-type-icon notif-page-type-icon--achievement" />
+                  ) : isTraining ? (
+                    <Dumbbell size={18} strokeWidth={2} className="notif-page-type-icon notif-page-type-icon--training" />
+                  ) : isSocial ? (
+                    <Users size={18} strokeWidth={2} className="notif-page-type-icon notif-page-type-icon--social" />
+                  ) : (
+                    <Settings2 size={18} strokeWidth={2} className="notif-page-type-icon notif-page-type-icon--system" />
+                  )}
+                </div>
+                <div className="notif-page-item-body">
+                  <div className="notif-page-item-top">
+                    <strong className="notif-page-title">{notif.title}</strong>
+                    <span className="notif-page-time">{notif.time}</span>
+                  </div>
+                  <p className="notif-page-desc">{notif.description}</p>
+                </div>
+                <div className="notif-page-actions">
+                  {href && (
+                    <span className="notif-page-go" aria-hidden>
+                      <svg {...chevron} viewBox="0 0 24 24">
+                        <path d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    className="notif-page-dismiss"
+                    onClick={(e) => dismissNotification(notif.id, e)}
+                    aria-label={isEs ? 'Eliminar notificación' : 'Dismiss notification'}
+                  >
+                    <X size={14} strokeWidth={1.5} />
+                  </button>
+                </div>
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

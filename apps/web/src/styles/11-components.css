@@ -1673,49 +1673,54 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 
 /* ── Notifications: full page (Strava-like) ──────────────────────────────────── */
 .page-notifications {
-  padding: 0 16px 24px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  min-height: 100vh;
+  width: 100%;
+  background: light-dark(#F7F9FD, #05080e);
 }
 
 .notif-page-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 0 16px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--bg-0);
+  padding: 0 16px;
+  height: 56px;
+  background: light-dark(#ffffff, #08090f);
   border-bottom: 1px solid var(--border);
 }
 
 .notif-page-back {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--surface-raised);
-  color: var(--text);
-  text-decoration: none;
-  transition: border-color 0.18s ease, background 0.18s ease;
+  gap: 6px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
+  color: var(--text-muted);
 }
 
 .notif-page-back:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-2);
+  color: var(--text);
+}
+
+.notif-page-back-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: inherit;
 }
 
 .notif-page-header-text {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 12px;
   min-width: 0;
+  width: 100%;
 }
 
 .notif-page-header-text h1 {
@@ -1842,76 +1847,6 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   background: rgba(239, 68, 68, 0.12);
   color: var(--danger);
 }
-
-/* ── Mobile Navigation (bottom tab bar) ──────────────────────────────────── */
-.mobile-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  background: var(--surface-overlay);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid var(--border);
-  z-index: 50;
-  padding: 0 4px;
-  gap: 2px;
-}
-
-.mobile-nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 6px 4px;
-  border-radius: var(--radius-md);
-  color: var(--text-muted);
-  text-decoration: none;
-  font-size: 0.65rem;
-  font-weight: 500;
-  transition: color var(--transition);
-  min-width: 0;
-  flex: 1;
-  max-width: 72px;
-}
-
-.mobile-nav-item.active {
-  color: var(--accent);
-}
-
-.mobile-nav-item span {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-.mobile-nav-avatar-img {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.mobile-nav-avatar {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--bg-2);
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-/* ── Not found / error ──────────────────────────────────────────────────── */
 
 /* ── Search Modal ──────────────────────────────────────────────────────────── */
 .search-overlay {
