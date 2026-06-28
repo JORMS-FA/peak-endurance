@@ -54,6 +54,10 @@ create trigger trg_profiles_bio_set_at
 -- Refresh public_profiles view so bio & location become visible to anon/authenticated.
 -- (Migration 0014 added defensive column detection; we just need to re-run it now
 -- that the columns actually exist.)
+--
+-- NOTE: `create or replace view` cannot reorder existing columns (Postgres
+-- throws "cannot change name of view column X to Y"). We must DROP first
+-- if the existing view's column list doesn't already include bio+location.
 do $$
 declare
   has_location boolean := exists (
@@ -72,8 +76,22 @@ declare
     select 1 from information_schema.tables
     where table_schema = 'public' and table_name = 'imported_activities'
   );
+  has_bio_in_view boolean := exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'public_profiles' and column_name = 'bio'
+  );
+  has_location_in_view boolean := exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'public_profiles' and column_name = 'location'
+  );
+  needs_recreate boolean := (has_bio and not has_bio_in_view)
+                           or (has_location and not has_location_in_view);
   sql_text text;
 begin
+  if needs_recreate then
+    execute 'drop view if exists public.public_profiles';
+  end if;
+
   sql_text := 'create or replace view public.public_profiles as
     select
       p.id,
@@ -102,5 +120,8 @@ begin
 
   execute sql_text;
 end $$;
+
+-- Re-grant access to the view (drop+recreate strips privileges).
+grant select on public.public_profiles to anon, authenticated;
 
 grant select on public.public_profiles to anon, authenticated;
