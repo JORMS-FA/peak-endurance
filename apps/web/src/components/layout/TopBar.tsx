@@ -133,17 +133,17 @@ export function TopBar({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
         </div>
 
         <div className="topbar-right">
-          {/* Search button — Lucide Search with the same strokeWidth as
-              the bell so both icons share the same visual weight. */}
-          <button
-            type="button"
-            className="topbar-action topbar-search-btn topbar-btn-round topbar-icon-btn"
-            aria-label={t('search')}
-            onClick={() => setSearchOpen(true)}
-          >
-            <Search size={22} strokeWidth={2.5} aria-hidden />
-            <kbd className="topbar-kbd">{navigator.platform?.includes('Mac') ? '⌘K' : 'Ctrl+K'}</kbd>
-          </button>
+          {/* Search button — prominent, thick stroke to match the bell
+                        and feel anchored to the same icon language. */}
+                    <button
+                      type="button"
+                      className="topbar-search-btn"
+                      aria-label={t('search')}
+                      onClick={() => setSearchOpen(true)}
+                    >
+                      <Search size={24} strokeWidth={3} aria-hidden />
+                      <kbd className="topbar-kbd">{navigator.platform?.includes('Mac') ? '⌘K' : 'Ctrl+K'}</kbd>
+                    </button>
 
           {/* Notifications button */}
           <div className="avatar-menu-wrap" ref={notifRef}>
