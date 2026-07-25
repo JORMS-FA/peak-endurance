@@ -1,151 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════
-   SIDEBAR DRAWER — slide-out nav below topbar
-   ═══════════════════════════════════════════════════════════════ */
-
-/* ── Drawer panel ─────────────────────────────────────────────── */
-
-.drawer {
-  position: fixed;
-  top: var(--topbar-height, 60px);
-  left: 0;
-  bottom: 0;
-  width: 280px;
-  max-width: calc(100vw - 40px);
-  z-index: 40;
-  background: var(--surface-raised);
-  border-right: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  flex-direction: column;
-  transform: translateX(-100%);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s ease;
-  overflow-y: auto;
-}
-
-.drawer.drawer-open {
-  transform: translateX(0);
-}
-
-/* ── Collapsed state: only icons ───────────────────────────────── */
-
-.drawer.drawer-collapsed {
-  width: 64px;
-}
-
-.drawer.drawer-collapsed .drawer-link span {
-  display: none;
-}
-
-.drawer.drawer-collapsed .drawer-link {
-  justify-content: center;
-  padding: 12px 0;
-  gap: 0;
-}
-
-.drawer.drawer-collapsed .drawer-footer span {
-  display: none;
-}
-
-.drawer.drawer-collapsed .drawer-footer {
-  padding: 8px 0;
-  display: flex;
-  justify-content: center;
-}
-
-.drawer.drawer-collapsed .drawer-collapse-btn {
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-}
-
-/* ── Drawer navigation ────────────────────────────────────────── */
-
-.drawer-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 10px;
-  flex: 1;
-}
-
-.drawer-section-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 4px 14px;
-}
-
-.drawer-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: var(--radius-md);
-  font-size: 0.92rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  transition: all var(--transition);
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.drawer-link:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.drawer-link.active {
-  color: var(--accent);
-  background: var(--accent-soft);
-  font-weight: 600;
-}
-
-/* ── Collapse toggle footer ────────────────────────────────────── */
-
-.drawer-footer {
-  border-top: 1px solid var(--border);
-  padding: 8px 10px;
-}
-
-.drawer-collapse-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: var(--radius-md);
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  transition: all var(--transition);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-.drawer-collapse-btn:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.drawer-collapse-icon {
-  transition: transform 0.2s ease;
-  flex-shrink: 0;
-}
-
-.drawer-collapse-icon.rotated {
-  transform: rotate(180deg);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   TOP BAR — full width, sticky
-   ═══════════════════════════════════════════════════════════════ */
+   Vercel Dark Layout & Navigation System
+   ========================================================================== */
 
 :root {
-  --topbar-height: 60px;
+  --topbar-height: 64px;
 }
 
 .topbar {
@@ -153,290 +11,131 @@
   align-items: center;
   justify-content: space-between;
   height: var(--topbar-height);
-  padding: 0 14px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface-overlay);
-  backdrop-filter: blur(12px);
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   position: sticky;
   top: 0;
-  z-index: 30;
-  gap: 12px;
+  z-index: 100;
 }
 
 .topbar-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
-/* ── Collapse / hamburger button ──────────────────────────────── */
-
 .topbar-collapse-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-md);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: grid;
   place-items: center;
-  color: var(--text-muted);
-  transition: all var(--transition);
-  flex-shrink: 0;
+  color: #888888;
+  background: transparent;
+  transition: all 0.15s ease;
 }
 
 .topbar-collapse-btn:hover {
-  background: var(--bg-2);
-  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 
-/* ── Logo as clickable button ─────────────────────────────────── */
-
-.topbar-logo-btn {
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  display: grid;
-  place-items: center;
-  transition: opacity 0.15s ease;
-  line-height: 0;
+.brand-name {
+  font-weight: 800;
+  font-size: 1rem;
+  color: #ffffff;
+  letter-spacing: -0.02em;
 }
 
-.topbar-logo-btn:hover {
-  opacity: 0.8;
-}
-
-/* ── Circular round buttons (search / notifications / avatar) ── */
-
-.topbar-btn-round {
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border-radius: 50% !important;
-  display: grid;
-  place-items: center;
-}
-
-/* Larger variant for icon buttons (search, notifications, avatar)
-   so all three share the same diameter and the icons feel centered. */
-.topbar-icon-btn {
-  width: 48px !important;
-  height: 48px !important;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  transition: all var(--transition);
-}
-.topbar-icon-btn:hover {
-  background: var(--bg-3);
-  color: var(--text);
-}
-
-.topbar-btn-round .topbar-kbd {
-  display: none;
-}
-
-/* ── Avatar — no colored border by default ────────────────────── */
-
-.topbar-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--bg-2);
-  color: var(--text);
-  display: grid;
-  place-items: center;
-  font-weight: 600;
-  font-size: 0.85rem;
-  flex-shrink: 0;
-  /* no border / glow by default */
-}
-
-.topbar-avatar-img {
-  object-fit: cover;
-}
-
-/* ── Subscriber neon border ───────────────────────────────────── */
-
-.topbar-avatar.subscriber {
-  box-shadow: 0 0 0 2px var(--accent), 0 0 12px var(--accent-glow);
-}
-
-/* ── Right side cluster ───────────────────────────────────────── */
-
-.topbar-right {
+/* Mobile Nav Bottom Bar Vercel */
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-around;
+  z-index: 100;
+  padding: 0 8px;
 }
 
-.avatar-menu-wrap {
-  position: relative;
-  flex-shrink: 0;
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #666666;
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 500;
+  flex: 1;
+  height: 100%;
+  transition: color 0.15s ease;
 }
 
-.avatar-menu-btn {
-  border: none;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
+.mobile-nav-item.active,
+.mobile-nav-item:hover {
+  color: #ffffff;
+}
+
+.mobile-nav-item svg {
   transition: transform 0.15s ease;
 }
 
-.avatar-menu-btn:hover {
-  transform: scale(1.05);
+.mobile-nav-item.active svg {
+  transform: translateY(-2px);
 }
 
-.avatar-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 220px;
-  background: var(--surface-raised);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  z-index: 100;
-  overflow: hidden;
-  animation: avatarMenuIn 0.15s ease;
-}
-
-@keyframes avatarMenuIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.avatar-menu-header {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
+/* Drawer / Sidebar Vercel */
+.drawer {
+  position: fixed;
+  top: var(--topbar-height);
+  left: 0;
+  bottom: 0;
+  width: 260px;
+  z-index: 90;
+  background: #0a0a0a;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  transform: translateX(-100%);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.avatar-menu-header strong {
-  font-size: 0.88rem;
+.drawer.drawer-open {
+  transform: translateX(0);
 }
 
-.avatar-menu-header small {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.avatar-menu-item {
+.drawer-link {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 10px 14px;
-  width: 100%;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  font-size: 0.85rem;
-  cursor: pointer;
-  text-align: left;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #888888;
   text-decoration: none;
-  transition: background var(--transition);
+  transition: all 0.15s ease;
 }
 
-.avatar-menu-item:hover {
-  background: var(--bg-2);
+.drawer-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
-/* ── Search button ────────────────────────────────────────────── */
-/* Pill-shaped, larger than the icon buttons so it reads as the
-   "primary affordance" of the right cluster — the same way Vercel,
-   Linear and Strava treat their search affordance. The icon is
-   bigger and uses a heavier stroke to feel anchored to the design
-   language instead of a faint, orphaned glyph. */
-
-.topbar-search-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  height: 44px;
-  padding: 0 16px 0 14px;
-  border-radius: var(--radius-full);
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  /* Match the same base color family used by .topbar-icon-btn so the
-     search affordance sits in the same icon language as the bell —
-     but force the glyph to full-text white so it reads as the
-     primary action of the right cluster. */
-  color: var(--text-muted);
-  transition: background var(--transition), border-color var(--transition),
-    color var(--transition), transform var(--transition);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-/* Force the SVG glyph itself to full white regardless of inherited
-   muted color — this is the single visual lift that keeps the icon
-   from looking lost next to the bell. */
-.topbar-search-btn > svg {
-  flex-shrink: 0;
-  display: block;
-  color: var(--text);
-  stroke-width: 3;
-}
-
-.topbar-search-btn:hover {
-  background: var(--bg-3);
-  border-color: var(--border-strong);
-  color: var(--text);
-  transform: translateY(-1px);
-}
-
-.topbar-search-btn:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.topbar-kbd {
-  font-size: 0.65rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-muted);
-  font-family: inherit;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.topbar-action {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-md);
-  display: grid;
-  place-items: center;
-  color: var(--text-muted);
-  transition: all var(--transition);
-  position: relative;
-}
-
-.topbar-action:hover {
-  background: var(--bg-2);
-  color: var(--text);
-}
-
-.topbar-dot {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid var(--surface-overlay);
-}
-
-/* ── Brand name ───────────────────────────────────────────────── */
-
-.brand-name {
-  font-weight: 700;
-  font-size: 1.35rem;
-  color: var(--text);
-  letter-spacing: -0.02em;
-  display: inline-block;
+.drawer-link.active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: 600;
 }
