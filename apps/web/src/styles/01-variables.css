@@ -59,23 +59,23 @@
 :root,
 [data-theme="dark"] {
   --bg-0: #000000;
-  --bg-1: #000000;
-  --bg-2: #000000;
-  --bg-3: #000000;
-  --bg-4: #000000;
+  --bg-1: #050505;
+  --bg-2: #0a0a0a;
+  --bg-3: #121212;
+  --bg-4: #181818;
 
-  --surface: #000000;
-  --surface-raised: #000000;
-  --surface-overlay: rgba(0, 0, 0, 0.96);
+  --surface: #0a0a0a;
+  --surface-raised: #0a0a0a;
+  --surface-overlay: rgba(0, 0, 0, 0.85);
 
-  --border: rgba(255, 255, 255, 0.07);
-  --border-strong: rgba(255, 255, 255, 0.14);
-  --border-focus: var(--accent);
+  --border: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --border-focus: #ffffff;
 
-  --text: #f0f1f5;
-  --text-2: #b8bcc8;
-  --text-muted: #7a8194;
-  --text-disabled: #4a5063;
+  --text: #ffffff;
+  --text-2: #a1a1a1;
+  --text-muted: #666666;
+  --text-disabled: #444444;
 
   --accent: #f97316;
   --accent-hover: #fb923c;
@@ -286,6 +286,24 @@ html[data-accent="white"] {
 }
 
 /* ─── Design Tokens ─────────────────────────────────────────── */
+/* ─── Pure B&W Landing Page Override ──────────────────────── */
+.landing-page {
+  --accent: #ffffff;
+  --accent-hover: rgba(255, 255, 255, 0.8);
+  --accent-soft: rgba(255, 255, 255, 0.08);
+  --accent-glow: rgba(255, 255, 255, 0.12);
+  --accent-rgb: 255, 255, 255;
+
+  --success: #ffffff;
+  --success-soft: rgba(255, 255, 255, 0.06);
+  --warning: #ffffff;
+  --warning-soft: rgba(255, 255, 255, 0.06);
+  --info: #ffffff;
+  --info-soft: rgba(255, 255, 255, 0.06);
+  --danger: #ffffff;
+  --danger-soft: rgba(255, 255, 255, 0.06);
+}
+
 :root {
   --font: 'Geist', system-ui, -apple-system, sans-serif;
   --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
